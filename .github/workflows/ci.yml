@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - 'main'
+      - 'v*.*.*'
     tags:
       - '*'
 
@@ -103,6 +104,10 @@ jobs:
         uses: codecov/codecov-action@v3
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+      - run: |
+          ls -al
+          cat .gitignore
 
       - name: Coverage comment
         id: coverage_comment
