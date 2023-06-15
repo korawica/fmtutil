@@ -1,10 +1,10 @@
 # Data Utility Package: Formatter
 
-[![test](https://github.com/KorawichSCG/dde-formatter/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/KorawichSCG/dde-formatter/actions/workflows/tests.yml)
-[![publish test](https://github.com/KorawichSCG/dde-formatter/actions/workflows/publish.yml/badge.svg?event=release)](https://github.com/KorawichSCG/dde-formatter/actions/workflows/publish.yml)
-[![codecov](https://codecov.io/gh/KorawichSCG/dde-formatter/branch/main/graph/badge.svg?token=J2MN63IFT0)](https://codecov.io/gh/KorawichSCG/dde-formatter)
+[![codecov](https://codecov.io/gh/korawica/dup-fmt/branch/main/graph/badge.svg?token=J2MN63IFT0)](https://codecov.io/gh/korawica/dup-fmt)
 [![hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch)
-[![size](https://img.shields.io/github/languages/code-size/KorawichSCG/dde-formatter)](https://github.com/KorawichSCG/dde-formatter)
+[![test](https://github.com/korawica/dup-fmt/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/korawica/dup-fmt/actions/workflows/tests.yml)
+[![publish test](https://github.com/korawica/dup-fmt/actions/workflows/publish.yml/badge.svg?event=release)](https://github.com/korawica/dup-fmt/actions/workflows/publish.yml)
+[![size](https://img.shields.io/github/languages/code-size/korawica/dup-fmt)](https://github.com/korawica/dup-fmt)
 
 **Type**: `DUP` | **Tag**: `Data Package` `Data` `Utility`
 
