@@ -4,7 +4,7 @@ on:
   release:
     types:
       - prereleased
-      - published
+      - released
 
 permissions:
   contents: read
@@ -39,6 +39,11 @@ jobs:
       - name: Build distribution
         run: python -m build
 
+      - run: |
+          echo "github ref is:" ${{ github.ref }} 
+          echo "event name is:" ${{ github.event_name }} 
+          echo "event type is:" ${{ github.event.action }} 
+
       - name: Publish to Test PyPI
         if: github.event.action == 'prereleased' && startsWith(github.ref, 'refs/tags')
         uses: pypa/gh-action-pypi-publish@v1.8.5
@@ -47,8 +52,8 @@ jobs:
           repository-url: https://test.pypi.org/legacy/
 
       - name: Publish to PyPI
-        # ${{ !startsWith(github.ref, 'refs/tags') }} && github.event_name == 'release'
-        if: github.event.action == 'published' && startsWith(github.ref, 'refs/tags')
+        # ${{ !startsWith(github.ref, 'refs/tags') }}
+        if: github.event.action == 'released' && startsWith(github.ref, 'refs/tags')
         uses: pypa/gh-action-pypi-publish@v1.8.5
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
