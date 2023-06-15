@@ -19,6 +19,3 @@ from .formatter import (
     Serial,
     Version,
 )
-
-__version__ = version = "0.0.1"
-__version_tuple__ = version_tuple = (0, 0, 1)
