@@ -54,8 +54,6 @@ jobs:
           path: ${{ env.pythonLocation }}
           key:  ${{ runner.os }}-python-${{ env.pythonLocation }}-${{ hashFiles('pyproject.toml') }}-test-v03
 
-      - run: ls -al
-
       # The `if` statement ensures this only runs on a cache miss.
       - name: Install Dependencies
         if:  steps.cache.outputs.cache-hit != 'true'
