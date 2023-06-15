@@ -10,7 +10,8 @@ jobs:
   coverage-display:
     name: Run tests & display coverage
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
+#    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
+    if: ${{ false }}
     permissions:
       # Gives the action the necessary permissions for publishing new
       # comments in pull requests.

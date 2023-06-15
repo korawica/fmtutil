@@ -108,23 +108,23 @@ jobs:
           ls -al
           cat .gitignore
 
-      - name: Coverage comment
-        id: coverage_comment
-        uses: py-cov-action/python-coverage-comment-action@v3
-        with:
-          GITHUB_TOKEN: ${{ secrets.ACTIONS_TOKEN }}
-          ANNOTATE_MISSING_LINES: true
-          ANNOTATION_TYPE: warning
-          COMMENT_ARTIFACT_NAME: coverage-comment-action
-          COMMENT_FILENAME: coverage-comment-action.txt
-          COVERAGE_DATA_BRANCH: coverage
+#      - name: Coverage comment
+#        id: coverage_comment
+#        uses: py-cov-action/python-coverage-comment-action@v3
+#        with:
+#          GITHUB_TOKEN: ${{ secrets.ACTIONS_TOKEN }}
+#          ANNOTATE_MISSING_LINES: true
+#          ANNOTATION_TYPE: warning
+#          COMMENT_ARTIFACT_NAME: coverage-comment-action
+#          COMMENT_FILENAME: coverage-comment-action.txt
+#          COVERAGE_DATA_BRANCH: coverage
 
-      - name: Store Pull Request comment to be posted
-        uses: actions/upload-artifact@v3
-        if: steps.coverage_comment.outputs.COMMENT_FILE_WRITTEN == 'true'
-        with:
-          name: coverage-comment-action
-          path: coverage-comment-action.txt
+#      - name: Store Pull Request comment to be posted
+#        uses: actions/upload-artifact@v3
+#        if: steps.coverage_comment.outputs.COMMENT_FILE_WRITTEN == 'true'
+#        with:
+#          name: coverage-comment-action
+#          path: coverage-comment-action.txt
 
       - name: Store coverage HTML
         uses: actions/upload-artifact@v3
