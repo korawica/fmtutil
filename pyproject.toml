@@ -10,7 +10,7 @@ requires-python = ">=3.8.10"
 license = "MIT"
 keywords = []
 authors = [
-    { name = "korawica", email = "korawica@scg.com" },
+    { name = "korawica", email = "korawich.anu@gmail.com" },
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -62,7 +62,7 @@ exclude_lines = [
 
 [tool.hatch.version]
 source = "code"
-path = "dup_fmt/__init__.py"
+path = "dup_fmt/__about__.py"
 
 [tool.hatch.build.targets.sdist]
 exclude = [
