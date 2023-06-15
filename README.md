@@ -78,7 +78,7 @@ like in `Datetime`, for `%B` value that was designed for month shortname
 ### Datetime
 
 ```python
-from ddefmt import Datetime
+from dup_fmt import Datetime
 
 datetime = Datetime.parse(
    value='This_is_time_20220101_000101',
@@ -94,7 +94,7 @@ datetime.format('This_datetime_format_%Y%b-%-d_%H:%M:%S')
 ### Version
 
 ```python
-from ddefmt import Version
+from dup_fmt import Version
 
 version = Version.parse(
     value='This_is_version_2_0_1',
@@ -110,7 +110,7 @@ version.format('New_version_%m%n%c')
 ### Serial
 
 ```python
-from ddefmt import Serial
+from dup_fmt import Serial
 
 serial = Serial.parse(
     value='This_is_serial_62130',
@@ -126,7 +126,7 @@ serial.format('Convert to binary: %b')
 ### Naming
 
 ```python
-from ddefmt import Naming
+from dup_fmt import Naming
 
 naming = Naming.parse(
     value='de is data engineer',
@@ -142,8 +142,8 @@ naming.format('Camel case is %c')
 ### Constant
 
 ```python
-from ddefmt import Constant
-from ddefmt.errors import FormatterError
+from dup_fmt import Constant
+from dup_fmt.errors import FormatterError
 
 const = Constant({
     '%n': 'normal',
@@ -164,7 +164,7 @@ except FormatterError as err:
 ```
 
 > **Note**: \
-> This package already implement environment constant object, `ddefmt.EnvConstant`.
+> This package already implement environment constant object, `dup_fmt.EnvConstant`.
 
 ## Ordered Formatter
 
@@ -173,7 +173,7 @@ all formatter objects together and can use order properties with other
 `OrderFormatter` object.
 
 ```python
-from ddefmt import OrderFormatter, Datetime, Version
+from dup_fmt import OrderFormatter, Datetime, Version
 
 ordered_1 = OrderFormatter({
     'timestamp': Datetime.parse("20220101", "%Y%m%d"),
@@ -200,7 +200,7 @@ like `name` as Naming object, or `timestamp` as Datetime object.
 **Parse**:
 
 ```python
-from ddefmt import FormatterGroup, Naming, Datetime
+from dup_fmt import FormatterGroup, Naming, Datetime
 
 group = FormatterGroup({'name': Naming, 'datetime': Datetime})
 group.parser(
@@ -225,7 +225,7 @@ group.parser(
 **Format**:
 
 ```python
-from ddefmt import FormatterGroup, Naming, Datetime
+from dup_fmt import FormatterGroup, Naming, Datetime
 from datetime import datetime
 
 group = FormatterGroup({
@@ -248,7 +248,7 @@ I provide the base abstract class, `BaseFormatter`, for this use-case like;
 
 ```python
 from typing import Optional, Dict, Union, Callable, Tuple
-from ddefmt import BaseFormatter
+from dup_fmt import BaseFormatter
 
 
 class Storage(BaseFormatter):

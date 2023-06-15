@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "ddefmt"
+name = "dup-fmt"
 description = "The formatter object for data developer and engineering"
 readme = "README.md"
 requires-python = ">=3.8.10"
@@ -27,7 +27,7 @@ dependencies = [
 dynamic = ["version"]
 
 [project.urls]
-Homepage = "https://github.com/korawica/ddefmt"
+Homepage = "https://github.com/korawica/dup-fmt"
 
 [project.optional-dependencies]
 test = [
@@ -46,10 +46,10 @@ parallel = true
 context = '${CONTEXT}'
 source = [
     "tests",
-    "ddefmt"
+    "dup_fmt"
 ]
 omit = [
-    "ddefmt/utils.py",
+    "dup_fmt/utils.py",
 ]
 relative_files = true
 
@@ -62,7 +62,7 @@ exclude_lines = [
 
 [tool.hatch.version]
 source = "code"
-path = "ddefmt/__init__.py"
+path = "dup_fmt/__init__.py"
 
 [tool.hatch.build.targets.sdist]
 exclude = [
@@ -73,7 +73,7 @@ exclude = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["ddefmt"]
+packages = ["dup_fmt"]
 
 [tool.pytest.ini_options]
 console_output_style = "count"
@@ -85,7 +85,7 @@ filterwarnings = ["error"]
 
 [tool.mypy]
 python_version = "3.8"
-files = ["ddefmt"]
+files = ["dup_fmt"]
 show_error_codes = true
 pretty = true
 strict = true
