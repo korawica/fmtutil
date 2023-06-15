@@ -1,4 +1,4 @@
-# Data Utility Package: Formatter
+# Data Utility Package: *Formatter*
 
 [![codecov](https://codecov.io/gh/korawica/dup-fmt/branch/main/graph/badge.svg?token=J2MN63IFT0)](https://codecov.io/gh/korawica/dup-fmt)
 [![hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch)
@@ -6,7 +6,7 @@
 [![publish test](https://github.com/korawica/dup-fmt/actions/workflows/publish.yml/badge.svg?event=release)](https://github.com/korawica/dup-fmt/actions/workflows/publish.yml)
 [![size](https://img.shields.io/github/languages/code-size/korawica/dup-fmt)](https://github.com/korawica/dup-fmt)
 
-**Type**: `DUP` | **Tag**: `Data Package` `Data` `Utility`
+**Type**: `DUP` | **Tag**: `Data Utility Package` `Data` `Utility`
 
 **Table of Contents**:
 
@@ -20,34 +20,35 @@
 - [Formatter Group](#formatter-group)
 - [Make your Formatter Object](#make-your-formatter-object)
 
-This **Formatter** package was created for parse and format any string values that able
-to design format pattern with regular expression. This package be the co-pylot
-project for stating to my python software developer role.
+This **Formatter** package was created for `parse` and `format` any string values
+that able to design format pattern with regular expression. This package be the
+co-pylot project for stating to my Python software developer role.
 
-First objective of this project is include necessary formatter objects for any
-components of data framework engine. We can use parse any file on server machine
-and get the right file to target data landing zone.
+First objective of this project is include necessary formatter objects for data
+components of the framework engine pakage. We can use `parse` any filename on source
+server machine and ingest the right filename to target landing zone.
 
-For example, we want to get filename with the format, `filename_20220101.csv`, on
-source file system storage, but we want to incremental latest file with 2022-03-25
-date. So we can implement `Datetime` object,
+For example, we want to get filename with the format like, `filename_20220101.csv`, on
+the file system storage, and we want to incremental ingest latest file with date **2022-03-25**
+date. So we will implement `Datetime` object and parse that filename to it,
 
 ```python
 Datetime.parse('filename_20220101.csv', 'filename_%Y%m%d.csv').value == datetime.today()
 ```
 
+The above example is **NOT SURPRISE!!!** for us because Python already provide build-in package
+`datetime` to parse by `.strptime` and format by `.strftime` with any string datetime value.
+This package will the special thing when we combine more than one formatter objects such as `Naming`,
+`Version`, or `Constant` together.
 
-The above is not a surprise for us because Python already provide build-in package
-`datetime` to parse with `.strptime` and format with `.strftime`. This package will
-the special when we combine more than one formatter objects like `Naming`, `Version`,
-or `Constant` together.
+For complex filename format like,
 
 ```text
 {filename:%s}_{datetime:%Y_%m_%d}.{version:%m.%n.%c}.csv
 ```
 
-From above, the `datetime` package does not enough for this scenario right?
-You can handle by your hard-code or create the better package than this project.
+From above format filename, the `datetime` package does not enough for this scenario right?
+but you can handle by your hard-code object or create the better package than this project.
 
 > **Note**: \
 > Any formatter object was implemented the `self.valid` method for help us validate
@@ -244,7 +245,8 @@ group.format('{name:%c}_{timestamp:%Y_%m_%d}_{name}')
 If this implemented formatter objects in this package does not help you all scenario
 of a formatted value, you can create your formatter object by yourself.
 
-I provide the base abstract class, `BaseFormatter`, for this use-case like;
+This package provide the base abstract class, `BaseFormatter`, for this use-case. You
+can create your formatter object like,
 
 ```python
 from typing import Optional, Dict, Union, Callable, Tuple
