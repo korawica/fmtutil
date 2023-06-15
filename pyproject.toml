@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dup-fmt"
-description = "The formatter object for data developer and engineering"
+description = "The utility formatter objects for the data engine package"
 readme = "README.md"
 requires-python = ">=3.8.10"
 license = "MIT"
@@ -13,12 +13,12 @@ authors = [
     { name = "korawica", email = "korawich.anu@gmail.com" },
 ]
 classifiers = [
+    "Topic :: Utilities",
     "Development Status :: 4 - Beta",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
     "python-dateutil>=2.8.2,<3.0.0",

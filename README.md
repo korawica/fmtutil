@@ -1,9 +1,8 @@
 # Data Utility Package: *Formatter*
 
-[![codecov](https://codecov.io/gh/korawica/dup-fmt/branch/main/graph/badge.svg?token=J2MN63IFT0)](https://codecov.io/gh/korawica/dup-fmt)
-[![hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch)
 [![test](https://github.com/korawica/dup-fmt/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/korawica/dup-fmt/actions/workflows/tests.yml)
-[![publish test](https://github.com/korawica/dup-fmt/actions/workflows/publish.yml/badge.svg?event=release)](https://github.com/korawica/dup-fmt/actions/workflows/publish.yml)
+[![codecov](https://codecov.io/gh/korawica/dup-fmt/branch/main/graph/badge.svg?token=J2MN63IFT0)](https://codecov.io/gh/korawica/dup-fmt)
+[![python support version](https://img.shields.io/pypi/pyversions/dup-fmt)](https://pypi.org/project/dup-fmt/)
 [![size](https://img.shields.io/github/languages/code-size/korawica/dup-fmt)](https://github.com/korawica/dup-fmt)
 
 **Type**: `DUP` | **Tag**: `Data Utility Package` `Data` `Utility`
@@ -24,6 +23,12 @@ This **Formatter** package was created for `parse` and `format` any string value
 that able to design format pattern with regular expression. This package be the
 co-pylot project for stating to my Python software developer role.
 
+**Install from PyPI**:
+
+```shell
+pip install dup-fmt
+```
+
 First objective of this project is include necessary formatter objects for data
 components of the framework engine pakage. We can use `parse` any filename on source
 server machine and ingest the right filename to target landing zone.
@@ -41,7 +46,7 @@ The above example is **NOT SURPRISE!!!** for us because Python already provide b
 This package will the special thing when we combine more than one formatter objects such as `Naming`,
 `Version`, or `Constant` together.
 
-For complex filename format like,
+**For complex filename format like**:
 
 ```text
 {filename:%s}_{datetime:%Y_%m_%d}.{version:%m.%n.%c}.csv
@@ -66,12 +71,12 @@ but you can handle by your hard-code object or create the better package than th
 - [Naming](#naming)
 - [Constant](#constant)
 
-The formatter component implement formatter objects for parse and format with
-base value, such as `Datetime`, `Version`, and `Serial` objects. This component
-was used for parse any filename with setting format string value in the register
-component. The formatter able to enhancement any format value from sting value,
-like in `Datetime`, for `%B` value that was designed for month shortname
-(`Jan`, `Feb`, etc.) that does not support in build-in `datetime` package.
+The main component is **Formatter Objects** for `parse` and `format` with string
+value, such as `Datetime`, `Version`, and `Serial` formatter objects. This objects
+were used for parse any filename with put the format string value. The formatter
+able to enhancement any format value from sting value, like in `Datetime`, for `%B`
+value that was designed for month shortname (`Jan`, `Feb`, etc.) that does not
+support in build-in `datetime` package.
 
 > **Note**: \
 > The main usage of this formatter object is `parse` and `format` method.
@@ -316,6 +321,8 @@ Storage({'bit': 2000}).format('%B')
 ```text
 >>> 250B
 ```
+
+Read more about [API Document](/docs/en//docs/API.md).
 
 ## License
 

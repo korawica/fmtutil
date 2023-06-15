@@ -3,12 +3,12 @@
 ## Getting Started
 
 ```shell
-$ git clone ...
+git clone https://github.com/korawica/dup-fmt.git
 ```
 
 ```shell
-$ python -m venv venv
-$ ./env/Scripts/activate
+python -m venv venv
+./env/Scripts/activate
 ```
 
 ```shell
