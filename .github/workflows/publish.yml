@@ -3,6 +3,7 @@ name: publish
 on:
   release:
     types:
+      - prereleased
       - published
 
 permissions:
@@ -39,14 +40,15 @@ jobs:
         run: python -m build
 
       - name: Publish to Test PyPI
-        if: ${{ !startsWith(github.ref, 'refs/tags') }}
+        if: github.event.action == 'prereleased' && startsWith(github.ref, 'refs/tags')
         uses: pypa/gh-action-pypi-publish@v1.8.5
         with:
           password: ${{ secrets.PYPI_TEST_API_TOKEN }}
           repository-url: https://test.pypi.org/legacy/
 
       - name: Publish to PyPI
-        if: startsWith(github.ref, 'refs/tags')
+        # ${{ !startsWith(github.ref, 'refs/tags') }} && github.event_name == 'release'
+        if: github.event.action == 'published' && startsWith(github.ref, 'refs/tags')
         uses: pypa/gh-action-pypi-publish@v1.8.5
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
