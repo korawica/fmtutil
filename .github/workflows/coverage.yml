@@ -30,8 +30,8 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.ACTIONS_TOKEN }}
           GITHUB_PR_RUN_ID: ${{ github.event.workflow_run.id }}
-          ANNOTATE_MISSING_LINES: true
-          ANNOTATION_TYPE: warning
+#          ANNOTATE_MISSING_LINES: true
+#          ANNOTATION_TYPE: warning
           COMMENT_ARTIFACT_NAME: coverage-comment-action
           COMMENT_FILENAME: coverage-comment-action.txt
           COVERAGE_DATA_BRANCH: coverage
