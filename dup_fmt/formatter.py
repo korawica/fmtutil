@@ -7,6 +7,8 @@
 The main object of formatter is able to format every thing you want by less
 config when inherit base class.
 """
+from __future__ import annotations
+
 import re
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -66,21 +68,21 @@ class SlotLevel:
         with level input value length of False.
         """
         self.level: int = level
-        self.slot: List[bool, ...] = [False] * level
+        self.slot: List[bool] = [False] * level
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{self.__class__.__name__}(level={self.level})>"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.level)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(tuple(self.slot))
 
-    def __eq__(self, other):
+    def __eq__(self, other: Union[SlotLevel, Any]) -> bool:
         return isinstance(other, self.__class__) and self.value == other.value
 
-    def __lt__(self, other):
+    def __lt__(self, other: SlotLevel) -> bool:
         return self.value < other.value
 
     @property
@@ -105,7 +107,7 @@ class SlotLevel:
 
     def update(
         self, numbers: Union[int, Tuple[int, ...]], strict: bool = True
-    ) -> "SlotLevel":
+    ) -> SlotLevel:
         """Update value in slot from False to True
 
         :param numbers: updated numbers of this SlotLevel object.
@@ -209,7 +211,7 @@ class BaseFormatter:
         base_config_value = None
 
     @classmethod
-    def parse(cls, value: str, fmt: Optional[str] = None) -> "BaseFormatter":
+    def parse(cls, value: str, fmt: Optional[str] = None) -> BaseFormatter:
         """Parse string value with its format to subclass of base formatter
         object.
 
@@ -1753,7 +1755,7 @@ class relativeserial:
     def __repr__(self):
         return f"<{self.__class__.__name__}(number={self.number})>"
 
-    def __eq__(self, other: Union[int, "relativeserial"]):
+    def __eq__(self, other: Union[int, relativeserial]):
         if isinstance(other, int):
             return self.number == other
         return self.number == other.number
@@ -1764,18 +1766,18 @@ class relativeserial:
     def __neg__(self):
         return self.__class__(number=-self.number)
 
-    def __rsub__(self, other: Union[int, "relativeserial"]):
+    def __rsub__(self, other: Union[int, relativeserial]):
         return other - self.number
 
-    def __sub__(self, other: Union[int, "relativeserial"]):
+    def __sub__(self, other: Union[int, relativeserial]):
         if isinstance(other, int):
             return self.number - other
         return self.__class__(number=(self.number - other.number))
 
-    def __radd__(self, other: Union[int, "relativeserial"]):
+    def __radd__(self, other: Union[int, relativeserial]):
         return other + self.number
 
-    def __add__(self, other: Union[int, "relativeserial"]):
+    def __add__(self, other: Union[int, relativeserial]):
         if isinstance(other, int):
             return self.__radd__(other)
         return self.__class__(number=(self.number + other.number))
@@ -1829,8 +1831,8 @@ class relativeversion:  # no cov
 
 
 def adjust_datetime(
-    self: "OrderFormatter", metrics: Optional[dict] = None
-) -> "OrderFormatter":
+    self: OrderFormatter, metrics: Optional[dict] = None
+) -> OrderFormatter:
     """
     :param self: a OrderFormatter instance that want to adjust
     :type self: OrderFormatter
@@ -1860,7 +1862,7 @@ def adjust_datetime(
     return self
 
 
-def adjust_serial(self: "OrderFormatter", metrics: Optional[dict] = None):
+def adjust_serial(self: OrderFormatter, metrics: Optional[dict] = None):
     """
     :param self: a OrderFormatter instance that want to adjust
     :type self: OrderFormatter
@@ -1935,7 +1937,7 @@ class OrderFormatter:
             )
         return self
 
-    def adjust_timestamp(self, value: int) -> "OrderFormatter":
+    def adjust_timestamp(self, value: int) -> OrderFormatter:
         """Adjust timestamp value in the order formatter object
 
         :param value: a datetime value for this adjustment.
@@ -1943,7 +1945,7 @@ class OrderFormatter:
         """
         return adjust_datetime(self, metrics={"months": value})
 
-    def adjust_version(self, value: str) -> "OrderFormatter":
+    def adjust_version(self, value: str) -> OrderFormatter:
         """Adjust version value in the order formatter object
 
         :param value: str : A version value for this adjustment with format
@@ -1982,7 +1984,7 @@ class OrderFormatter:
         self.data["version"]: list = _replace
         return self
 
-    def adjust_serial(self, value: int) -> "OrderFormatter":
+    def adjust_serial(self, value: int) -> OrderFormatter:
         """Adjust serial value in the order formatter object
 
         .. note:: This adjust method will replace old value to new.

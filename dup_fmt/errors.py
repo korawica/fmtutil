@@ -6,7 +6,9 @@
 """
 Define Errors Object for core engine
 """
-from typing import Union
+from __future__ import annotations
+
+from typing import Tuple, Union
 
 
 class BaseError(Exception):
@@ -47,16 +49,16 @@ class FormatterArgumentError(FormatterError):
     :type message: str
     """
 
-    def __init__(self, argument: Union[str, tuple], message: str):
+    def __init__(self, argument: Union[str, Tuple[str, ...]], message: str):
         """Main Initialization that merge the argument and message input values
         with specific content message together like
 
             `__class__` with `argument`, `message`
         """
-        _argument: str = f"{argument!r}"
+        _argument: str
         if isinstance(argument, tuple):
             _last_arg: str = str(argument[-1])
-            _argument: str = (
+            _argument = (
                 (
                     ", ".join(f"{x!r}" for x in argument[:-1])
                     + f", and {_last_arg!r}"
@@ -64,4 +66,6 @@ class FormatterArgumentError(FormatterError):
                 if len(argument) > 1
                 else f"{_last_arg!r}"
             )
+        else:
+            _argument = f"{argument!r}"
         super().__init__(f"with {_argument}, {message}")

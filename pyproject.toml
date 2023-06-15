@@ -19,6 +19,8 @@ classifiers = [
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
 ]
 dependencies = [
     "python-dateutil>=2.8.2,<3.0.0",
@@ -31,13 +33,14 @@ Homepage = "https://github.com/korawica/dup-fmt"
 
 [project.optional-dependencies]
 test = [
-    "pytest>=7.1.3,<8.0.0",
-    "coverage[toml]",
-    "mypy==0.982",
+    "pytest>=7.1.3",
+    "coverage[toml]>=7.0.0",
+    "mypy>=0.982",
+    "types-python-dateutil",
 ]
 dev = [
-    "ruff==0.0.138",
-    "pre-commit>=2.17.0,<3.0.0"
+    "ruff>=0.0.138",
+    "pre-commit>=2.17.0"
 ]
 
 [tool.coverage.run]
@@ -45,10 +48,10 @@ branch = true
 parallel = true
 context = '${CONTEXT}'
 source = [
-    "tests",
-    "dup_fmt"
+    "dup_fmt",
 ]
 omit = [
+    "dup_fmt/__about__.py",
     "dup_fmt/utils.py",
 ]
 relative_files = true
@@ -56,7 +59,7 @@ relative_files = true
 [tool.coverage.report]
 exclude_lines = [
     "no cov",
-    "if __name__ == .__main__.:",
+    "if __name__ == __main__:",
     "if TYPE_CHECKING:",
 ]
 
@@ -85,7 +88,7 @@ filterwarnings = ["error"]
 
 [tool.mypy]
 python_version = "3.8"
-files = ["dup_fmt"]
+#files = ["dup_fmt"]
 show_error_codes = true
 pretty = true
 strict = true
