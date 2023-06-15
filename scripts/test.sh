@@ -3,4 +3,4 @@
 set -e
 set -x
 
-coverage run --module pytest --verbose tests ${@}
+coverage run --m pytest tests ${@}
