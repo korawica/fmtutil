@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 0.0.2
+
+**Fix**:
+
+- fix: pypi release does not publish
+
 ## Version 0.0.1
 
 **Fix**:
