@@ -119,7 +119,7 @@ jobs:
           path: htmlcov
 
       - run: |
-          la -al
+          ls -al
           coverage xml --data-file=.coverage
 
       - name: Upload coverage reports to Codecov
