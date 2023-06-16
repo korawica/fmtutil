@@ -53,7 +53,8 @@ test = [
 dev = [
     "hatch>=1.6.0",
     "ruff>=0.0.138",
-    "pre-commit>=2.17.0"
+    "pre-commit>=2.17.0",
+    "bump2version>=1.0.1"
 ]
 
 # TODO: Implement cli for use on cmd
@@ -62,6 +63,7 @@ dev = [
 
 [tool.coverage.run]
 branch = true
+concurrency = ["thread", "multiprocessing"]
 parallel = true
 context = '${CONTEXT}'
 source = [

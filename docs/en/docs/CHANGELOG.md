@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+**Fix**:
+
+- fix: add ignore htmlcov
+
+**Build**:
+
+- build: add black config on pyproject.toml
+
+**Features**:
+
+- feat: add local hook for pytest
+- feat: add test pipeline for python version 3.10, 3.11
+
 ## Version 0.0.2
 
 **Fix**:
