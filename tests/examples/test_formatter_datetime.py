@@ -4,12 +4,10 @@
 # license information.
 # --------------------------------------------------------------------------
 """
-Test the formatter object examples.
+Test the formatter object examples for Datetime.
 """
 import unittest
 from datetime import datetime
-
-from packaging.version import Version
 
 import dup_fmt.formatter as fmt
 
@@ -24,12 +22,4 @@ class DatetimeExampleTestCase(unittest.TestCase):
         self.assertEqual(
             datetime(2021, 1, 3),
             fmt.Datetime.parse("2021-Jan Monday 3", "%Y-%b %A %-d").value,
-        )
-
-
-class VersionExampleTestCase(unittest.TestCase):
-    def test_parse_examples(self):
-        self.assertEqual(
-            Version("1.0.5"),
-            fmt.Version.parse("version: 1-0-5", "version: %m-%n-%c").value,
         )
