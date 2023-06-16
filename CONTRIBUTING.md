@@ -11,6 +11,14 @@ Table of Contents:
 git clone https://github.com/korawica/dup-fmt.git
 ```
 
+> **Note**: \
+> If you want to set user and email before push your edited code,
+> ```shell
+> git config --local user.name "Korawich Anuttra"
+> git config --local user.email "korawich.anu@gmail.com"
+> git config --local credential.helper ""
+> ```
+
 ```shell
 python -m pip install --upgrade pip
 python -m venv venv
