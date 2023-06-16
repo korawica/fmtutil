@@ -18,17 +18,21 @@ from typing import (
     Callable,
     Dict,
     List,
+    Literal,
     Optional,
     Tuple,
     Type,
+    TypedDict,
     TypeVar,
     Union,
 )
 
+# TODO: Review ``semver`` package instead ``packaging``.
+#  docs: https://pypi.org/project/semver/
 import packaging.version as pck_version
 from dateutil.relativedelta import relativedelta
 
-from dup_fmt.errors import (
+from dup_fmt.exceptions import (
     FormatterArgumentError,
     FormatterKeyError,
     FormatterTypeError,
@@ -1687,9 +1691,14 @@ FORMATTERS_ADJUST: dict = {
 }
 
 
+class ExpectRegexValue(TypedDict):
+    regex: str
+    value: Callable[[], Any]
+
+
 def extract_regex_with_value(
     fmt: FormatterType, value: Optional[Any] = None, called: bool = False
-) -> Dict[str, dict]:
+) -> Dict[str, ExpectRegexValue]:
     """Return extract data from `cls.regex` method and `cls.formatter`
 
     :param fmt: a formatter object
@@ -1700,7 +1709,7 @@ def extract_regex_with_value(
     :type called: bool(=False)
 
     :rtype: Dict[str, dict]
-    :return: a extract data from `cls.regex` method and `cls.formatter`
+    :return: an extract data from `cls.regex` method and `cls.formatter`
     """
     regex: dict = fmt.regex()
     formatter: dict = fmt.formatter(value)
@@ -1862,7 +1871,9 @@ def adjust_datetime(
     return self
 
 
-def adjust_serial(self: OrderFormatter, metrics: Optional[dict] = None):
+def adjust_serial(
+    self: OrderFormatter, metrics: Optional[dict] = None
+) -> OrderFormatter:
     """
     :param self: a OrderFormatter instance that want to adjust
     :type self: OrderFormatter
@@ -1928,7 +1939,7 @@ class OrderFormatter:
                     f"{type(formatters[name])}"
                 )
 
-    def adjust(self, fmt: str, value: int):  # no cov
+    def adjust(self, fmt: str, value: int):  # no cov # mypy: ignore
         # TODO: merge adjust methods to dynamic method
         if fmt not in self.data:
             raise FormatterArgumentError(
@@ -1981,7 +1992,7 @@ class OrderFormatter:
                     **{"value": ".".join(_results), "fmt": "%m.%n.%c"}
                 )
             )
-        self.data["version"]: list = _replace
+        self.data["version"]: List = _replace
         return self
 
     def adjust_serial(self, value: int) -> OrderFormatter:
@@ -1991,16 +2002,16 @@ class OrderFormatter:
         """
         return adjust_serial(self, metrics={"number": value})
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{self.__class__.__name__}(formatters={self.data})>"
 
     def __str__(self) -> str:
         return f"({', '.join([f'{k}={list(map(str, v))}' for k, v in self.data.items()])})"
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, self.__class__) and self.data == other.data
 
-    def __lt__(self, other):
+    def __lt__(self, other: OrderFormatter) -> bool:
         return next(
             (
                 self.data[name] < other.data[name]
@@ -2010,7 +2021,7 @@ class OrderFormatter:
             False,
         )
 
-    def __le__(self, other):
+    def __le__(self, other: OrderFormatter) -> bool:
         return next(
             (
                 self.data[name] <= other.data[name]
@@ -2021,15 +2032,22 @@ class OrderFormatter:
         )
 
 
+class FormatterGroupParseArgs(TypedDict):
+    fmt: FormatterType[Any]
+    value: Optional[str]
+
+
 @dataclass
 class FormatterGroupData:
     """Formatter Data"""
 
-    fmt: FormatterType
+    fmt: FormatterType[Any]
     value: Any
 
     @classmethod
-    def parse(cls, value: Union[dict, Type[Formatter]]):
+    def parse(
+        cls, value: Union[FormatterGroupParseArgs, Type[Formatter]]
+    ) -> FormatterGroupData:
         """Parse any value to this FormatterGroupData class
 
         :param value: a value that want to parse
@@ -2043,7 +2061,7 @@ class FormatterGroupData:
         )
 
     @classmethod
-    def parse_dict(cls, values: dict):
+    def parse_dict(cls, values: FormatterGroupParseArgs) -> FormatterGroupData:
         """Parse dict value to this FormatterGroupData class
 
         :param values: a dict value
@@ -2067,7 +2085,10 @@ class FormatterGroup:
 
     def __init__(
         self,
-        formatters: Dict[str, Union[FormatterGroupData, dict, Type[Formatter]]],
+        formatters: Dict[
+            str,
+            Union[FormatterGroupData, FormatterGroupParseArgs, Type[Formatter]],
+        ],
     ):
         """Main initialization get the formatter value, a mapping of name
         and formatter from input argument and generate the necessary
@@ -2080,11 +2101,11 @@ class FormatterGroup:
             for k, v in formatters.items()
         }
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.__class__.__name__}({', '.join(self.formatters)})"
 
     @property
-    def groups(self) -> Dict[str, Formatter]:
+    def groups(self) -> Dict[str, Dict[str, ExpectRegexValue]]:
         """Return the groups of format value and extract Formatter
         values.
         """
@@ -2093,7 +2114,9 @@ class FormatterGroup:
             for k, v in self.formatters.items()
         }
 
-    def parser(self, value: str, fmt: str, _max: bool = True) -> dict:
+    def parser(
+        self, value: str, fmt: str, _max: bool = True
+    ) -> Dict[str, Formatter]:
         """Parse formatter by generator values like timestamp, version,
         or serial.
 
@@ -2106,7 +2129,8 @@ class FormatterGroup:
         :type _max: bool(=True)
         """
         results, _ = self.__parser_all(value, fmt)
-        rs: dict = {}
+        # TODO: split process for _max option
+        rs: Dict[str, Union[List[Formatter], Dict[str, str]]] = {}
         for result in results:
             if (k := result.split("__", maxsplit=1)[0]) in rs:
                 if _max:
@@ -2138,7 +2162,7 @@ class FormatterGroup:
             for _search in re.finditer(
                 rf"(?P<name>{{{fmt_name}:(?P<format>[^{{}}]+)?}})", fmt
             ):
-                fmt: str = fmt.replace(
+                fmt = fmt.replace(
                     f'{{{fmt_name}:{_search.groupdict()["format"]}}}',
                     self.__loop_sub_fmt(
                         search=_search, mapping=fmt_mapping, key="value"
@@ -2148,13 +2172,15 @@ class FormatterGroup:
             # name but does not set formatter.
             if re.search(rf"(?P<name>{{{fmt_name}}})", fmt):
                 # Get the first format value from the formatter property.
-                fmt: str = fmt.replace(
+                fmt = fmt.replace(
                     f"{{{fmt_name}}}",
                     caller(fmt_mapping[list(fmt_mapping.keys())[0]]["value"]),
                 )
         return fmt
 
-    def __parser_all(self, value: str, fmt: str) -> Tuple[dict, dict]:
+    def __parser_all(
+        self, value: str, fmt: str
+    ) -> Tuple[Dict[str, Dict[str, str]], Dict[str, str]]:
         """Parse all formatter by generator that return getter and outer
         mapping.
 
@@ -2163,7 +2189,7 @@ class FormatterGroup:
         :param fmt:
         :type fmt:  str
 
-        :rtype: Tuple[dict, dict]
+        :rtype: Tuple[Dict[str, Dict[str, str]], Dict[str, str]]
         :returns: a pair of mappings, like;
 
             {
@@ -2183,27 +2209,27 @@ class FormatterGroup:
                 f"'^{_fmt_filled}$'",
             )
 
-        _searches: dict = _search.groupdict()
-        _fmt_outer: dict = {}
+        _searches: Dict[str, str] = _search.groupdict()
+        _fmt_outer: Dict[str, str] = {}
         for name in _searches.copy():
             if name in _fmt_getter:
-                _fmt_getter[name]["value"]: str = _searches.pop(name)
+                _fmt_getter[name]["value"] = _searches.pop(name)
             else:
-                _fmt_outer[name]: str = _searches.pop(name)
+                _fmt_outer[name] = _searches.pop(name)
 
         return _fmt_getter, _fmt_outer
 
-    def __stage_parser(self, fmt: str) -> Tuple[str, dict]:
+    def __stage_parser(self, fmt: str) -> Tuple[str, Dict[str, Dict[str, str]]]:
         """Return the both of filled and getter format from the stage format
         value.
 
         :param fmt: a string format
         :type fmt: str
 
-        :rtype: Tuple[str, dict]
+        :rtype: Tuple[str, Dict[str, Dict[str, str]]]
         :returns: a pair of format value and result of regular expression.
         """
-        _get_format: dict = {}
+        _get_format: Dict[str, Dict[str, str]] = {}
         for fmt_name, fmt_mapping in self.groups.items():
             for _index, _search in enumerate(
                 re.finditer(
@@ -2211,11 +2237,13 @@ class FormatterGroup:
                 ),
                 start=1,
             ):
+                _search_fmt: str
+                _search_fmt_re: str
                 _search_fmt_old: str = ""
                 if _search_fmt := _search.group("format"):
                     # Case I: contain formatter values.
-                    _search_fmt_old: str = f":{_search_fmt}"
-                    _search_fmt_re: str = self.__loop_sub_fmt(
+                    _search_fmt_old = f":{_search_fmt}"
+                    _search_fmt_re = self.__loop_sub_fmt(
                         search=_search,
                         mapping=fmt_mapping,
                         key="regex",
@@ -2223,22 +2251,22 @@ class FormatterGroup:
                     )
                 else:
                     # Case II: does not set any formatter value.
-                    _search_fmt: str = list(fmt_mapping.keys())[0]
-                    _search_fmt_re: str = fmt_mapping[_search_fmt]["regex"]
+                    _search_fmt = list(fmt_mapping.keys())[0]
+                    _search_fmt_re = fmt_mapping[_search_fmt]["regex"]
 
                 # Replace old format value with new mapping formatter
                 # value.
                 _fmt_name_index: str = (
                     f"{fmt_name}{self.__generate_index(_index)}"
                 )
-                fmt: str = fmt.replace(
+                fmt = fmt.replace(
                     f"{{{fmt_name}{_search_fmt_old}}}",
                     f"(?P<{_fmt_name_index}>{_search_fmt_re})",
                     1,
                 )
 
                 # Keep the searched format value to getter format dict.
-                _get_format[_fmt_name_index]: dict = {"fmt": _search_fmt}
+                _get_format[_fmt_name_index] = {"fmt": _search_fmt}
         return fmt, _get_format
 
     @staticmethod
@@ -2256,14 +2284,19 @@ class FormatterGroup:
 
     @staticmethod
     def __loop_sub_fmt(
-        search: re.Match, mapping: dict, key: str, index: int = 1
+        search: re.Match[str],
+        mapping: Dict[str, ExpectRegexValue],
+        key: Literal["regex", "value"],
+        index: int = 1,
     ) -> str:
         """Loop method for find any sub-format from search input argument.
 
         :param search: a Match object from searching process.
         :type search: re.Match
         :param mapping: a formatter mapping value for getting matching key.
-        :type mapping: dict
+        :type mapping: Dict[
+                str, Dict[str, Dict[str, Union[str, Callable[[], Any]]]]
+            ]
         :param key: A key value for get value from the `mapping` parameter.
         :type key: str
         :param index:
@@ -2276,11 +2309,10 @@ class FormatterGroup:
             "value",
             "regex",
         }, "the `key` argument should be 'value' or 'regex' only."
-        _search_dict: dict = search.groupdict()
+        _search_dict: Dict[str, str] = search.groupdict()
         _search_re: str = _search_dict["format"]
         for _fmt in re.findall(r"(%[-+!*]?\w)", _search_re):
             try:
-                # print(mapping)
                 _fmt_replace: str = caller(mapping[_fmt][key])
                 if index > 1 and (
                     _sr := re.search(
@@ -2288,12 +2320,12 @@ class FormatterGroup:
                     )
                 ):
                     _sr_re: str = _sr.groupdict()["alias_name"]
-                    _fmt_replace: str = re.sub(
+                    _fmt_replace = re.sub(
                         rf"\(\?P<{_sr_re}>",
                         rf"(?P<{_sr_re}_{str(index - 1)}>",
                         _fmt_replace,
                     )
-                _search_re: str = _search_re.replace(_fmt, _fmt_replace)
+                _search_re = _search_re.replace(_fmt, _fmt_replace)
             except KeyError as err:
                 raise FormatterArgumentError(
                     "format",

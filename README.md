@@ -149,7 +149,7 @@ naming.format('Camel case is %c')
 
 ```python
 from dup_fmt import Constant
-from dup_fmt.errors import FormatterError
+from dup_fmt.exceptions import FormatterError
 
 const = Constant({
     '%n': 'normal',

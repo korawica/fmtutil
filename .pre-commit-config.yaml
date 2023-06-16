@@ -46,18 +46,6 @@ repos:
     rev: 23.3.0
     hooks:
     -   id: black
-        language_version: py38
-        args:
-        - --line-length=80
-        - --exclude="""\.git|
-            \.__pycache__|
-            \.idea|
-            \.pytest_cache|
-            \.venv|
-            _build|
-            buck-out|
-            build|
-            dist"""
 
 # Python linter
 # ---

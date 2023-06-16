@@ -10,7 +10,7 @@ import unittest
 from typing import Dict, List
 
 import dup_fmt.formatter as fmt
-from dup_fmt.errors import FormatterTypeError
+from dup_fmt.exceptions import FormatterTypeError
 
 
 class OrderFormatTestCase(unittest.TestCase):

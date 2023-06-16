@@ -1,5 +1,9 @@
 [build-system]
-requires = ["hatchling"]
+requires = [
+    "hatchling>=1.8.0",
+    # This plug-in support for py-version >= 3.9
+    # "hatch-semver",
+]
 build-backend = "hatchling.build"
 
 [project]
@@ -8,13 +12,20 @@ description = "The utility formatter objects for the data engine package"
 readme = "README.md"
 requires-python = ">=3.8.10"
 license = "MIT"
-keywords = []
+keywords = [
+    'data',
+    'formatter',
+]
 authors = [
     { name = "korawica", email = "korawich.anu@gmail.com" },
 ]
 classifiers = [
     "Topic :: Utilities",
+    "Natural Language :: English",
+    #"Development Status :: 3 - Alpha",
     "Development Status :: 4 - Beta",
+    #"Development Status :: 5 - Production/Stable",
+    "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.8",
@@ -29,7 +40,8 @@ dependencies = [
 dynamic = ["version"]
 
 [project.urls]
-Homepage = "https://github.com/korawica/dup-fmt"
+Homepage = "https://github.com/korawica/dup-fmt/"
+"Source Code" = "https://github.com/korawica/dup-fmt/"
 
 [project.optional-dependencies]
 test = [
@@ -39,9 +51,14 @@ test = [
     "types-python-dateutil",
 ]
 dev = [
+    "hatch>=1.6.0",
     "ruff>=0.0.138",
     "pre-commit>=2.17.0"
 ]
+
+# TODO: Implement cli for use on cmd
+# [project.scripts]
+# dupfmt = "dup_fmt.cli:main"
 
 [tool.coverage.run]
 branch = true
@@ -64,6 +81,7 @@ exclude_lines = [
 ]
 
 [tool.hatch.version]
+scheme = "standard"
 source = "code"
 path = "dup_fmt/__about__.py"
 
@@ -88,12 +106,41 @@ filterwarnings = ["error"]
 
 [tool.mypy]
 python_version = "3.8"
-#files = ["dup_fmt"]
+files = ["dup_fmt"]
 show_error_codes = true
 pretty = true
 strict = true
-local_partial_types = true
+#local_partial_types = true
 warn_unreachable = true
+
+[[tool.mypy.overrides]]
+module = "dup_fmt.utils"
+warn_unused_ignores = false
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+ignore_missing_imports = true
+check_untyped_defs = true
+
+[tool.black]
+line-length = 80
+target-version = ['py38']
+exclude = """
+/(
+    \\.git
+    | \\.__pycache__
+    | \\.idea
+    | \\.ruff_cache
+    | \\.mypy_cache
+    | \\.pytest_cache
+    | \\.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+)/
+"""
 
 [tool.ruff]
 line-length = 80

@@ -9,7 +9,7 @@ Test the Serial formatter object.
 import unittest
 
 import dup_fmt.formatter as fmt
-from dup_fmt.errors import FormatterKeyError
+from dup_fmt.exceptions import FormatterKeyError
 
 
 class SerialTestCase(unittest.TestCase):

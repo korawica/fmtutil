@@ -8,7 +8,7 @@ Test the error object.
 """
 import unittest
 
-import dup_fmt.errors as err
+import dup_fmt.exceptions as err
 
 
 class ErrorsTestCase(unittest.TestCase):
