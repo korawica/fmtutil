@@ -21,7 +21,7 @@
 
 This **Formatter** package was created for `parse` and `format` any string values
 that able to design format pattern with regular expression. This package be the
-co-pylot project for stating to my Python software developer role.
+co-pylot project for stating to my **Python Software Developer** role.
 
 **Install from PyPI**:
 
