@@ -129,7 +129,7 @@ class SlotLevel:
             if num == 0:
                 continue
             elif 0 <= (_num := (num - 1)) <= (self.level - 1):
-                self.slot[_num]: bool = True
+                self.slot[_num] = True
                 continue
             if strict:
                 raise FormatterValueError(
@@ -156,7 +156,7 @@ class PriorityData:
     """Priority Data class"""
 
     value: Callable = field(default=itself, repr=False)
-    level: Union[int, tuple] = field(default=(0,))
+    level: Union[int, Tuple[int, ...]] = field(default=(0,))
 
 
 @total_ordering
@@ -239,7 +239,7 @@ class BaseFormatter:
         if not _fmt or isinstance(_fmt, NotImplementedError):
             raise NotImplementedError("This class does not set default format")
 
-        _fmt: str = reduce(
+        _fmt = reduce(
             lambda x, y: x.replace(y, cls.regex()[y]),
             re.findall(r"(%[-+!*]?\w)", _fmt),
             _fmt,
@@ -261,8 +261,8 @@ class BaseFormatter:
         :rtype: Dict[str, str]
         :return: a mapping of format, and it's regular expression string
         """
-        results: dict = {}
-        pre_results: dict = {}
+        results: Dict[str, str] = {}
+        pre_results: Dict[str, str] = {}
         for f, props in cls.formatter().items():
             if "regex" in props:
                 results[f] = props["regex"]
@@ -302,7 +302,7 @@ class BaseFormatter:
                 _value: Union[Callable, str] = _formatter[_sup_fmt]["value"]
                 # FIXME: There shouldn't be any duplicate replaces to the
                 #  previous value
-                fmt: str = fmt.replace(
+                fmt = fmt.replace(
                     _sup_fmt, (_value() if callable(_value) else _value)
                 )
             except KeyError as err:
@@ -312,14 +312,14 @@ class BaseFormatter:
                 ) from err
         return fmt.replace("[ESCAPE]", "%")
 
-    def __init__(self, formats: Optional[dict] = None):
+    def __init__(self, formats: Optional[Dict] = None):
         """Main initialization get the format mapping from input argument
         and generate the necessary attributes for define the value of this
         base formatter object.
 
             The setter of attribute does not do anything to __slot__ variable.
         """
-        _formats: dict = formats or {}
+        _formats: Dict = formats or {}
 
         # Set level of SlotLevel object that set from `base_level` and pass this
         # value to _level variable for update process in priorities loop.
@@ -374,15 +374,15 @@ class BaseFormatter:
                 "Parsing value does not valid from validator"
             )
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         """Return hashed string value of str property"""
         return hash(self.string)
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return string value of str property"""
         return self.string
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return represent string"""
         return (
             f"<{self.__class__.__name__}"
@@ -554,7 +554,7 @@ class Serial(BaseFormatter):
         )
 
 
-MONTHS: dict = {
+MONTHS: Dict[str, str] = {
     "Jan": "01",
     "Feb": "02",
     "Mar": "03",
@@ -569,7 +569,7 @@ MONTHS: dict = {
     "Dec": "12",
 }
 
-WEEKS: dict = {
+WEEKS: Dict[str, str] = {
     "Mon": "0",
     "Thu": "1",
     "Wed": "2",
@@ -605,7 +605,7 @@ class Datetime(BaseFormatter):
         "_dt_datetime",
     )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"<{self.__class__.__name__}"
             f".parse('{self.string}000', "
@@ -1064,7 +1064,7 @@ class Version(BaseFormatter):
         "_vs_local",
     )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         _fmt: str = "v%m.%n.%c"
         if self._vs_epoch != "0":
             _fmt: str = f"%e{_fmt[1:]}"
@@ -1227,9 +1227,7 @@ class Version(BaseFormatter):
             },
             "%q": {
                 "value": lambda: (
-                    concat(str(x) for x in _pre)
-                    if (_pre := _version.pre)
-                    else ""
+                    concat(map(str, _pre)) if (_pre := _version.pre) else ""
                 ),
                 "regex": (
                     r"(?P<pre>(a|b|c|rc|alpha|beta|pre|preview)[-_\.]?[0-9]+)"
@@ -1677,7 +1675,7 @@ Formatter = TypeVar("Formatter", bound=BaseFormatter)
 
 FormatterType = Type[Formatter]
 
-FORMATTERS: Dict[str, Type[Formatter]] = {
+FORMATTERS: Dict[str, Type[BaseFormatter]] = {
     "timestamp": Datetime,
     "version": Version,
     "serial": Serial,
@@ -1685,7 +1683,7 @@ FORMATTERS: Dict[str, Type[Formatter]] = {
     "envconst": EnvConstant,
 }
 
-FORMATTERS_ADJUST: dict = {
+FORMATTERS_ADJUST: Dict[str, Any] = {
     "timestamp": relativedelta,
     "serial": relativedelta,
 }
@@ -1711,8 +1709,8 @@ def extract_regex_with_value(
     :rtype: Dict[str, dict]
     :return: an extract data from `cls.regex` method and `cls.formatter`
     """
-    regex: dict = fmt.regex()
-    formatter: dict = fmt.formatter(value)
+    regex: Dict[str, str] = fmt.regex()
+    formatter: Dict[str, Dict[str, Union[Callable, str]]] = fmt.formatter(value)
     return {
         i: {
             "regex": regex[i],
@@ -1817,30 +1815,30 @@ class relativeversion:  # no cov
         self.dev: Optional[int] = dev
         self.local: Optional[str] = local
 
-    def __hash__(self):
+    def __hash__(self) -> str:
         return ...
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{self.__class__.__name__}()>"
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:  # type: ignore
         return ...
 
-    def __neg__(self):
+    def __neg__(self) -> relativeversion:
         return ...
 
-    def __add__(self, other):
+    def __add__(self, other):  # type: ignore
         return ...
 
-    def __sub__(self, other):
+    def __sub__(self, other):  # type: ignore
         return ...
 
-    def __lt__(self, other):
+    def __lt__(self, other) -> bool:  # type: ignore
         return ...
 
 
 def adjust_datetime(
-    self: OrderFormatter, metrics: Optional[dict] = None
+    self: OrderFormatter, metrics: Optional[Dict[str, int]] = None
 ) -> OrderFormatter:
     """
     :param self: a OrderFormatter instance that want to adjust
@@ -1850,16 +1848,16 @@ def adjust_datetime(
 
     :return: a adjusted OrderFormatter instance.
     """
-    metrics: dict = metrics or {}
+    _metrics: Dict[str, int] = metrics or {}
     if "timestamp" not in self.data:
         raise FormatterArgumentError(
             "timestamp",
             "order file object does not have `timestamp` in name " "formatter",
         )
-    _replace: list = [
+    _replace: List[BaseFormatter] = [
         FORMATTERS["timestamp"].parse(
             **{
-                "value": (time_data.value - relativedelta(**metrics)).strftime(
+                "value": (time_data.value - relativedelta(**_metrics)).strftime(
                     "%Y%m%d %H%M%S"
                 ),
                 "fmt": "%Y%m%d %H%M%S",
@@ -1867,12 +1865,12 @@ def adjust_datetime(
         )
         for time_data in self.data["timestamp"]
     ]
-    self.data["timestamp"]: list = _replace
+    self.data["timestamp"]: List[BaseFormatter] = _replace
     return self
 
 
 def adjust_serial(
-    self: OrderFormatter, metrics: Optional[dict] = None
+    self: OrderFormatter, metrics: Optional[Dict[str, int]] = None
 ) -> OrderFormatter:
     """
     :param self: a OrderFormatter instance that want to adjust
@@ -1882,22 +1880,22 @@ def adjust_serial(
 
     :return: a adjusted OrderFormatter instance.
     """
-    metrics: dict = metrics or {}
+    _metrics: Dict[str, int] = metrics or {}
     if "serial" not in self.data:
         raise FormatterArgumentError(
             "serial",
             "order file object does not have `serial` in name " "formatter",
         )
-    _replace: list = [
+    _replace: List[BaseFormatter] = [
         FORMATTERS["serial"].parse(
             **{
-                "value": (str(serial.value - relativeserial(**metrics))),
+                "value": (str(serial.value - relativeserial(**_metrics))),
                 "fmt": "%n",
             }
         )
         for serial in self.data["serial"]
     ]
-    self.data["serial"]: list = _replace
+    self.data["serial"] = _replace
     return self
 
 
@@ -1921,17 +1919,25 @@ class OrderFormatter:
 
     __slots__ = ("data",)
 
-    def __init__(self, formatters: Dict[str, Union[Formatter, dict]]):
+    def __init__(
+        self, formatters: Dict[str, Union[BaseFormatter, Dict[str, Any]]]
+    ):
         """Main initialize process of the ordering formatter object."""
-        self.data: dict = {}
+        self.data: Dict[str, List[BaseFormatter]] = {}
         # TODO: add merge_dict function to mapping by {'serial': ...}
         #  before for-loop process
         for name in formatters:
             _name: str = re.sub(r"(_\d+)$", "", name)
-            name_value: list = self.data.setdefault(_name, [])
-            if isinstance(formatters[name], dict) and _name in FORMATTERS:
+
+            if _name not in FORMATTERS:
+                raise FormatterValueError(
+                    f"value of key {_name} does not support"
+                )
+
+            name_value: List[BaseFormatter] = self.data.setdefault(_name, [])
+            if isinstance(formatters[name], dict):
                 name_value.append(FORMATTERS[_name].parse(**formatters[name]))
-            elif isinstance(formatters[name], (dict, BaseFormatter)):
+            elif isinstance(formatters[name], BaseFormatter):
                 name_value.append(formatters[name])
             else:
                 raise FormatterTypeError(
@@ -1939,7 +1945,7 @@ class OrderFormatter:
                     f"{type(formatters[name])}"
                 )
 
-    def adjust(self, fmt: str, value: int):  # no cov # mypy: ignore
+    def adjust(self, fmt: str, value: int):  # type: ignore  # no cov
         # TODO: merge adjust methods to dynamic method
         if fmt not in self.data:
             raise FormatterArgumentError(
@@ -1948,13 +1954,13 @@ class OrderFormatter:
             )
         return self
 
-    def adjust_timestamp(self, value: int) -> OrderFormatter:
+    def adjust_timestamp(self, metrics: Dict[str, int]) -> OrderFormatter:
         """Adjust timestamp value in the order formatter object
 
-        :param value: a datetime value for this adjustment.
-        :type value: int
+        :param metrics: a datetime value for this adjustment.
+        :type metrics: Dict[str, int]
         """
-        return adjust_datetime(self, metrics={"months": value})
+        return adjust_datetime(self, metrics=metrics)
 
     def adjust_version(self, value: str) -> OrderFormatter:
         """Adjust version value in the order formatter object
@@ -1968,11 +1974,11 @@ class OrderFormatter:
                 "order file object does not have `version` "
                 "in name formatter",
             )
-        _replace: list = []
+        _replace: List[BaseFormatter] = []
         for version_data in self.data["version"]:
             # `versioning` must have 3 length of tuple
             versioning: Tuple[int, ...] = version_data.value.release
-            _values: List[int, ...] = [
+            _values: List[int] = [
                 -99 if v == "*" else int(v) for v in value.split(".")
             ]
             _results: List[str] = []
@@ -1992,7 +1998,7 @@ class OrderFormatter:
                     **{"value": ".".join(_results), "fmt": "%m.%n.%c"}
                 )
             )
-        self.data["version"]: List = _replace
+        self.data["version"] = _replace
         return self
 
     def adjust_serial(self, value: int) -> OrderFormatter:
@@ -2129,27 +2135,32 @@ class FormatterGroup:
         :type _max: bool(=True)
         """
         results, _ = self.__parser_all(value, fmt)
-        # TODO: split process for _max option
-        rs: Dict[str, Union[List[Formatter], Dict[str, str]]] = {}
+        if _max:
+            return self.__parser_max(results=results)
+
+        rs: Dict[str, Dict[str, str]] = {}
         for result in results:
             if (k := result.split("__", maxsplit=1)[0]) in rs:
-                if _max:
-                    rs[k].append(
-                        self.formatters[k].fmt.parse(**results[result])
-                    )
-                else:
-                    rs[k]["fmt"] += f"__{results[result]['fmt']}"
-                    rs[k]["value"] += f"__{results[result]['value']}"
-            elif _max:
-                rs[k] = [self.formatters[k].fmt.parse(**results[result])]
+                rs[k]["fmt"] += f"__{results[result]['fmt']}"
+                rs[k]["value"] += f"__{results[result]['value']}"
             else:
                 rs[k] = results[result]
-        return {
-            k: max(v, key=lambda x: x.level.value)
-            if _max
-            else self.formatters[k].fmt.parse(**v)
-            for k, v in rs.items()
-        }
+        return {k: self.formatters[k].fmt.parse(**v) for k, v in rs.items()}
+
+    def __parser_max(
+        self, results: Dict[str, Dict[str, str]]
+    ) -> Dict[str, Formatter]:
+        rs: Dict[str, List[Formatter]] = {}
+        for result in results:
+            if (k := result.split("__", maxsplit=1)[0]) in rs:
+                rs[k].append(self.formatters[k].fmt.parse(**results[result]))
+            else:
+                rs[k] = [self.formatters[k].fmt.parse(**results[result])]
+
+        def get_level_value(fmt: Formatter) -> int:
+            return fmt.level.value
+
+        return {k: max(v, key=get_level_value) for k, v in rs.items()}
 
     def format(self, fmt: str) -> str:
         """Fill the formatter to value input argument.

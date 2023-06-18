@@ -7,10 +7,10 @@
 Test the formatter object.
 """
 import unittest
-from typing import Dict, List
+from typing import Any, Dict, List
 
 import dup_fmt.formatter as fmt
-from dup_fmt.exceptions import FormatterTypeError
+from dup_fmt.exceptions import FormatterTypeError, FormatterValueError
 
 
 class OrderFormatTestCase(unittest.TestCase):
@@ -31,6 +31,15 @@ class OrderFormatTestCase(unittest.TestCase):
         self.fmt_order4 = fmt.OrderFormatter({"version": self.vs2})
         self.fmt_order5 = fmt.OrderFormatter({"serial": self.sr_dict})
         self.fmt_order6 = fmt.OrderFormatter({"serial": self.sr_dict2})
+        # self.fmt_order7 = fmt.OrderFormatter({"number": self.sr_dict2})
+
+    def test_order_raise_name_init(self):
+        raise_respec: Dict[str, Dict[Any, Any]] = {"number": self.sr_dict2}
+        with self.assertRaises(FormatterValueError) as context:
+            fmt.OrderFormatter(raise_respec)  # type: ignore
+        self.assertTrue(
+            "value of key number does not support" in str(context.exception)
+        )
 
     def test_order_raise_type_init(self):
         raise_respec: Dict[str, List[str]] = {"timestamp": ["20210101"]}
@@ -57,6 +66,7 @@ class OrderFormatTestCase(unittest.TestCase):
         self.assertEqual(
             "(timestamp=['2022-01-01 00:00:00.000'])", self.fmt_order.__str__()
         )
+        print(self.fmt_order7.data)
 
     def test_order_timestamp(self):
         self.assertTrue(self.fmt_order == self.fmt_order)
@@ -80,12 +90,12 @@ class OrderFormatTestCase(unittest.TestCase):
     def test_order_datetime_adjust(self):
         self.assertEqual(
             "(timestamp=['2021-12-01 00:00:00.000'])",
-            self.fmt_order.adjust_timestamp(value=1).__str__(),
+            self.fmt_order.adjust_timestamp(metrics={"months": 1}).__str__(),
         )
 
     def test_order_datetime_adjust_raise(self):
         with self.assertRaises(fmt.FormatterArgumentError) as context:
-            self.fmt_order3.adjust_timestamp(value=1)
+            self.fmt_order3.adjust_timestamp(metrics={"months": 1})
         self.assertTrue(
             (
                 "with 'timestamp', order file object does not have "

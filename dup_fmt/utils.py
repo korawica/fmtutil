@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import Any, Callable, List, Union
+from typing import Any, Callable, Iterable, List, Union
 
-concat: Callable[[List[str]], str] = "".join
+concat: Callable[[Union[List[str], Iterable[str]]], str] = "".join
 
 
 def remove_pad(value: str) -> str:

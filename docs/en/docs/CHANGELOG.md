@@ -1,5 +1,9 @@
 # Changelog
 
+## Future
+
+- [ ] (`v0.1.*`) Change base `__slot__` class to slot dataclass for easy to implement and easy to create new formatter object.
+
 ## Unreleased
 
 **Fix**:

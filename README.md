@@ -5,7 +5,7 @@
 [![python support version](https://img.shields.io/pypi/pyversions/dup-fmt)](https://pypi.org/project/dup-fmt/)
 [![size](https://img.shields.io/github/languages/code-size/korawica/dup-fmt)](https://github.com/korawica/dup-fmt)
 
-**Type**: `DUP` | **Tag**: `Data Utility Package` `Data` `Utility`
+**Type**: `DUP` | **Tag**: `Data Utility Package` `Data` `Utility` `Formatter`
 
 **Table of Contents**:
 
