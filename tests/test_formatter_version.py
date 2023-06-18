@@ -122,7 +122,6 @@ class VersionTestCase(unittest.TestCase):
                 fmt=fmt.Version, value=Version(version="0.5.6"), called=True
             ),
         )
-        ...
 
     def test_version_properties(self):
         self.assertEqual(

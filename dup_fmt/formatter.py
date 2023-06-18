@@ -11,6 +11,7 @@ config when inherit base class.
 from __future__ import annotations
 
 import re
+from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from functools import lru_cache, partial, reduce, total_ordering
@@ -24,7 +25,6 @@ from typing import (
     Tuple,
     Type,
     TypedDict,
-    TypeVar,
     Union,
 )
 
@@ -41,30 +41,36 @@ from dup_fmt.exceptions import (
 )
 from dup_fmt.utils import caller, concat, itself, remove_pad
 
-Formatter = TypeVar("Formatter", bound="BaseFormatter")
-FormatterType = Type[Formatter]
-
+FormatterType = Type["Formatter"]
 PriorityCallable = Union[Callable[[Any], Any], Callable[[], Any], partial]
 FormatterCallable = Union[Callable[[], Any], partial]
 
+ConstantType = Type["__BaseConstant"]
+
 
 class PriorityValue(TypedDict):
+    """Type Dictionary for value of mapping of ``cls.priorities``"""
+
     value: PriorityCallable
     level: Optional[Union[int, Tuple[int, ...]]]
 
 
 class CRegexValue(TypedDict):
+    """Type Dictionary for value of mapping of ``cls.formatter``"""
+
     value: Union[FormatterCallable, str]
     cregex: str
 
 
 class RegexValue(TypedDict):
+    """Type Dictionary for value of mapping of ``cls.formatter``"""
+
     value: Union[FormatterCallable, str]
     regex: str
 
 
-PropPriorities = Dict[str, PriorityValue]
-PropFormatters = Dict[str, Union[CRegexValue, RegexValue]]
+PropPrioritiesType = Dict[str, PriorityValue]
+PropFormattersType = Dict[str, Union[CRegexValue, RegexValue]]
 
 
 @total_ordering
@@ -188,9 +194,15 @@ class PriorityData:
     level: Optional[Union[int, Tuple[int, ...]]] = field(default=(0,))
 
 
+class MetaFormatter(metaclass=ABCMeta):
+    """Metaclass Formatter object"""
+
+    __slots__: Tuple[str, ...] = ()
+
+
 @total_ordering
-class BaseFormatter:
-    """Base formatter object for inherit to any formatter subclass that define
+class Formatter(MetaFormatter):
+    """Formatter object for inherit to any formatter subclass that define
     format and parse method. The base class will implement necessary
     properties and method for subclass that should implement or enhance such
     as `the cls.formatter()` method or the `cls.priorities` property.
@@ -227,7 +239,7 @@ class BaseFormatter:
     """
 
     # This value must reassign from child class
-    base_fmt: str = NotImplementedError(  # type: ignore[assignment]
+    base_fmt: Union[str, NotImplementedError] = NotImplementedError(
         "Please implement base_fmt class property "
         "for this sub-formatter class"
     )
@@ -248,7 +260,7 @@ class BaseFormatter:
         cls,
         value: str,
         fmt: Optional[str] = None,
-    ) -> BaseFormatter:
+    ) -> Formatter:
         """Parse string value with its format to subclass of base formatter
         object.
 
@@ -263,11 +275,11 @@ class BaseFormatter:
         :raises ValueError: if value does not match with regular expression
             format string.
 
-        :rtype: BaseFormatter
-        :return: an instance of BaseFormatter that parse from string value by
+        :rtype: Formatter
+        :return: an instance of Formatter that parse from string value by
             format string.
         """
-        _fmt: str = fmt or cls.base_fmt
+        _fmt: Union[str, NotImplementedError] = fmt or cls.base_fmt
 
         if not _fmt or isinstance(_fmt, NotImplementedError):
             raise NotImplementedError("This class does not set default format")
@@ -330,7 +342,7 @@ class BaseFormatter:
         :rtype: str
         :return: a formatted string value
         """
-        _formatter: PropFormatters = self.formatter(self.value)
+        _formatter: PropFormattersType = self.formatter(self.value)
         fmt = fmt.replace("%%", "[ESCAPE]")
         for _sup_fmt in re.findall(r"(%[-+!*]?\w)", fmt):
             try:
@@ -434,13 +446,14 @@ class BaseFormatter:
             f"'{self.base_fmt}')>"
         )
 
-    def __eq__(self, other: Union[BaseFormatter, Any]) -> bool:
+    def __eq__(self, other: Union[Formatter, Any]) -> bool:
         return isinstance(other, self.__class__) and self.value == other.value
 
-    def __lt__(self, other: BaseFormatter) -> bool:
+    def __lt__(self, other: Formatter) -> bool:
         return self.value.__lt__(other.value)  # type: ignore[no-any-return]
 
     @property
+    @abstractmethod
     def value(self) -> Any:  # pragma: no cover
         """Return the value object that define by any subclass."""
         raise NotImplementedError(
@@ -448,6 +461,7 @@ class BaseFormatter:
         )
 
     @property
+    @abstractmethod
     def string(self) -> str:  # pragma: no cover
         """Return standard string value that define by any subclass."""
         raise NotImplementedError(
@@ -482,18 +496,20 @@ class BaseFormatter:
         return {k: PriorityData(**v) for k, v in self.priorities.items()}
 
     @property
+    @abstractmethod
     def priorities(
         self,
-    ) -> PropPriorities:
+    ) -> PropPrioritiesType:
         """"""
         raise NotImplementedError(
             "Please implement priorities property for this sub-formatter class"
         )
 
     @staticmethod
+    @abstractmethod
     def formatter(
         value: Optional[Any] = None,
-    ) -> PropFormatters:
+    ) -> PropFormattersType:
         """"""
         raise NotImplementedError(
             "Please implement formatter static method for this "
@@ -506,7 +522,7 @@ class BaseFormatter:
         return lambda: value
 
 
-class Serial(BaseFormatter):
+class Serial(Formatter):
     """Serial object for register process that implement formatter and
     parser.
     """
@@ -515,7 +531,7 @@ class Serial(BaseFormatter):
 
     base_attr_prefix: str = "sr"
 
-    class Config(BaseFormatter.Config):
+    class Config(Formatter.Config):
         """Configuration of Serial object"""
 
         serial_max_padding: int = 3
@@ -537,7 +553,7 @@ class Serial(BaseFormatter):
     @property
     def priorities(
         self,
-    ) -> PropPriorities:
+    ) -> PropPrioritiesType:
         return {
             "number": {
                 "value": lambda x: x,
@@ -557,7 +573,7 @@ class Serial(BaseFormatter):
     @staticmethod
     def formatter(
         serial: Optional[int] = None,
-    ) -> PropFormatters:
+    ) -> PropFormattersType:
         """Generate formatter that support mapping formatter,
             %n  : Normal format
             %p  : Padding number
@@ -628,7 +644,7 @@ WEEKS: Dict[str, str] = {
 }
 
 
-class Datetime(BaseFormatter):
+class Datetime(Formatter):
     """Datetime object for register process that implement formatter and
     parser.
     """
@@ -683,7 +699,7 @@ class Datetime(BaseFormatter):
     @property
     def priorities(
         self,
-    ) -> PropPriorities:
+    ) -> PropPrioritiesType:
         """Priority Properties of the datetime object
 
         :rtype: Dict[str, Dict[str, Union[Callable, Tuple[int, ...], int]]]
@@ -865,7 +881,7 @@ class Datetime(BaseFormatter):
     @staticmethod
     def formatter(
         dt: Optional[datetime] = None,
-    ) -> PropFormatters:
+    ) -> PropFormattersType:
         """Generate formatter that support mapping formatter,
             %n  : Normal format with `%Y%m%d_%H%M%S`
             %Y  : Year with century as a decimal number.
@@ -1072,7 +1088,7 @@ class Datetime(BaseFormatter):
         return remove_pad(_dt.strftime(fmt))
 
 
-class Version(BaseFormatter):
+class Version(Formatter):
     """Version object for register process that implement formatter and
     parser.
 
@@ -1152,7 +1168,7 @@ class Version(BaseFormatter):
     @property
     def priorities(
         self,
-    ) -> PropPriorities:
+    ) -> PropPrioritiesType:
         return {
             "epoch": {
                 "value": lambda x: x.rstrip("!"),
@@ -1219,7 +1235,7 @@ class Version(BaseFormatter):
     @staticmethod
     def formatter(
         version: Optional[pck_version.Version] = None,
-    ) -> PropFormatters:
+    ) -> PropFormattersType:
         """Generate formatter that support mapping formatter,
             %f  : full version format with `%m_%n_%c`
             %-f : full version format with `%m-%n-%c`
@@ -1329,7 +1345,7 @@ class Version(BaseFormatter):
         )
 
 
-class Naming(BaseFormatter):
+class Naming(Formatter):
     """Naming object for register process that implement formatter and parser.
 
     note: A name value that parsing to this class should not contain any
@@ -1369,7 +1385,7 @@ class Naming(BaseFormatter):
     @property
     def priorities(
         self,
-    ) -> PropPriorities:
+    ) -> PropPrioritiesType:
         return {
             "strings": {"value": lambda x: x.split(), "level": 5},
             "strings_upper": {
@@ -1442,7 +1458,7 @@ class Naming(BaseFormatter):
     @staticmethod
     def formatter(
         value: Optional[Union[str, List[str]]] = None,
-    ) -> PropFormatters:
+    ) -> PropFormattersType:
         """Generate formatter that support mapping formatter,
 
             %n  : Normal name format
@@ -1647,17 +1663,14 @@ class Naming(BaseFormatter):
         )
 
 
-ConstantType = Type["BaseConstant"]
-
-
-class BaseConstant(BaseFormatter):
+class __BaseConstant(Formatter):
     """Constant object for register process that implement formatter and
     parser.
     """
 
     base_attr_prefix: str = "ct"
 
-    base_formatter: Optional[PropFormatters] = None
+    base_formatter: Optional[PropFormattersType] = None
 
     __slots__ = (
         "_ct_string",
@@ -1679,7 +1692,7 @@ class BaseConstant(BaseFormatter):
     @property
     def priorities(
         self,
-    ) -> PropPriorities:
+    ) -> PropPrioritiesType:
         return {
             "constant": {
                 "value": lambda x: x,
@@ -1710,11 +1723,11 @@ class BaseConstant(BaseFormatter):
     def formatter(  # type: ignore[override]
         cls,
         value: Optional[str] = None,
-    ) -> Optional[PropFormatters]:
+    ) -> Optional[PropFormattersType]:
         return cls.base_formatter
 
 
-Constant = BaseConstant.create
+Constant = __BaseConstant.create
 
 EnvConstant: ConstantType = Constant(
     {
@@ -1735,7 +1748,7 @@ EnvConstant: ConstantType = Constant(
 )
 
 
-FORMATTERS: Dict[str, Type[BaseFormatter]] = {
+FORMATTERS: Dict[str, Type[Formatter]] = {
     "timestamp": Datetime,
     "version": Version,
     "serial": Serial,
@@ -1750,7 +1763,7 @@ FORMATTERS_ADJUST: Dict[str, Any] = {
 
 
 def extract_regex_with_value(
-    fmt: FormatterType[Any],
+    fmt: FormatterType,
     value: Optional[Any] = None,
     called: bool = False,
 ) -> Dict[str, RegexValue]:
@@ -1767,7 +1780,7 @@ def extract_regex_with_value(
     :return: an extract data from `cls.regex` method and `cls.formatter`
     """
     regex: Dict[str, str] = fmt.regex()
-    formatter: PropFormatters = fmt.formatter(value)
+    formatter: PropFormattersType = fmt.formatter(value)
     return {
         i: {
             "regex": regex[i],
@@ -1919,7 +1932,7 @@ def adjust_datetime(
             "timestamp",
             "order file object does not have `timestamp` in name " "formatter",
         )
-    _replace: List[BaseFormatter] = [
+    _replace: List[Formatter] = [
         FORMATTERS["timestamp"].parse(
             **{
                 "value": (
@@ -1952,7 +1965,7 @@ def adjust_serial(
             "serial",
             "order file object does not have `serial` in name " "formatter",
         )
-    _replace: List[BaseFormatter] = [
+    _replace: List[Formatter] = [
         FORMATTERS["serial"].parse(
             **{
                 "value": (str(serial.value - relativeserial(**_metrics))),
@@ -1980,19 +1993,17 @@ class OrderFormatter:
     :type formatters: dict
 
     :raises TypeError: if value of mapping does not match with dict or
-        BaseFormatter type.
+        Formatter type.
     """
 
     __slots__ = ("data",)
 
-    def __init__(
-        self, formatters: Dict[str, Union[BaseFormatter, Dict[str, Any]]]
-    ):
+    def __init__(self, formatters: Dict[str, Union[Formatter, Dict[str, Any]]]):
         """Main initialize process of the ordering formatter object."""
-        self.data: Dict[str, List[BaseFormatter]] = {}
+        self.data: Dict[str, List[Formatter]] = {}
         # TODO: add merge_dict function to mapping by {'serial': ...}
         #  before for-loop process
-        for name in formatters:
+        for name, value in formatters.items():
             _name: str = re.sub(r"(_\d+)$", "", name)
 
             if _name not in FORMATTERS:
@@ -2000,16 +2011,15 @@ class OrderFormatter:
                     f"value of key {_name} does not support"
                 )
 
-            name_value: List[BaseFormatter] = self.data.setdefault(_name, [])
-            fmt_value: Union[BaseFormatter, Dict[str, Any]] = formatters[name]
-            if isinstance(fmt_value, BaseFormatter):
-                name_value.append(fmt_value)
-            elif isinstance(fmt_value, dict):
-                name_value.append(FORMATTERS[_name].parse(**fmt_value))
+            name_value: List[Formatter] = self.data.setdefault(_name, [])
+            if isinstance(value, Formatter):
+                name_value.append(value)
+            elif isinstance(value, dict):
+                name_value.append(FORMATTERS[_name].parse(**value))
             else:
                 raise FormatterTypeError(
                     f"value of key {_name} does not support for type "
-                    f"{type(fmt_value)}"
+                    f"{type(value)}"
                 )
 
     def adjust(self, fmt: str, value: int):  # type: ignore  # no cov
@@ -2041,7 +2051,7 @@ class OrderFormatter:
                 "order file object does not have `version` "
                 "in name formatter",
             )
-        _replace: List[BaseFormatter] = []
+        _replace: List[Formatter] = []
         for version_data in self.data["version"]:
             # `versioning` must have 3 length of tuple
             versioning: Tuple[int, ...] = version_data.value.release
@@ -2106,7 +2116,7 @@ class OrderFormatter:
 
 
 class FormatterGroupParseArgs(TypedDict):
-    fmt: FormatterType[Any]
+    fmt: FormatterType
     value: Optional[str]
 
 
@@ -2114,7 +2124,7 @@ class FormatterGroupParseArgs(TypedDict):
 class FormatterGroupData:
     """Formatter Data"""
 
-    fmt: FormatterType[Any]
+    fmt: FormatterType
     value: Any
 
     @classmethod
@@ -2416,7 +2426,7 @@ class FormatterGroup:
 __all__ = (
     "FORMATTERS",
     "FORMATTERS_ADJUST",
-    "BaseFormatter",
+    "Formatter",
     "Serial",
     "Datetime",
     "Version",
@@ -2424,7 +2434,6 @@ __all__ = (
     "ConstantType",
     "Constant",
     "EnvConstant",
-    "Formatter",
     "FormatterGroup",
     "OrderFormatter",
 )

@@ -29,6 +29,21 @@ class SerialTestCase(unittest.TestCase):
             fmt.Serial.regex(),
         )
 
+    def test_serial_formatter(self):
+        self.assertDictEqual(
+            {
+                "%b": {
+                    "regex": "(?P<number_binary>[0-1]*)",
+                    "value": "1000000000",
+                },
+                "%n": {"regex": "(?P<number>[0-9]*)", "value": "512"},
+                "%p": {"regex": "(?P<number_pad>[0-9]{3})", "value": "512"},
+            },
+            fmt.extract_regex_with_value(
+                fmt=fmt.Serial, value=512, called=True
+            ),
+        )
+
     def test_serial_properties(self):
         self.assertEqual("<Serial.parse('781', '%n')>", self.sr.__repr__())
         self.assertEqual(hash(self.sr.string), self.sr.__hash__())

@@ -29,19 +29,19 @@ co-pylot project for stating to my **Python Software Developer** role.
 pip install dup-fmt
 ```
 
-First objective of this project is include necessary formatter objects for data
-components of the framework engine pakage. We can use `parse` any filename on source
+:dart: First objective of this project is include necessary formatter objects for data
+components of the framework engine package. We can use `parse` any filename on source
 server machine and ingest the right filename to target landing zone.
 
 For example, we want to get filename with the format like, `filename_20220101.csv`, on
-the file system storage, and we want to incremental ingest latest file with date **2022-03-25**
+the file system storage, and we want to incremental ingest the latest file with date **2022-03-25**
 date. So we will implement `Datetime` object and parse that filename to it,
 
 ```python
 Datetime.parse('filename_20220101.csv', 'filename_%Y%m%d.csv').value == datetime.today()
 ```
 
-The above example is **NOT SURPRISE!!!** for us because Python already provide build-in package
+The above example is :yawning_face: **NOT SURPRISE!!!** for us because Python already provide build-in package
 `datetime` to parse by `.strptime` and format by `.strftime` with any string datetime value.
 This package will the special thing when we combine more than one formatter objects such as `Naming`,
 `Version`, or `Constant` together.
@@ -71,8 +71,8 @@ but you can handle by your hard-code object or create the better package than th
 - [Naming](#naming)
 - [Constant](#constant)
 
-The main component is **Formatter Objects** for `parse` and `format` with string
-value, such as `Datetime`, `Version`, and `Serial` formatter objects. This objects
+The main purpose is **Formatter Objects** for `parse` and `format` with string
+value, such as `Datetime`, `Version`, and `Serial` formatter objects. These objects
 were used for parse any filename with put the format string value. The formatter
 able to enhancement any format value from sting value, like in `Datetime`, for `%B`
 value that was designed for month shortname (`Jan`, `Feb`, etc.) that does not
@@ -174,9 +174,9 @@ except FormatterError as err:
 
 ## Ordered Formatter
 
-The Formatter object already implement the `OrderFormatter` object that combine
-all formatter objects together and can use order properties with other
-`OrderFormatter` object.
+The **Ordered Formatter** object, `OrderFormatter`, that will combine some of all
+formatter objects together. The use-case of this object is make **order principle**
+to formatter objects.
 
 ```python
 from dup_fmt import OrderFormatter, Datetime, Version
@@ -199,9 +199,9 @@ assert ordered_1 > ordered_2
 
 ## Formatter Group
 
-The formatter group object, `FormatterGroup`, that is the grouping of needed
-mapping formatter object and name together. You can define a name of formatter
-like `name` as Naming object, or `timestamp` as Datetime object.
+The **Formatter Group** object, `FormatterGroup`, which is the grouping of needed
+mapping formatter objects and its name together. You can define a name of formatter
+that you want, like `name` for `Naming` object, or `timestamp` for `Datetime` object.
 
 **Parse**:
 
@@ -245,20 +245,24 @@ group.format('{name:%c}_{timestamp:%Y_%m_%d}_{name}')
 >>> dataEngineer_2022_01_01
 ```
 
+> **Warning**: \
+> This formatter group object does not good enough for implement order principle.
+> If you want it, you can use `OrderFormatter` together with `FormatterGroup`.
+
 ## Make your Formatter Object
 
 If this implemented formatter objects in this package does not help you all scenario
 of a formatted value, you can create your formatter object by yourself.
 
-This package provide the base abstract class, `BaseFormatter`, for this use-case. You
+This package provide the base abstract class, `Formatter`, for this use-case. You
 can create your formatter object like,
 
 ```python
 from typing import Optional, Dict, Union, Callable, Tuple
-from dup_fmt import BaseFormatter
+from dup_fmt import Formatter
 
 
-class Storage(BaseFormatter):
+class Storage(Formatter):
 
     base_fmt = '%b'
 
