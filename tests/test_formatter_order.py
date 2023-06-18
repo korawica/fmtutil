@@ -66,7 +66,6 @@ class OrderFormatTestCase(unittest.TestCase):
         self.assertEqual(
             "(timestamp=['2022-01-01 00:00:00.000'])", self.fmt_order.__str__()
         )
-        print(self.fmt_order7.data)
 
     def test_order_timestamp(self):
         self.assertTrue(self.fmt_order == self.fmt_order)
