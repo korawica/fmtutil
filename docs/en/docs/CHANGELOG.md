@@ -6,9 +6,12 @@
 
 ## Unreleased
 
+## Version 0.0.3.post1
+
 **Fix**:
 
-- :gear: fix: add type annotation for 100% coverage that missing
+- :gear: fix: add type annotation for 100% coverage that missing (#7)
+- :gear: fix: debug pytest for another python versions
 
 **Features**:
 
