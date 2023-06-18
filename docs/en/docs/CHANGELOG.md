@@ -6,6 +6,8 @@
 
 ## Unreleased
 
+## Version 0.0.3
+
 **Fix**:
 
 - :gear: fix: add ignore htmlcov
