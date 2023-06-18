@@ -42,3 +42,16 @@ python -m venv venv
   "dup-fmt[test,dev]"
 (venv) $ pytest -v
 ```
+
+```shell
+(venv) $ git add . ; git commit --amend --no-edit
+```
+
+## Release Code
+
+```shell
+bump2version patch
+```
+
+> **Note**: \
+> `git restore .`

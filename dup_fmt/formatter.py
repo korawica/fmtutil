@@ -1748,7 +1748,7 @@ EnvConstant: ConstantType = Constant(
 )
 
 
-FORMATTERS: Dict[str, Type[Formatter]] = {
+FORMATTERS: Dict[str, Type[BaseFormatter]] = {
     "timestamp": Datetime,
     "version": Version,
     "serial": Serial,
@@ -1760,6 +1760,11 @@ FORMATTERS_ADJUST: Dict[str, Any] = {
     "timestamp": relativedelta,
     "serial": relativedelta,
 }
+
+
+class ExpectRegexValue(TypedDict):
+    regex: str
+    value: Callable[[], Any]
 
 
 def extract_regex_with_value(
@@ -2124,7 +2129,7 @@ class FormatterGroupParseArgs(TypedDict):
 class FormatterGroupData:
     """Formatter Data"""
 
-    fmt: FormatterType
+    fmt: FormatterType[Any]
     value: Any
 
     @classmethod

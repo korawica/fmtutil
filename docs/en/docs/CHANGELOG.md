@@ -40,7 +40,6 @@
 
 - :page_facing_up: docs: add more CONTRIBUTING.md
 
-
 ## Version 0.0.2
 
 **Fix**:
