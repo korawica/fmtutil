@@ -97,6 +97,8 @@ datetime.format('This_datetime_format_%Y%b-%-d_%H:%M:%S')
 >>> 'This_datetime_format_2022Jan-1_00:01:01'
 ```
 
+[Supported Datetime formats](/docs/en/docs/API.md#datetime)
+
 ### Version
 
 ```python
@@ -112,6 +114,8 @@ version.format('New_version_%m%n%c')
 ```text
 >>> 'New_version_201'
 ```
+
+[Supported Version formats](/docs/en/docs/API.md#version)
 
 ### Serial
 
@@ -129,6 +133,8 @@ serial.format('Convert to binary: %b')
 >>> 'Convert to binary: 1111001010110010'
 ```
 
+[Supported Serial formats](/docs/en/docs/API.md#serial)
+
 ### Naming
 
 ```python
@@ -144,6 +150,8 @@ naming.format('Camel case is %c')
 ```text
 >>> 'Camel case is dataEngineer'
 ```
+
+[Supported Naming formats](/docs/en/docs/API.md#naming)
 
 ### Constant
 

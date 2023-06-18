@@ -8,6 +8,20 @@
 
 **Fix**:
 
+- :gear: fix: add type annotation for 100% coverage that missing
+
+**Features**:
+
+- :dart: feat: add abstract class for Formatter object (#7)
+
+**Documents**:
+
+- :page_facing_up: docs: add more README.md
+
+## Version 0.0.3
+
+**Fix**:
+
 - :gear: fix: add ignore htmlcov
 
 **Workflows**:
@@ -16,10 +30,16 @@
 
 **Features**:
 
+- :dart: feat: add type annotation and fix typing issue for mypy 100% coverage (#6)
 - :dart: test: add test examples
 - :dart: feat: add bump2version
 - :dart: feat: add local hook for pytest
 - :dart: feat: add test pipeline for python version 3.10, 3.11
+
+**Documents**
+
+- :page_facing_up: docs: add more CONTRIBUTING.md
+
 
 ## Version 0.0.2
 
