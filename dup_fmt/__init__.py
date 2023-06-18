@@ -7,7 +7,6 @@
 from .formatter import (
     FORMATTERS,
     FORMATTERS_ADJUST,
-    BaseFormatter,
     Constant,
     ConstantType,
     Datetime,

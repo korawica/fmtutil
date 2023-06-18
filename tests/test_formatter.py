@@ -7,6 +7,7 @@
 Test the formatter object.
 """
 import unittest
+from abc import ABC
 from typing import Dict, Optional, Type
 
 import dup_fmt.formatter as fmt
@@ -62,9 +63,9 @@ class PriorityDataTestCase(unittest.TestCase):
         )
 
 
-class BaseFormatterTestCase(unittest.TestCase):
+class FormatterTestCase(unittest.TestCase):
     def setUp(self) -> None:
-        class WrongFormatter(fmt.BaseFormatter):
+        class WrongFormatter(fmt.Formatter):
             base_fmt: str = "%n"
 
             base_attr_prefix: str = "sr"
@@ -98,35 +99,77 @@ class BaseFormatterTestCase(unittest.TestCase):
                     },
                 }
 
+        class NotImpPriority(fmt.Formatter, ABC):
+            base_fmt: str = "%n"
+
+            base_attr_prefix: str = "sr"
+
+            __slots__ = (
+                "_sr_number",
+                "_sr_serial",
+            )
+
+            @property
+            def value(self) -> int:  # pragma: no cover
+                return 1
+
+            @property
+            def string(self) -> str:  # pragma: no cover
+                return "Demo"
+
+            @staticmethod
+            def formatter(
+                serial: Optional[int] = None,
+            ) -> Dict[str, Dict[str, str]]:
+                _value: str = str(serial or 0)
+                return {
+                    "%n": {
+                        "value": _value,
+                        "wrong_regex": r"(?P<number>[0-9]*)",
+                    },
+                }
+
         class ValidateFormatter(fmt.Naming):
             @property
             def validate(self) -> bool:
                 return False
 
         self.wrong_fmt_cls = WrongFormatter
+        self.not_imp_priority_cls = NotImpPriority
         self.validate_fmt_cls = ValidateFormatter
 
     def test_base_formatter_properties(self):
-        with self.assertRaises(NotImplementedError) as context:
-            fmt.BaseFormatter()
+        with self.assertRaises(TypeError) as context:
+            fmt.Formatter()
         self.assertTrue(
             (
-                "Please implement priorities property "
-                "for this sub-formatter class"
+                "Can't instantiate abstract class Formatter with abstract "
+                "methods formatter, priorities, string, value"
+            )
+            in str(context.exception)
+        )
+
+    def test_base_formatter_init_with_fmt(self):
+        with self.assertRaises(TypeError) as context:
+            fmt.Formatter({"month": 1})
+        self.assertTrue(
+            (
+                "Can't instantiate abstract class Formatter with abstract "
+                "methods formatter, priorities, string, value"
             )
             in str(context.exception)
         )
 
     def test_base_formatter_parse_without_fmt(self):
         with self.assertRaises(NotImplementedError) as context:
-            fmt.BaseFormatter.parse("dummy")
+            fmt.Formatter.parse("dummy")
         self.assertTrue(
             "This class does not set default format" in str(context.exception)
         )
 
     def test_base_formatter_parse_with_fmt(self):
         with self.assertRaises(NotImplementedError) as context:
-            fmt.BaseFormatter.parse("dummy", "%Z")
+            fmt.Formatter.parse("dummy", "%Z")
         self.assertTrue(
             (
                 "Please implement formatter static method "
@@ -142,6 +185,15 @@ class BaseFormatterTestCase(unittest.TestCase):
             "formatter does not contain `regex` or `cregex` "
             "in dict value" in str(context.exception)
         )
+
+    def test_new_format_without_priorities(self):
+        with self.assertRaises(TypeError) as context:
+            self.not_imp_priority_cls()
+        self.assertTrue(
+            "Can't instantiate abstract class NotImpPriority "
+            "with abstract method" in str(context.exception)
+        )
+        self.assertTrue("priorities" in str(context.exception))
 
     def test_new_validate_error(self):
         with self.assertRaises(FormatterValueError) as context:

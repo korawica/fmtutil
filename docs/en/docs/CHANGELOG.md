@@ -6,6 +6,18 @@
 
 ## Unreleased
 
+**Fix**:
+
+- :gear: fix: add type annotation for 100% coverage that missing
+
+**Features**:
+
+- :dart: feat: add abstract class for Formatter object (#7)
+
+**Documents**:
+
+- :page_facing_up: docs: add more README.md
+
 ## Version 0.0.3
 
 **Fix**:
