@@ -16,10 +16,15 @@
 
 **Features**:
 
+- :dart: feat: add type annotation and fix typing issue for mypy 100% coverage (#6)
 - :dart: test: add test examples
 - :dart: feat: add bump2version
 - :dart: feat: add local hook for pytest
 - :dart: feat: add test pipeline for python version 3.10, 3.11
+
+**Documents**
+
+- :page_facing_up: docs: add more CONTRIBUTING.md
 
 ## Version 0.0.2
 
