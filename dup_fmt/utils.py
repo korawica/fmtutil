@@ -1,6 +1,8 @@
-from typing import Any, Callable, Union
+from __future__ import annotations
 
-concat: Callable = "".join
+from typing import Any, Callable, Iterable, List, Union
+
+concat: Callable[[Union[List[str], Iterable[str]]], str] = "".join
 
 
 def remove_pad(value: str) -> str:
@@ -23,7 +25,7 @@ def itself(x: Any = None) -> Any:
     return x
 
 
-def caller(func: Union[Callable, Any]) -> Any:
+def caller(func: Union[Callable[[], Any], Any]) -> Any:
     """Call function if it was callable
     .. usage::
         >>> some_func = lambda: 100

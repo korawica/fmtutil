@@ -11,7 +11,7 @@ import unittest
 from packaging.version import Version
 
 import dup_fmt.formatter as fmt
-from dup_fmt.errors import FormatterValueError
+from dup_fmt.exceptions import FormatterValueError
 
 
 class VersionTestCase(unittest.TestCase):

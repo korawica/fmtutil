@@ -10,7 +10,7 @@ import unittest
 from typing import Dict, Optional, Type
 
 import dup_fmt.formatter as fmt
-from dup_fmt.errors import FormatterValueError
+from dup_fmt.exceptions import FormatterValueError
 
 
 class SlotLevelTestCase(unittest.TestCase):

@@ -10,7 +10,8 @@ jobs:
   coverage-display:
     name: Run tests & display coverage
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
+#    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
+    if: ${{ false }}
     permissions:
       # Gives the action the necessary permissions for publishing new
       # comments in pull requests.
@@ -30,8 +31,8 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.ACTIONS_TOKEN }}
           GITHUB_PR_RUN_ID: ${{ github.event.workflow_run.id }}
-          ANNOTATE_MISSING_LINES: true
-          ANNOTATION_TYPE: warning
+#          ANNOTATE_MISSING_LINES: true
+#          ANNOTATION_TYPE: warning
           COMMENT_ARTIFACT_NAME: coverage-comment-action
           COMMENT_FILENAME: coverage-comment-action.txt
           COVERAGE_DATA_BRANCH: coverage

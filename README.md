@@ -5,7 +5,7 @@
 [![python support version](https://img.shields.io/pypi/pyversions/dup-fmt)](https://pypi.org/project/dup-fmt/)
 [![size](https://img.shields.io/github/languages/code-size/korawica/dup-fmt)](https://github.com/korawica/dup-fmt)
 
-**Type**: `DUP` | **Tag**: `Data Utility Package` `Data` `Utility`
+**Type**: `DUP` | **Tag**: `Data Utility Package` `Data` `Utility` `Formatter`
 
 **Table of Contents**:
 
@@ -21,7 +21,7 @@
 
 This **Formatter** package was created for `parse` and `format` any string values
 that able to design format pattern with regular expression. This package be the
-co-pylot project for stating to my Python software developer role.
+co-pylot project for stating to my **Python Software Developer** role.
 
 **Install from PyPI**:
 
@@ -149,7 +149,7 @@ naming.format('Camel case is %c')
 
 ```python
 from dup_fmt import Constant
-from dup_fmt.errors import FormatterError
+from dup_fmt.exceptions import FormatterError
 
 const = Constant({
     '%n': 'normal',
