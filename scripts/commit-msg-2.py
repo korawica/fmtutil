@@ -58,13 +58,13 @@ def check_commit_msg_pattern():
         sys.exit(1)
 
     if len(lines[0]) > 50:
-        # has_warning = True
+        has_warning = True
         message = "There should be less then 50 characters in the commit title."
         print_with_color(message, Level.WARNING)
         sys.exit(1)
 
     if lines[1].strip() != "":
-        # has_warning = True
+        has_warning = True
         message = (
             "There should be an empty line between the commit title and body."
         )
