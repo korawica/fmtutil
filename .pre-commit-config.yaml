@@ -112,9 +112,10 @@ repos:
         # additional_dependencies: [pytest]
     -   id: commit-msg-hook
         name: Prepare Commit Message
-        stages: [commit-msg]
+        stages:
+            - commit-msg
         types: [python]
         entry: python scripts/commit-msg-2.py
-        language: system
+        language: python_venv
         args: [.git/COMMIT_EDITMSG]
         always_run: true
