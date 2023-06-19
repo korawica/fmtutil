@@ -140,7 +140,7 @@ def _extracted_from_isCommitValid_50(branchRef, message):
     return result
 
 
-def main():
+def main() -> int:
     messageFile = sys.argv[1]
     message = pathlib.Path(messageFile).read_text()
     isValid, messageOverride = isCommitValid(message)
@@ -149,11 +149,12 @@ def main():
         try:
             with open(messageFile, "w") as file:
                 file.write(messageOverride)
-        except Exception:
+        except Exception as err:
+            print(err)
             isValid = False
 
-    sys.exit(0 if isValid else 1)
+    return 0 if isValid else 1
 
 
 if __name__ == "__main__":
-    main()
+    SystemExit(main())

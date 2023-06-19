@@ -70,6 +70,7 @@ source = [
     "dup_fmt",
 ]
 omit = [
+    "scripts/",
     "dup_fmt/__about__.py",
     "dup_fmt/utils.py",
 ]

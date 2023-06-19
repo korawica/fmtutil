@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 """
 The commit-msg Git hook to check the commit message.
 docs: https://cbea.ms/git-commit/
@@ -59,7 +60,6 @@ def print_color(message: str, level: Level) -> None:
     print(
         f"{Bcolors[level]}{Bcolors.BOLD}"
         f"{level}: [Policy] {message}{Bcolors.ENDC}",
-        file=sys.stderr,
     )
 
 
