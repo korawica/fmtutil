@@ -97,6 +97,16 @@ repos:
 # ---
 -   repo: local
     hooks:
+    -   id: commit-msg-hook
+        name: Prepare Commit Message
+        stages:
+            - commit-msg
+        types: [python]
+        entry: scripts/commit-msg-2.py
+        language: python
+        args: [.git/COMMIT_EDITMSG]
+        always_run: true
+
     -   id: pytest-check
         name: PyTest Runner
         stages: [push]
@@ -110,12 +120,3 @@ repos:
         # though tests might be invalidated if you were to say change a data file
         always_run: true
         # additional_dependencies: [pytest]
-    -   id: commit-msg-hook
-        name: Prepare Commit Message
-        stages:
-            - commit-msg
-        types: [python]
-        entry: python scripts/commit-msg-2.py
-        language: python_venv
-        args: [.git/COMMIT_EDITMSG]
-        always_run: true
