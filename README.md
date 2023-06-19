@@ -267,7 +267,7 @@ can create your formatter object like,
 
 ```python
 from typing import Optional, Dict, Union, Callable, Tuple
-from dup_fmt import Formatter
+from dup_fmt import Formatter, ReturnPrioritiesType, ReturnFormattersType
 
 
 class Storage(Formatter):
@@ -291,9 +291,7 @@ class Storage(Formatter):
         return self._st_bit
 
     @property
-    def priorities(self) -> Dict[
-        str, Dict[str, Union[Callable, Tuple[int, ...], int]]
-    ]:
+    def priorities(self) -> ReturnPrioritiesType:
         return {
             "bit": {
                 "value": lambda x: str(x),
@@ -310,7 +308,7 @@ class Storage(Formatter):
     @staticmethod
     def formatter(
             value: Optional[int] = None,
-    ) -> Dict[str, Dict[str, Union[Callable, str]]]:
+    ) -> ReturnFormattersType:
         """Generate formatter that support mapping formatter,
             %b  : Bit format
             %B  : Byte format

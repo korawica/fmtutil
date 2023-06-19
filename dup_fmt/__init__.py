@@ -15,6 +15,8 @@ from .formatter import (
     FormatterGroup,
     Naming,
     OrderFormatter,
+    ReturnFormattersType,
+    ReturnPrioritiesType,
     Serial,
     Version,
 )

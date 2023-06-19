@@ -69,8 +69,9 @@ class RegexValue(TypedDict):
     regex: str
 
 
-PropPrioritiesType = Dict[str, PriorityValue]
-PropFormattersType = Dict[str, Union[CRegexValue, RegexValue]]
+ReturnPrioritiesType = Dict[str, PriorityValue]
+ReturnFormattersType = Dict[str, Union[CRegexValue, RegexValue]]
+ReturnFormattersType = Dict[str, Union[CRegexValue, RegexValue]]
 
 
 @total_ordering
@@ -342,7 +343,7 @@ class Formatter(MetaFormatter):
         :rtype: str
         :return: a formatted string value
         """
-        _formatter: PropFormattersType = self.formatter(self.value)
+        _formatter: ReturnFormattersType = self.formatter(self.value)
         fmt = fmt.replace("%%", "[ESCAPE]")
         for _sup_fmt in re.findall(r"(%[-+!*]?\w)", fmt):
             try:
@@ -499,7 +500,7 @@ class Formatter(MetaFormatter):
     @abstractmethod
     def priorities(
         self,
-    ) -> PropPrioritiesType:
+    ) -> ReturnPrioritiesType:
         """"""
         raise NotImplementedError(
             "Please implement priorities property for this sub-formatter class"
@@ -509,7 +510,7 @@ class Formatter(MetaFormatter):
     @abstractmethod
     def formatter(
         value: Optional[Any] = None,
-    ) -> PropFormattersType:
+    ) -> ReturnFormattersType:
         """"""
         raise NotImplementedError(
             "Please implement formatter static method for this "
@@ -553,7 +554,7 @@ class Serial(Formatter):
     @property
     def priorities(
         self,
-    ) -> PropPrioritiesType:
+    ) -> ReturnPrioritiesType:
         return {
             "number": {
                 "value": lambda x: x,
@@ -573,7 +574,7 @@ class Serial(Formatter):
     @staticmethod
     def formatter(
         serial: Optional[int] = None,
-    ) -> PropFormattersType:
+    ) -> ReturnFormattersType:
         """Generate formatter that support mapping formatter,
             %n  : Normal format
             %p  : Padding number
@@ -699,7 +700,7 @@ class Datetime(Formatter):
     @property
     def priorities(
         self,
-    ) -> PropPrioritiesType:
+    ) -> ReturnPrioritiesType:
         """Priority Properties of the datetime object
 
         :rtype: Dict[str, Dict[str, Union[Callable, Tuple[int, ...], int]]]
@@ -881,7 +882,7 @@ class Datetime(Formatter):
     @staticmethod
     def formatter(
         dt: Optional[datetime] = None,
-    ) -> PropFormattersType:
+    ) -> ReturnFormattersType:
         """Generate formatter that support mapping formatter,
             %n  : Normal format with `%Y%m%d_%H%M%S`
             %Y  : Year with century as a decimal number.
@@ -1168,7 +1169,7 @@ class Version(Formatter):
     @property
     def priorities(
         self,
-    ) -> PropPrioritiesType:
+    ) -> ReturnPrioritiesType:
         return {
             "epoch": {
                 "value": lambda x: x.rstrip("!"),
@@ -1235,7 +1236,7 @@ class Version(Formatter):
     @staticmethod
     def formatter(
         version: Optional[pck_version.Version] = None,
-    ) -> PropFormattersType:
+    ) -> ReturnFormattersType:
         """Generate formatter that support mapping formatter,
             %f  : full version format with `%m_%n_%c`
             %-f : full version format with `%m-%n-%c`
@@ -1385,7 +1386,7 @@ class Naming(Formatter):
     @property
     def priorities(
         self,
-    ) -> PropPrioritiesType:
+    ) -> ReturnPrioritiesType:
         return {
             "strings": {"value": lambda x: x.split(), "level": 5},
             "strings_upper": {
@@ -1458,7 +1459,7 @@ class Naming(Formatter):
     @staticmethod
     def formatter(
         value: Optional[Union[str, List[str]]] = None,
-    ) -> PropFormattersType:
+    ) -> ReturnFormattersType:
         """Generate formatter that support mapping formatter,
 
             %n  : Normal name format
@@ -1670,7 +1671,7 @@ class __BaseConstant(Formatter):
 
     base_attr_prefix: str = "ct"
 
-    base_formatter: Optional[PropFormattersType] = None
+    base_formatter: Optional[ReturnFormattersType] = None
 
     __slots__ = (
         "_ct_string",
@@ -1692,7 +1693,7 @@ class __BaseConstant(Formatter):
     @property
     def priorities(
         self,
-    ) -> PropPrioritiesType:
+    ) -> ReturnPrioritiesType:
         return {
             "constant": {
                 "value": lambda x: x,
@@ -1723,7 +1724,7 @@ class __BaseConstant(Formatter):
     def formatter(  # type: ignore[override]
         cls,
         value: Optional[str] = None,
-    ) -> Optional[PropFormattersType]:
+    ) -> Optional[ReturnFormattersType]:
         return cls.base_formatter
 
 
@@ -1748,7 +1749,7 @@ EnvConstant: ConstantType = Constant(
 )
 
 
-FORMATTERS: Dict[str, Type[BaseFormatter]] = {
+FORMATTERS: Dict[str, Type[Formatter]] = {
     "timestamp": Datetime,
     "version": Version,
     "serial": Serial,
@@ -1785,7 +1786,7 @@ def extract_regex_with_value(
     :return: an extract data from `cls.regex` method and `cls.formatter`
     """
     regex: Dict[str, str] = fmt.regex()
-    formatter: PropFormattersType = fmt.formatter(value)
+    formatter: ReturnFormattersType = fmt.formatter(value)
     return {
         i: {
             "regex": regex[i],
@@ -2441,4 +2442,6 @@ __all__ = (
     "EnvConstant",
     "FormatterGroup",
     "OrderFormatter",
+    "ReturnPrioritiesType",
+    "ReturnFormattersType",
 )
