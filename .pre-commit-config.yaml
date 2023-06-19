@@ -110,3 +110,11 @@ repos:
         # though tests might be invalidated if you were to say change a data file
         always_run: true
         # additional_dependencies: [pytest]
+    -   id: commit-msg-hook
+        name: Prepare Commit Message
+        stages: [commit-msg]
+        types: [python]
+        entry: python scripts/commit-msg-2.py
+        language: system
+        args: [.git/COMMIT_EDITMSG]
+        always_run: true
