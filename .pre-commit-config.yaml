@@ -105,16 +105,6 @@ repos:
 # ---
 -   repo: local
     hooks:
-    -   id: commit-msg-hook
-        name: Prepare Commit Message
-        stages:
-            - commit-msg
-        types: [python]
-        entry: venv/Scripts/python.exe scripts/commit-msg-2.py
-        language: system
-        args: [.git/COMMIT_EDITMSG]
-        always_run: true
-
     -   id: pytest-check
         name: PyTest Runner
         stages:
