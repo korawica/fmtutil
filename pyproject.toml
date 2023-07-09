@@ -32,6 +32,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
 ]
 dependencies = [
+    "dup-utils>=0.0.2",
     "python-dateutil>=2.8.2,<3.0.0",
     "packaging>=23.1,<24",
 ]
@@ -56,9 +57,12 @@ dev = [
     "bump2version>=1.0.1"
 ]
 
-# TODO: Implement cli for use on cmd
-# [project.scripts]
-# dupfmt = "dup_fmt.cli:main"
+[project.scripts]
+dupfmt = "dup_fmt.__main__:main"
+
+[tool.utils.version]
+version = "./dup_fmt/__about__.py"
+changelog = "./docs/en/docs/CHANGELOG.md"
 
 [tool.coverage.run]
 branch = true
