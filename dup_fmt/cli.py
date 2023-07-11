@@ -1,4 +1,4 @@
-from __future__ import annotations  # no cov
+from __future__ import annotations  # pragma: no cover.
 
 import sys
 
@@ -12,8 +12,9 @@ def cli():
 
 
 @cli.command()
-def log():
-    sys.exit(0)
+def say():
+    """Say Hello World"""
+    sys.exit("Hello World")
 
 
 def main() -> None:
