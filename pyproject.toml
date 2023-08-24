@@ -22,9 +22,7 @@ authors = [
 classifiers = [
     "Topic :: Utilities",
     "Natural Language :: English",
-    #"Development Status :: 3 - Alpha",
     "Development Status :: 4 - Beta",
-    #"Development Status :: 5 - Production/Stable",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3 :: Only",
@@ -34,6 +32,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
 ]
 dependencies = [
+    "dup-utils>=0.0.4",
     "python-dateutil>=2.8.2,<3.0.0",
     "packaging>=23.1,<24",
 ]
@@ -49,17 +48,21 @@ test = [
     "coverage[toml]>=7.0.0",
     "mypy>=0.982",
     "types-python-dateutil",
+    "memory_profiler>=0.61.0",
 ]
 dev = [
     "hatch>=1.6.0",
     "ruff>=0.0.138",
     "pre-commit>=2.17.0",
-    "bump2version>=1.0.1"
+    "bump2version>=1.0.1",
 ]
 
-# TODO: Implement cli for use on cmd
-# [project.scripts]
-# dupfmt = "dup_fmt.cli:main"
+[project.scripts]
+fmt = "dup_fmt.__main__:main"
+
+[tool.utils.version]
+version = "./dup_fmt/__about__.py"
+changelog = "./docs/en/docs/CHANGELOG.md"
 
 [tool.coverage.run]
 branch = true
@@ -70,18 +73,12 @@ source = [
     "dup_fmt",
 ]
 omit = [
+    "tests/perfs/",
+    "scripts/",
     "dup_fmt/__about__.py",
     "dup_fmt/utils.py",
 ]
 relative_files = true
-
-[tool.coverage.report]
-exclude_lines = [
-    "no cov",
-    "if __name__ == __main__:",
-    "if TYPE_CHECKING:",
-    "raise NotImplementedError",
-]
 
 [tool.hatch.version]
 scheme = "standard"
@@ -92,20 +89,26 @@ path = "dup_fmt/__about__.py"
 exclude = [
     "/.github",
     "/docs",
-    "/scripts",
     "/.pre-commit-config.yaml",
 ]
 
 [tool.hatch.build.targets.wheel]
 packages = ["dup_fmt"]
 
+[tool.coverage.report]
+exclude_lines = [
+    "no cov",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
+
 [tool.pytest.ini_options]
 console_output_style = "count"
+filterwarnings = ["error"]
 addopts = [
     "--strict-config",
     "--strict-markers",
 ]
-filterwarnings = ["error"]
 
 [tool.mypy]
 python_version = "3.8"
@@ -113,18 +116,7 @@ files = ["dup_fmt"]
 show_error_codes = true
 pretty = true
 strict = true
-#local_partial_types = true
 warn_unreachable = true
-
-[[tool.mypy.overrides]]
-module = "dup_fmt.utils"
-warn_unused_ignores = false
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "tests.*"
-ignore_missing_imports = true
-check_untyped_defs = true
 
 [tool.black]
 line-length = 80
@@ -138,10 +130,6 @@ exclude = """
     | \\.mypy_cache
     | \\.pytest_cache
     | \\.venv
-    | _build
-    | buck-out
-    | build
-    | dist
 )/
 """
 
@@ -165,14 +153,8 @@ exclude = [
     ".git",
     ".mypy_cache",
     ".ruff_cache",
-    "__pypackages__",
-    "build",
-    "dist",
     "venv",
 ]
 
 [tool.ruff.per-file-ignores]
 "__init__.py" = ["F401"]
-
-[tool.ruff.isort]
-known-third-party = ["pydantic"]

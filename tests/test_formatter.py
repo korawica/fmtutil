@@ -8,7 +8,7 @@ Test the formatter object.
 """
 import unittest
 from abc import ABC
-from typing import Dict, Optional, Type
+from typing import Dict, Optional
 
 import dup_fmt.formatter as fmt
 from dup_fmt.exceptions import FormatterValueError
@@ -189,6 +189,8 @@ class FormatterTestCase(unittest.TestCase):
     def test_new_format_without_priorities(self):
         with self.assertRaises(TypeError) as context:
             self.not_imp_priority_cls()
+        # TODO: Change merge asserts together when move to python39
+        #  (This is issue of python38, error statement have `s` after `method`)
         self.assertTrue(
             "Can't instantiate abstract class NotImpPriority "
             "with abstract method" in str(context.exception)
@@ -204,27 +206,88 @@ class FormatterTestCase(unittest.TestCase):
         )
 
 
-class ConstantTestCase(unittest.TestCase):
+class TypeConstructFormatterTestCase(unittest.TestCase):
     def setUp(self) -> None:
-        self.const: Type["fmt.Constant"] = fmt.Constant(
-            {
-                "%n": "normal",
-                "%s": "special",
+        def value(self) -> int:  # no cov
+            return int(self.string)
+
+        def string(self) -> str:  # no cov
+            return self._st_bit
+
+        def priorities(self):  # no cov
+            return {
+                "bit": {
+                    "value": lambda x: str(x),
+                    "level": 1,
+                },
+                "byte": {
+                    "value": lambda x: str(int(x.replace("B", "")) * 8),
+                    "level": 1,
+                },
+                "bit_default": {"value": self.default("0")},
+                "byte_default": {"value": self.default("0")},
             }
-        )
-        self.ct = self.const.parse("normal_life", "%n_life")
 
-    def test_const_parser_raise(self):
-        with self.assertRaises(FormatterValueError) as context:
-            self.const.parse("special_job", "%s_life")
-        self.assertTrue(
-            (
-                "value 'special_job' does not match "
-                "with format '(?P<constant>special)_life'"
+        def formatter(value):  # no cov
+            size: int = value or 0
+            return {
+                "%b": {
+                    "value": lambda: str(size),
+                    "regex": r"(?P<bit>[0-9]*)",
+                },
+                "%B": {
+                    "value": lambda: f"{str(round(size / 8))}B",
+                    "regex": r"(?P<byte>[0-9]*B)",
+                },
+            }
+
+        TypeConstructFormatter = type(  # no cov
+            "TypeConstructFormatter",
+            (fmt.Formatter,),
+            {
+                "__slots__": (
+                    "_st_bit",
+                    "_st_byte",
+                    "_st_storge",
+                ),
+                "base_fmt": "%b",
+                "base_attr_prefix": "st",
+                "string": property(string),
+                "value": property(value),
+                "priorities": property(priorities),
+                "formatter": staticmethod(formatter),
+            },
+        )
+        self.construct_with_type_cls = TypeConstructFormatter
+
+        class TypeConstructFormatterMeta(fmt.Formatter, ABC):  # no cov
+            __slots__ = (
+                "_st_bit",
+                "_st_byte",
+                "_st_storge",
             )
-            in str(context.exception)
+            base_fmt = "%b"
+            base_attr_prefix = "st"
+
+        TypeConstructFormatter2 = type(  # no cov
+            "TypeConstructFormatter2",
+            (TypeConstructFormatterMeta,),
+            {
+                "string": property(string),
+                "value": property(value),
+                "priorities": property(priorities),
+                "formatter": staticmethod(formatter),
+            },
         )
 
-    def test_const_properties(self):
-        self.assertEqual(1, self.ct.level.value)
-        self.assertEqual("special", self.ct.format("%s"))
+        self.construct_with_type_cls2 = TypeConstructFormatter2
+
+    def test_type_formatter_init(self):
+        self.assertEqual(
+            "250B",
+            self.construct_with_type_cls({"bit": 2000}).format("%B"),
+        )
+        self.assertEqual(
+            "250B",
+            self.construct_with_type_cls2({"bit": 2000}).format("%B"),
+        )
