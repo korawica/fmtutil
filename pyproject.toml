@@ -32,7 +32,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
 ]
 dependencies = [
-    "dup-utils>=0.0.2",
+    "dup-utils>=0.0.3",
     "python-dateutil>=2.8.2,<3.0.0",
     "packaging>=23.1,<24",
 ]
@@ -57,7 +57,7 @@ dev = [
 ]
 
 [project.scripts]
-fmtter = "dup_fmt.__main__:main"
+fmt = "dup_fmt.__main__:main"
 
 [tool.utils.version]
 version = "./dup_fmt/__about__.py"
@@ -79,13 +79,6 @@ omit = [
 ]
 relative_files = true
 
-[tool.coverage.report]
-exclude_lines = [
-    "no cov",
-    "if TYPE_CHECKING:",
-    "raise NotImplementedError",
-]
-
 [tool.hatch.version]
 scheme = "standard"
 source = "code"
@@ -100,6 +93,13 @@ exclude = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["dup_fmt"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "no cov",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
 
 [tool.pytest.ini_options]
 console_output_style = "count"

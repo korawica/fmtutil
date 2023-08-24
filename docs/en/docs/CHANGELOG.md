@@ -1,12 +1,38 @@
-# Changelog
+# Changelogs
 
-## Future
+## Latest Changes
 
-- [ ] (`v0.1.*`) Change base `__slot__` class to slot dataclass for easy to implement and easy to create new formatter object.
+### Features
 
-## Unreleased
+- :dart: feat: add utils package from dup-uitls project (_2023-07-11_)
+- :dart: feat: add cli for formatter package (_2023-07-10_)
+- :dart: feat: add performance load test for memory usage when init (_2023-06-19_)
+- :dart: feat: Create dependabot.yml (_2023-06-19_)
+- :dart: feat: add script for commit-msg and generate release note (_2023-06-19_)
+- :dart: feat: edit pre-commit-msg hook (_2023-06-19_)
+- :dart: feat: New (_2023-06-19_)
 
-## Version 0.0.3.post1
+### Code Changes
+
+- :construction: refactor: remove commit-message script (_2023-07-03_)
+- :construction: refactor: ⬆ bump actions/setup-python from 3 to 4 (_2023-06-19_)
+- :construction: refactor: ⬆ bump pypa/gh-action-pypi-publish from 1.8.5 to 1.8.6 (_2023-06-19_)
+- script: add precommit (_2023-06-19_)
+- :test_tube: test: add type construct of formatter object scenario (_2023-06-19_)
+
+### Documents
+
+- :page_facing_up: docs: prepare and remove unsuable code in pyproject.toml (_2023-06-23_)
+
+### Fix Bugs
+
+- :gear: fix: delete extension file from git command (_2023-06-20_)
+- :gear: fix: merge change from main that add dependabot config (_2023-06-19_)
+- :gear: fix: commit-msg (_2023-06-19_)
+- :gear: fix:  (_2023-06-19_)
+- :gear: fix: has_warning (_2023-06-19_)
+
+## 0.0.3.post1
 
 **Fix**:
 
@@ -21,7 +47,7 @@
 
 - :page_facing_up: docs: add more README.md
 
-## Version 0.0.3
+## 0.0.3
 
 **Fix**:
 
@@ -43,13 +69,13 @@
 
 - :page_facing_up: docs: add more CONTRIBUTING.md
 
-## Version 0.0.2
+## 0.0.2
 
 **Fix**:
 
 - :gear: fix: pypi release does not publish
 
-## Version 0.0.1
+## 0.0.1
 
 **Fix**:
 

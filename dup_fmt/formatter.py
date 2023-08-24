@@ -71,7 +71,6 @@ class RegexValue(TypedDict):
 
 ReturnPrioritiesType = Dict[str, PriorityValue]
 ReturnFormattersType = Dict[str, Union[CRegexValue, RegexValue]]
-ReturnFormattersType = Dict[str, Union[CRegexValue, RegexValue]]
 
 
 @total_ordering
