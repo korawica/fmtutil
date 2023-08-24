@@ -4,6 +4,7 @@
 
 ### Features
 
+- :dart: feat: add cli commands of formatter object parsing method (_2023-08-24_)
 - :dart: feat: add utils package from dup-uitls project (_2023-07-11_)
 - :dart: feat: add cli for formatter package (_2023-07-10_)
 - :dart: feat: add performance load test for memory usage when init (_2023-06-19_)
@@ -14,6 +15,7 @@
 
 ### Code Changes
 
+- :test_tube: test: add type annotation with required by mypy package (_2023-08-24_)
 - :construction: refactor: remove commit-message script (_2023-07-03_)
 - :construction: refactor: ⬆ bump actions/setup-python from 3 to 4 (_2023-06-19_)
 - :construction: refactor: ⬆ bump pypa/gh-action-pypi-publish from 1.8.5 to 1.8.6 (_2023-06-19_)

@@ -2,13 +2,14 @@ from __future__ import annotations  # pragma: no cover.
 
 import sys
 import datetime
+from typing import Dict, Any
 
 import click
 
-from .formatter import Datetime, Serial, Version, Naming
+from .formatter import Datetime, Serial, Version, Naming, FormatterType
 
 
-MAP_FMTS: dict = {
+MAP_FMTS: Dict[str, FormatterType] = {
     'datetime': Datetime,
     'serial': Serial,
     'version': Version,
@@ -17,32 +18,32 @@ MAP_FMTS: dict = {
 
 
 @click.group()
-def cli():
+def cli() -> None:
     """A simple command line tool."""
     pass  # pragma: no cover.
 
 
 @click.group(name="datetime")
-def cli_datetime():
+def cli_datetime() -> None:
     """Datetime Formatter Object Interface CLI"""
     pass
 
 @click.group(name="serial")
-def cli_serial():
+def cli_serial() -> None:
     """Serial Formatter Object Interface CLI"""
     pass
 
 @click.group(name="version")
-def cli_version():
+def cli_version() -> None:
     """Version Formatter Object Interface CLI"""
     pass
 
 @click.group(name="naming")
-def cli_naming():
+def cli_naming() -> None:
     """Naming Formatter Object Interface CLI"""
     pass
 
-def dynamic_parse(name: str):
+def dynamic_parse(name: str) -> Any:
 
     @click.option(
         "-v", "--value",
@@ -58,7 +59,7 @@ def dynamic_parse(name: str):
         type=click.STRING,
         default="%Y-%m-%d %H:%M:%S",
     )
-    def parse(value, format_in, format_out):
+    def parse(value: str, format_in: str, format_out: str) -> None:
         dt = Datetime.parse(
             value=value,
             fmt=format_in
@@ -76,7 +77,7 @@ def dynamic_parse(name: str):
     type=click.STRING,
     default="%Y-%m-%d %H:%M:%S",
 )
-def now(format_out):
+def now(format_out: str) -> None:
     """Get Now Datetime with any string format value.
     """
     sys.exit(
