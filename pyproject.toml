@@ -75,6 +75,8 @@ source = [
 omit = [
     "tests/perfs/",
     "scripts/",
+    "dup_fmt/__main__.py",
+    "dup_fmt/cli.py",
     "dup_fmt/__about__.py",
     "dup_fmt/utils.py",
 ]
