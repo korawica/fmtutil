@@ -2129,7 +2129,7 @@ class FormatterGroupParseArgs(TypedDict):
 class FormatterGroupData:
     """Formatter Data"""
 
-    fmt: FormatterType[Any]
+    fmt: FormatterType
     value: Any
 
     @classmethod
@@ -2432,6 +2432,7 @@ __all__ = (
     "FORMATTERS",
     "FORMATTERS_ADJUST",
     "Formatter",
+    "FormatterType",
     "Serial",
     "Datetime",
     "Version",

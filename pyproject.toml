@@ -32,7 +32,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
 ]
 dependencies = [
-    "dup-utils>=0.0.3",
+    "dup-utils>=0.0.4",
     "python-dateutil>=2.8.2,<3.0.0",
     "packaging>=23.1,<24",
 ]
@@ -54,6 +54,7 @@ dev = [
     "hatch>=1.6.0",
     "ruff>=0.0.138",
     "pre-commit>=2.17.0",
+    "bump2version>=1.0.1",
 ]
 
 [project.scripts]

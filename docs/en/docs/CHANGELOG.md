@@ -2,8 +2,11 @@
 
 ## Latest Changes
 
+## 0.0.4
+
 ### Features
 
+- :dart: feat: add cli commands of formatter object parsing method (_2023-08-24_)
 - :dart: feat: add utils package from dup-uitls project (_2023-07-11_)
 - :dart: feat: add cli for formatter package (_2023-07-10_)
 - :dart: feat: add performance load test for memory usage when init (_2023-06-19_)
@@ -31,6 +34,10 @@
 - :gear: fix: commit-msg (_2023-06-19_)
 - :gear: fix:  (_2023-06-19_)
 - :gear: fix: has_warning (_2023-06-19_)
+
+### Build & Workflow
+
+- :toolbox: build: add bump2version dependency and update version dup-utils (_2023-08-24_)
 
 ## 0.0.3.post1
 
