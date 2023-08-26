@@ -32,6 +32,7 @@ from typing import (
 #  docs: https://pypi.org/project/semver/
 import packaging.version as pck_version
 from dateutil.relativedelta import relativedelta
+from dup_utils.core.base import remove_pad
 
 from dup_fmt.exceptions import (
     FormatterArgumentError,
@@ -39,7 +40,11 @@ from dup_fmt.exceptions import (
     FormatterTypeError,
     FormatterValueError,
 )
-from dup_fmt.utils import caller, concat, itself, remove_pad
+from dup_fmt.utils import (
+    caller,
+    concat,
+    itself,
+)
 
 FormatterType = Type["Formatter"]
 PriorityCallable = Union[Callable[[Any], Any], Callable[[], Any], partial]
@@ -481,12 +486,17 @@ class Formatter(MetaFormatter):
         """Return true if the value attribute from parser of string and
         fmt is valid with self.value.
         """
-        return self.value.__eq__(self.__class__.parse(string, fmt).value)  # type: ignore[no-any-return]
+        return self.value.__eq__(
+            self.__class__.parse(string, fmt).value,
+        )  # type: ignore[no-any-return]
 
     @property
     def level(self) -> SlotLevel:
         """Return the slot level object of any subclass."""
-        return getattr(self, f"_{self.base_attr_prefix}_level")  # type: ignore[no-any-return]
+        return getattr(
+            self,
+            f"_{self.base_attr_prefix}_level",
+        )  # type: ignore[no-any-return]
 
     @property
     def __priorities(self) -> Dict[str, PriorityData]:
@@ -1840,9 +1850,9 @@ class relativeserial:
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, int):
             return self.number == other
-        if isinstance(other, relativeserial):
+        elif isinstance(other, relativeserial):
             return self.number == other.number
-        raise NotImplementedError
+        return NotImplemented
 
     def __lt__(self, other: relativeserial) -> bool:
         return self.number < other.number
@@ -1935,7 +1945,7 @@ def adjust_datetime(
     if "timestamp" not in self.data:
         raise FormatterArgumentError(
             "timestamp",
-            "order file object does not have `timestamp` in name " "formatter",
+            "order file object does not have `timestamp` in name formatter",
         )
     _replace: List[Formatter] = [
         FORMATTERS["timestamp"].parse(
@@ -1968,7 +1978,7 @@ def adjust_serial(
     if "serial" not in self.data:
         raise FormatterArgumentError(
             "serial",
-            "order file object does not have `serial` in name " "formatter",
+            "order file object does not have `serial` in name formatter",
         )
     _replace: List[Formatter] = [
         FORMATTERS["serial"].parse(
@@ -2034,7 +2044,7 @@ class OrderFormatter:
         if fmt not in self.data:
             raise FormatterArgumentError(
                 fmt,
-                f"order object does not have `{fmt}` in name " f"formatter",
+                f"order object does not have `{fmt}` in name formatter",
             )
         return self
 
@@ -2096,7 +2106,10 @@ class OrderFormatter:
         return f"<{self.__class__.__name__}(formatters={self.data})>"
 
     def __str__(self) -> str:
-        return f"({', '.join([f'{k}={list(map(str, v))}' for k, v in self.data.items()])})"
+        make_str: List[str] = [
+            f"{k}={list(map(str, v))}" for k, v in self.data.items()
+        ]
+        return f"({', '.join(make_str)})"
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, self.__class__) and self.data == other.data
