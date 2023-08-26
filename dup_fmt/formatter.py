@@ -1855,8 +1855,19 @@ class relativeserial:
             return self.number == other.number
         return NotImplemented
 
-    def __lt__(self, other: relativeserial) -> bool:
-        return self.number < other.number
+    def __lt__(self, other: Any) -> bool:
+        if isinstance(other, int):
+            return self.number < other
+        elif isinstance(other, relativeserial):
+            return self.number < other.number
+        return NotImplemented
+
+    def __le__(self, other: Any) -> bool:
+        if isinstance(other, int):
+            return self.number <= other
+        elif isinstance(other, relativeserial):
+            return self.number <= other.number
+        return NotImplemented
 
     def __neg__(self) -> relativeserial:
         return self.__class__(number=-self.number)

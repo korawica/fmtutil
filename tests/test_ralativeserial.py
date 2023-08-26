@@ -49,7 +49,27 @@ class SerialTestCase(unittest.TestCase):
                 + fmt.relativeserial(**{"number": 5})
             )
         )
+        self.assertFalse(fmt.relativeserial(**{"number": 15}) <= 10)
+        self.assertTrue(
+            fmt.relativeserial(**{"number": 15})
+            <= fmt.relativeserial(**{"number": 20})
+        )
+        self.assertFalse(fmt.relativeserial(**{"number": 15}) < 4)
         self.assertEqual(
             fmt.relativeserial(**{"number": 15}),
             -fmt.relativeserial(**{"number": -15}),
+        )
+        self.assertFalse(fmt.relativeserial(**{"number": 0}) == 0.012)
+        with self.assertRaises(TypeError) as context:
+            assert fmt.relativeserial(**{"number": 15}) < 0.11
+        self.assertTrue(
+            "'<' not supported between instances of 'relativeserial' and 'float'"
+            in str(context.exception)
+        )
+
+        with self.assertRaises(TypeError) as context:
+            assert fmt.relativeserial(**{"number": 15}) <= 9.9
+        self.assertTrue(
+            "'<=' not supported between instances of 'relativeserial' and "
+            "'float'" in str(context.exception)
         )
