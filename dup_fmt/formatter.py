@@ -315,7 +315,8 @@ class Formatter(MetaFormatter):
         pre_results: Dict[str, str] = {}
         for f, props in cls.formatter().items():
             # issue: https://github.com/python/mypy/issues/8887
-            # docs: https://mypy.readthedocs.io/en/stable/literal_types.html#tagged-unions
+            # docs: https://mypy.readthedocs.io/en/stable/ -
+            #   literal_types.html#tagged-unions
             if "regex" in props:
                 results[f] = props["regex"]  # type: ignore[typeddict-item]
             elif "cregex" in props:
@@ -349,13 +350,11 @@ class Formatter(MetaFormatter):
         """
         _formatter: ReturnFormattersType = self.formatter(self.value)
         fmt = fmt.replace("%%", "[ESCAPE]")
-        for _sup_fmt in re.findall(r"(%[-+!*]?\w)", fmt):
+        for _sup_fmt in set(re.findall(r"(%[-+!*]?\w)", fmt)):
             try:
                 _value: Union[FormatterCallable, str] = _formatter[_sup_fmt][
                     "value"
                 ]
-                # FIXME: There shouldn't be any duplicate replaces to the
-                #  previous value
                 fmt = fmt.replace(
                     _sup_fmt,
                     (_value() if callable(_value) else _value),
