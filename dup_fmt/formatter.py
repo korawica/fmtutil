@@ -404,7 +404,11 @@ class Formatter(MetaFormatter):
             if getattr(self, f"_{self.base_attr_prefix}_{attr}"):
                 continue
             elif any(name.endswith(i) for i in {"_default", "_fix"}):
-                setattr(self, f"_{self.base_attr_prefix}_{attr}", props.value())  # type: ignore[call-arg]
+                setattr(
+                    self,
+                    f"_{self.base_attr_prefix}_{attr}",
+                    props.value(),
+                )  # type: ignore[call-arg]
 
                 # Update level by default it will update at first level
                 _level.update(props.level)
@@ -1150,9 +1154,7 @@ class Version(Formatter):
             _fmt = f"{_fmt}%d"
         if self._vs_local:
             _fmt = f"{_fmt}%l"
-        return (
-            f"<{self.__class__.__name__}.parse(" f"'{self.string}', '{_fmt}')>"
-        )
+        return f"<{self.__class__.__name__}.parse('{self.string}', '{_fmt}')>"
 
     @property
     def value(self) -> pck_version.Version:
@@ -1992,11 +1994,12 @@ def adjust_serial(
     return self
 
 
-# def adjust_version():
-#     ...
-#
-# def adjust_name():
-#     ...
+def adjust_version():  # type: ignore  # no cov
+    ...
+
+
+def adjust_name():  # type: ignore  # no cov
+    ...
 
 
 @total_ordering
@@ -2040,6 +2043,7 @@ class OrderFormatter:
 
     def adjust(self, fmt: str, value: int):  # type: ignore  # no cov
         # TODO: merge adjust methods to dynamic method
+        _ = value
         if fmt not in self.data:
             raise FormatterArgumentError(
                 fmt,
