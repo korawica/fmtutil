@@ -2003,6 +2003,8 @@ class OrderFormatter:
 
     __slots__ = ("data",)
 
+    FMTS: Dict[str, Type[Formatter]] = FORMATTERS
+
     def __init__(self, formatters: Dict[str, Union[Formatter, Dict[str, Any]]]):
         """Main initialize process of the ordering formatter object."""
         self.data: Dict[str, List[Formatter]] = {}
@@ -2011,7 +2013,7 @@ class OrderFormatter:
         for name, value in formatters.items():
             _name: str = re.sub(r"(_\d+)$", "", name)
 
-            if _name not in FORMATTERS:
+            if _name not in self.FMTS:
                 raise FormatterValueError(
                     f"value of key {_name} does not support"
                 )
@@ -2020,7 +2022,7 @@ class OrderFormatter:
             if isinstance(value, Formatter):
                 name_value.append(value)
             elif isinstance(value, dict):
-                name_value.append(FORMATTERS[_name].parse(**value))
+                name_value.append(self.FMTS[_name].parse(**value))
             else:
                 raise FormatterTypeError(
                     f"value of key {_name} does not support for type "
@@ -2076,7 +2078,7 @@ class OrderFormatter:
                 else:
                     _results.append(str(major))
             _replace.append(
-                FORMATTERS["version"].parse(
+                self.FMTS["version"].parse(
                     **{"value": ".".join(_results), "fmt": "%m.%n.%c"}
                 )
             )
@@ -2103,7 +2105,7 @@ class OrderFormatter:
         return next(
             (
                 self.data[name] < other.data[name]
-                for name in FORMATTERS
+                for name in self.FMTS
                 if (name in self.data and name in other.data)
             ),
             False,
@@ -2113,7 +2115,7 @@ class OrderFormatter:
         return next(
             (
                 self.data[name] <= other.data[name]
-                for name in FORMATTERS
+                for name in self.FMTS
                 if (name in self.data and name in other.data)
             ),
             self.__eq__(other),
