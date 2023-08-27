@@ -75,7 +75,7 @@ class OrderFormatTestCase(unittest.TestCase):
         )
 
         self.assertEqual(
-            "(timestamp=['2022-01-01 00:00:00.000'], serial=['1'])",
+            "(timestamp=['2022-01-01 00:00:00.000'], serial=['0'])",
             self.fmt_order7.__str__(),
         )
 

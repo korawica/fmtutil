@@ -9,15 +9,56 @@ The standard object that use for keep main value for compare data in formatter.
 """
 from __future__ import annotations
 
+import re
 from functools import total_ordering
 from typing import (
     Any,
+    ClassVar,
     Optional,
+    Pattern,
     Union,
 )
 
 
-class Version:  # type: ignore  # no cov
+class VersionFormat:  # type: ignore  # no cov
+    """Version object that build from below packages:
+    - packaging
+    - semver
+    """
+
+    _REGEX_TEMPLATE: ClassVar[
+        str
+    ] = r"""
+        ^
+        (?P<major>0|[1-9]\d*)
+        (?:
+            \.
+            (?P<minor>0|[1-9]\d*)
+            (?:
+                \.
+                (?P<patch>0|[1-9]\d*)
+            ){opt_patch}
+        ){opt_minor}
+        (?:-(?P<prerelease>
+            (?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)
+            (?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*
+        ))?
+        (?:\+(?P<build>
+            [0-9a-zA-Z-]+
+            (?:\.[0-9a-zA-Z-]+)*
+        ))?
+        $
+    """
+    #: Regex for a semver version
+    _REGEX: ClassVar[Pattern[str]] = re.compile(
+        _REGEX_TEMPLATE.format(opt_patch="", opt_minor=""),
+        re.VERBOSE,
+    )
+    #: Regex for a semver version that might be shorter
+    _REGEX_OPTIONAL_MINOR_AND_PATCH: ClassVar[Pattern[str]] = re.compile(
+        _REGEX_TEMPLATE.format(opt_patch="?", opt_minor="?"),
+        re.VERBOSE,
+    )
     ...
 
 
@@ -119,8 +160,6 @@ class relativeversion:  # no cov
         beta: Optional[int] = None,
         pre: Optional[int] = None,
         post: Optional[int] = None,
-        dev: Optional[int] = None,
-        local: Optional[str] = None,
     ) -> None:
         self.epoch: int = epoch
         self.major: int = major
@@ -130,8 +169,6 @@ class relativeversion:  # no cov
         self.beta: Optional[int] = beta
         self.pre: Optional[int] = pre
         self.post: Optional[int] = post
-        self.dev: Optional[int] = dev
-        self.local: Optional[str] = local
 
     def __hash__(self) -> int:
         release = f"{self.major}.{self.minor}.{self.micro}"
@@ -143,10 +180,6 @@ class relativeversion:  # no cov
             release = f"{release}.pre{self.pre}"
         if self.post:
             release = f"{release}.post{self.post}"
-        if self.dev:
-            release = f"{release}.dev{self.post}"
-        if self.local:
-            release = f"{release}+local{self.post}"
         return hash(release)  # type: ignore
 
     def __repr__(self) -> str:
@@ -179,8 +212,6 @@ class relativeversion:  # no cov
             beta=(-self.beta if self.beta else None),
             pre=(-self.pre if self.pre else None),
             post=(-self.post if self.post else None),
-            dev=(-self.dev if self.dev else None),
-            local=self.local,
         )  # type: ignore
 
     def __add__(

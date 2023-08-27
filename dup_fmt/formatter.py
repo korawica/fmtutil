@@ -1968,7 +1968,7 @@ class OrderFormatter:
                 )
 
         if auto_serial and "serial" not in self.data:
-            self.data["serial"] = [Serial.parse("1", "%n")]
+            self.data["serial"] = [Serial.parse("0", "%n")]
 
     def adjust(self, fmt: str, value: int):  # type: ignore  # no cov
         # TODO: merge adjust methods to dynamic method
@@ -2069,7 +2069,11 @@ class OrderFormatter:
 
 class FormatterGroupParseArgs(TypedDict):
     fmt: FormatterType
-    value: Optional[str]
+    value: Optional[Union[str, Any]]
+
+
+class FormatterGroupParseArgsDefault(TypedDict):
+    fmt: FormatterType
 
 
 @dataclass
@@ -2081,7 +2085,12 @@ class FormatterGroupData:
 
     @classmethod
     def parse(
-        cls, value: Union[FormatterGroupParseArgs, Type[Formatter]]
+        cls,
+        value: Union[
+            FormatterGroupParseArgs,
+            FormatterGroupParseArgsDefault,
+            FormatterType,
+        ],
     ) -> FormatterGroupData:
         """Parse any value to this FormatterGroupData class
 
@@ -2096,7 +2105,13 @@ class FormatterGroupData:
         )
 
     @classmethod
-    def parse_dict(cls, values: FormatterGroupParseArgs) -> FormatterGroupData:
+    def parse_dict(
+        cls,
+        values: Union[
+            FormatterGroupParseArgs,
+            FormatterGroupParseArgsDefault,
+        ],
+    ) -> FormatterGroupData:
         """Parse dict value to this FormatterGroupData class
 
         :param values: a dict value
@@ -2122,9 +2137,14 @@ class FormatterGroup:
         self,
         formatters: Dict[
             str,
-            Union[FormatterGroupData, FormatterGroupParseArgs, Type[Formatter]],
+            Union[
+                FormatterGroupData,
+                FormatterGroupParseArgs,
+                FormatterGroupParseArgsDefault,
+                FormatterType,
+            ],
         ],
-    ):
+    ) -> None:
         """Main initialization get the formatter value, a mapping of name
         and formatter from input argument and generate the necessary
         attributes for define the value of this formatter group object.
@@ -2150,7 +2170,10 @@ class FormatterGroup:
         }
 
     def parser(
-        self, value: str, fmt: str, _max: bool = True
+        self,
+        value: str,
+        fmt: str,
+        _max: bool = False,
     ) -> Dict[str, Formatter]:
         """Parse formatter by generator values like timestamp, version,
         or serial.
@@ -2161,7 +2184,7 @@ class FormatterGroup:
         :type fmt: str
         :param _max: the max strategy for pick the maximum level from
             duplication formats in parser method.
-        :type _max: bool(=True)
+        :type _max: bool(=False)
         """
         results, _ = self.__parser_all(value, fmt)
         if _max:
@@ -2179,6 +2202,12 @@ class FormatterGroup:
     def __parser_max(
         self, results: Dict[str, Dict[str, str]]
     ) -> Dict[str, Formatter]:
+        """Parser with the max strategy that combine all string value and
+        format value together before parsing.
+
+        :param results: result mapping of name and a pair of format values
+        :type results: Dict[str, Dict[str, str]]
+        """
         rs: Dict[str, List[Formatter]] = {}
         for result in results:
             if (k := result.split("__", maxsplit=1)[0]) in rs:

@@ -73,6 +73,7 @@ class FormatterGroupTestCase(unittest.TestCase):
             self.gp.parser(
                 "data_engineer_in_20220101_de",
                 fmt="{name:%s}_in_{datetime:%Y%m%d}_{name:%a}",
+                _max=True,
             ),
         )
         self.assertEqual(
@@ -83,6 +84,7 @@ class FormatterGroupTestCase(unittest.TestCase):
             self.gp2.parser(
                 "20220101_1_2_3",
                 fmt="{datetime:%Y%m%d}_{version}",
+                _max=True,
             ),
         )
         self.assertEqual(
@@ -93,6 +95,7 @@ class FormatterGroupTestCase(unittest.TestCase):
             self.gp_default2.parser(
                 "20221121_1_0_0",
                 fmt="{datetime:%Y%m%d}_{version}",
+                _max=True,
             ),
         )
 
@@ -116,6 +119,7 @@ class FormatterGroupTestCase(unittest.TestCase):
             self.gp_default.parser(
                 "20230425_1_2_3",
                 fmt="{datetime:%Y%m%d}_{version}",
+                _max=True,
             ),
         )
 
