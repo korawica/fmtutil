@@ -31,8 +31,7 @@ class OrderFormatTestCase(unittest.TestCase):
         self.fmt_order4 = fmt.OrderFormatter({"version": self.vs2})
         self.fmt_order5 = fmt.OrderFormatter({"serial": self.sr_dict})
         self.fmt_order6 = fmt.OrderFormatter({"serial": self.sr_dict2})
-        # self.fmt_order7 = fmt.OrderFormatter({"number": self.sr_dict2})
-        self.fmt_order8 = fmt.OrderFormatter(
+        self.fmt_order7 = fmt.OrderFormatter(
             {"timestamp": self.dt},
             auto_serial=True,
         )
@@ -77,7 +76,7 @@ class OrderFormatTestCase(unittest.TestCase):
 
         self.assertEqual(
             "(timestamp=['2022-01-01 00:00:00.000'], serial=['1'])",
-            self.fmt_order8.__str__(),
+            self.fmt_order7.__str__(),
         )
 
         self.assertEqual(
@@ -115,7 +114,7 @@ class OrderFormatTestCase(unittest.TestCase):
             self.fmt_order3.adjust_timestamp(metrics={"months": 1})
         self.assertTrue(
             (
-                "with 'timestamp', order file object does not have "
+                "with 'timestamp', order formatter object does not have "
                 "`timestamp` in name formatter"
             )
             in str(context.exception)
@@ -137,7 +136,7 @@ class OrderFormatTestCase(unittest.TestCase):
             self.fmt_order.adjust_version("*.1.3")
         self.assertTrue(
             (
-                "with 'version', order file object does not have "
+                "with 'version', order formatter object does not have "
                 "`version` in name formatter"
             )
             in str(context.exception)
@@ -153,7 +152,7 @@ class OrderFormatTestCase(unittest.TestCase):
             self.fmt_order.adjust_serial(1)
         self.assertTrue(
             (
-                "with 'serial', order file object does not have "
+                "with 'serial', order formatter object does not have "
                 "`serial` in name formatter"
             )
             in str(context.exception)

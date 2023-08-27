@@ -34,13 +34,14 @@ import packaging.version as pck_version
 from dateutil.relativedelta import relativedelta
 from dup_utils.core.base import remove_pad
 
-from dup_fmt.exceptions import (
+from .exceptions import (
     FormatterArgumentError,
     FormatterKeyError,
     FormatterTypeError,
     FormatterValueError,
 )
-from dup_fmt.utils import (
+from .objects import relativeserial
+from .utils import (
     caller,
     concat,
     itself,
@@ -1810,140 +1811,9 @@ def extract_regex_with_value(
     }
 
 
-@total_ordering
-class relativeserial:
-    """Relative delta for the Serial object.
-
-    .. examples::
-
-        >>> 5 + relativeserial(**{"number": 5})
-        10
-
-        >>> relativeserial(**{"number": 5}) + 5
-        10
-
-        >>> relativeserial(**{"number": 5}) - 5
-        0
-
-        >>> relativeserial(**{"number": 5}) - 12
-        -7
-
-        >>> 10 - relativeserial(**{"number": 5})
-        5
-
-        >>> 2 - relativeserial(**{"number": 5})
-        -3
-
-        >>> -relativeserial(**{"number": 5})
-        <relativeserial(number=-5)>
-
-    """
-
-    def __init__(self, number: int = 0) -> None:
-        self.number: int = number
-
-    def __hash__(self) -> int:
-        return hash(self.number)
-
-    def __repr__(self) -> str:
-        return f"<{self.__class__.__name__}(number={self.number})>"
-
-    def __eq__(self, other: Any) -> bool:
-        if isinstance(other, int):
-            return self.number == other
-        elif isinstance(other, relativeserial):
-            return self.number == other.number
-        return NotImplemented
-
-    def __lt__(self, other: Any) -> bool:
-        if isinstance(other, int):
-            return self.number < other
-        elif isinstance(other, relativeserial):
-            return self.number < other.number
-        return NotImplemented
-
-    def __le__(self, other: Any) -> bool:
-        if isinstance(other, int):
-            return self.number <= other
-        elif isinstance(other, relativeserial):
-            return self.number <= other.number
-        return NotImplemented
-
-    def __neg__(self) -> relativeserial:
-        return self.__class__(number=-self.number)
-
-    def __rsub__(self, other: int) -> int:
-        return other - self.number
-
-    def __sub__(
-        self,
-        other: Union[int, relativeserial],
-    ) -> Union[int, relativeserial]:
-        if isinstance(other, int):
-            return self.number - other
-        return self.__class__(number=(self.number - other.number))
-
-    def __radd__(self, other: int) -> int:
-        return other + self.number
-
-    def __add__(
-        self,
-        other: Union[int, relativeserial],
-    ) -> Union[int, relativeserial]:
-        if isinstance(other, int):
-            return self.__radd__(other)
-        return self.__class__(number=(self.number + other.number))
-
-
-# TODO: create relativeversion
-# @total_ordering
-class relativeversion:  # no cov
-    def __init__(
-        self,
-        major: int = 0,
-        minor: int = 0,
-        micro: int = 0,
-        alpha: Optional[int] = None,
-        beta: Optional[int] = None,
-        pre: Optional[int] = None,
-        post: Optional[int] = None,
-        dev: Optional[int] = None,
-        local: Optional[str] = None,
-    ) -> None:
-        self.major: int = major
-        self.minor: int = minor
-        self.micro: int = micro
-        self.alpha: Optional[int] = alpha
-        self.beta: Optional[int] = beta
-        self.pre: Optional[int] = pre
-        self.post: Optional[int] = post
-        self.dev: Optional[int] = dev
-        self.local: Optional[str] = local
-
-    def __hash__(self) -> int:
-        return ...  # type: ignore
-
-    def __repr__(self) -> str:
-        return f"<{self.__class__.__name__}()>"
-
-    def __eq__(self, other) -> bool:  # type: ignore
-        return ...  # type: ignore
-
-    def __neg__(self) -> relativeversion:
-        return ...  # type: ignore
-
-    def __add__(self, other):  # type: ignore
-        return ...
-
-    def __sub__(self, other):  # type: ignore
-        return ...
-
-    def __lt__(self, other) -> bool:  # type: ignore
-        return ...  # type: ignore
-
-
 def adjust_datetime(
-    self: OrderFormatter, metrics: Optional[Dict[str, int]] = None
+    self: OrderFormatter,
+    metrics: Optional[Dict[str, int]] = None,
 ) -> OrderFormatter:
     """
     :param self: a OrderFormatter instance that want to adjust
@@ -1957,10 +1827,13 @@ def adjust_datetime(
     if "timestamp" not in self.data:
         raise FormatterArgumentError(
             "timestamp",
-            "order file object does not have `timestamp` in name formatter",
+            (
+                "order formatter object does not have `timestamp` in name "
+                "formatter"
+            ),
         )
     _replace: List[Formatter] = [
-        FORMATTERS["timestamp"].parse(
+        self.FMTS["timestamp"].parse(
             **{
                 "value": (
                     time_data.value
@@ -1976,7 +1849,8 @@ def adjust_datetime(
 
 
 def adjust_serial(
-    self: OrderFormatter, metrics: Optional[Dict[str, int]] = None
+    self: OrderFormatter,
+    metrics: Optional[Dict[str, int]] = None,
 ) -> OrderFormatter:
     """
     :param self: a OrderFormatter instance that want to adjust
@@ -1990,10 +1864,10 @@ def adjust_serial(
     if "serial" not in self.data:
         raise FormatterArgumentError(
             "serial",
-            "order file object does not have `serial` in name formatter",
+            "order formatter object does not have `serial` in name formatter",
         )
     _replace: List[Formatter] = [
-        FORMATTERS["serial"].parse(
+        self.FMTS["serial"].parse(
             **{
                 "value": (str(serial.value - relativeserial(**_metrics))),
                 "fmt": "%n",
@@ -2005,12 +1879,50 @@ def adjust_serial(
     return self
 
 
-def adjust_version():  # type: ignore  # no cov
-    ...
+# TODO: implement adjust version logic when create relativeversion
+def adjust_version(
+    self: OrderFormatter,
+    metrics: Optional[Dict[str, int]] = None,
+):  # type: ignore  # no cov
+    _metrics: Dict[str, int] = metrics or {}
+    if "version" not in self.data:
+        raise FormatterArgumentError(
+            "version",
+            "order formatter object does not have `version` in name formatter",
+        )
+    _replace: List[Formatter] = [
+        self.FMTS["version"].parse(
+            **{
+                "value": "",
+                "fmt": "",
+            }
+        )
+    ]
+    self.data["version"] = _replace
+    return self
 
 
-def adjust_name():  # type: ignore  # no cov
-    ...
+def adjust_name(
+    self: OrderFormatter,
+    metrics: Optional[Dict[str, str]] = None,
+):  # type: ignore  # no cov
+    _metrics: Dict[str, str] = metrics or {}
+    if "name" not in self.data:
+        raise FormatterArgumentError(
+            "name",
+            "order formatter object does not have `name` in name formatter",
+        )
+    _replace: List[Formatter] = [
+        self.FMTS["name"].parse(
+            **{
+                "value": metrics,
+                "fmt": "",
+            }
+        )
+        for _ in self.data["name"]
+    ]
+    self.data["name"] = _replace
+    return self
 
 
 @total_ordering
@@ -2085,7 +1997,7 @@ class OrderFormatter:
         if "version" not in self.data:
             raise FormatterArgumentError(
                 "version",
-                "order file object does not have `version` "
+                "order formatter object does not have `version` "
                 "in name formatter",
             )
         _replace: List[Formatter] = []
