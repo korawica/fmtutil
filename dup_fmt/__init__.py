@@ -23,9 +23,14 @@ from .formatter import (
     ReturnPrioritiesType,
     Serial,
     Version,
+    make_order_fmt,
+)
+from .objects import (
+    relativeserial,
 )
 
 __all__ = (
+    "relativeserial",
     "FORMATTERS",
     "FORMATTERS_ADJUST",
     "Constant",
@@ -40,6 +45,7 @@ __all__ = (
     "ReturnPrioritiesType",
     "Serial",
     "Version",
+    "make_order_fmt",
     "__version__",
     "__version_tuple__",
 )

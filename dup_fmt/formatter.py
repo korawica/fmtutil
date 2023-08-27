@@ -1938,7 +1938,7 @@ class OrderFormatter:
 
     __slots__ = ("data",)
 
-    FMTS: Dict[str, Type[Formatter]] = FORMATTERS
+    FMTS: Dict[str, FormatterType] = FORMATTERS
 
     def __init__(
         self,
@@ -2067,6 +2067,15 @@ class OrderFormatter:
         )
 
 
+def make_order_fmt(formats: Dict[str, FormatterType]) -> Type[OrderFormatter]:
+    """Create new OrderFormatter class with a custom formatter mapping."""
+
+    class CustomOrderFormatter(OrderFormatter):
+        FMTS = formats
+
+    return CustomOrderFormatter
+
+
 class FormatterGroupParseArgs(TypedDict):
     fmt: FormatterType
     value: Optional[Union[str, Any]]
@@ -2123,6 +2132,7 @@ class FormatterGroupData:
         )
 
 
+# TODO: Can FormatterGroup handle order formatter property?
 class FormatterGroup:
     """Group of any Formatters together with dynamic naming like timestamp
     for Datetime formatter object.
@@ -2158,6 +2168,11 @@ class FormatterGroup:
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({', '.join(self.formatters)})"
+
+    @property
+    def formats(self) -> Dict[str, FormatterType]:
+        """Return the mapping of formatter and alias name of that format"""
+        return {k: v.fmt for k, v in self.formatters.items()}
 
     @property
     def groups(self) -> Dict[str, Dict[str, RegexValue]]:
@@ -2404,6 +2419,10 @@ class FormatterGroup:
         return _search_re
 
 
+class Formatters:  # type: ignore  # no cov
+    ...
+
+
 __all__ = (
     "FORMATTERS",
     "FORMATTERS_ADJUST",
@@ -2420,4 +2439,5 @@ __all__ = (
     "OrderFormatter",
     "ReturnPrioritiesType",
     "ReturnFormattersType",
+    "make_order_fmt",
 )

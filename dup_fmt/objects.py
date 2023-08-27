@@ -231,3 +231,6 @@ class relativeversion:  # no cov
 
     def __rsub__(self, other):  # type: ignore
         return ...
+
+
+__all__ = ("relativeserial",)
