@@ -21,6 +21,7 @@
 
 ### Fix Bugs
 
+- :gear: fixed: change the version of dup-utils that fix import issue. (_2023-08-27_)
 - :gear: fixed: duplicate replaces to the previous value on format method. (_2023-08-26_)
 - :gear: fixed: add omit cli files for coverage process (_2023-08-25_)
 
