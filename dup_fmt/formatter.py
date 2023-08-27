@@ -329,10 +329,11 @@ class Formatter(MetaFormatter):
         for f, cr in pre_results.items():
             # TODO: improve pref of this line when `results` was large
             #  of mapping regex values
-            for rf in results:
+            cr = cr.replace("%%", "[ESCAPE]")
+            for rf in iter(results):
                 if rf in cr:
                     cr = cr.replace(rf, results[rf])
-            results[f] = cr
+            results[f] = cr.replace("[ESCAPE]", "%%")
         return results
 
     def format(self, fmt: str) -> str:
@@ -400,14 +401,13 @@ class Formatter(MetaFormatter):
             attr = name.split("_", maxsplit=1)[0]
 
             # Set attr condition
-            # FIXME: the value in properties should defined input type!!!
             if getattr(self, f"_{self.base_attr_prefix}_{attr}"):
                 continue
             elif any(name.endswith(i) for i in {"_default", "_fix"}):
                 setattr(
                     self,
                     f"_{self.base_attr_prefix}_{attr}",
-                    props.value(),
+                    (props.value() if callable(props.value) else props.value),
                 )  # type: ignore[call-arg]
 
                 # Update level by default it will update at first level
@@ -1900,19 +1900,19 @@ class relativeserial:
 class relativeversion:  # no cov
     def __init__(
         self,
-        major: Optional[int] = None,
-        minor: Optional[int] = None,
-        micro: Optional[int] = None,
+        major: int = 0,
+        minor: int = 0,
+        micro: int = 0,
         alpha: Optional[int] = None,
         beta: Optional[int] = None,
         pre: Optional[int] = None,
         post: Optional[int] = None,
         dev: Optional[int] = None,
         local: Optional[str] = None,
-    ):
-        self.major: Optional[int] = major
-        self.minor: Optional[int] = minor
-        self.micro: Optional[int] = micro
+    ) -> None:
+        self.major: int = major
+        self.minor: int = minor
+        self.micro: int = micro
         self.alpha: Optional[int] = alpha
         self.beta: Optional[int] = beta
         self.pre: Optional[int] = pre
@@ -2028,11 +2028,14 @@ class OrderFormatter:
 
     FMTS: Dict[str, Type[Formatter]] = FORMATTERS
 
-    def __init__(self, formatters: Dict[str, Union[Formatter, Dict[str, Any]]]):
+    def __init__(
+        self,
+        formatters: Dict[str, Union[Formatter, Dict[str, Any]]],
+        *,
+        auto_serial: bool = False,
+    ):
         """Main initialize process of the ordering formatter object."""
         self.data: Dict[str, List[Formatter]] = {}
-        # TODO: add merge_dict function to mapping by {'serial': ...}
-        #  before for-loop process
         for name, value in formatters.items():
             _name: str = re.sub(r"(_\d+)$", "", name)
 
@@ -2051,6 +2054,9 @@ class OrderFormatter:
                     f"value of key {_name} does not support for type "
                     f"{type(value)}"
                 )
+
+        if auto_serial and "serial" not in self.data:
+            self.data["serial"] = [Serial.parse("1", "%n")]
 
     def adjust(self, fmt: str, value: int):  # type: ignore  # no cov
         # TODO: merge adjust methods to dynamic method
@@ -2125,7 +2131,7 @@ class OrderFormatter:
         ]
         return f"({', '.join(make_str)})"
 
-    def __eq__(self, other: object) -> bool:
+    def __eq__(self, other: Any) -> bool:
         return isinstance(other, self.__class__) and self.data == other.data
 
     def __lt__(self, other: OrderFormatter) -> bool:

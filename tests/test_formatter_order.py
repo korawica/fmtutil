@@ -32,6 +32,14 @@ class OrderFormatTestCase(unittest.TestCase):
         self.fmt_order5 = fmt.OrderFormatter({"serial": self.sr_dict})
         self.fmt_order6 = fmt.OrderFormatter({"serial": self.sr_dict2})
         # self.fmt_order7 = fmt.OrderFormatter({"number": self.sr_dict2})
+        self.fmt_order8 = fmt.OrderFormatter(
+            {"timestamp": self.dt},
+            auto_serial=True,
+        )
+        self.fmt_order9 = fmt.OrderFormatter(
+            {"timestamp": self.dt, "serial": self.sr_dict},
+            auto_serial=True,
+        )
 
     def test_order_raise_name_init(self):
         raise_respec: Dict[str, Dict[Any, Any]] = {"number": self.sr_dict2}
@@ -67,8 +75,18 @@ class OrderFormatTestCase(unittest.TestCase):
             "(timestamp=['2022-01-01 00:00:00.000'])", self.fmt_order.__str__()
         )
 
+        self.assertEqual(
+            "(timestamp=['2022-01-01 00:00:00.000'], serial=['1'])",
+            self.fmt_order8.__str__(),
+        )
+
+        self.assertEqual(
+            "(timestamp=['2022-01-01 00:00:00.000'], serial=['2'])",
+            self.fmt_order9.__str__(),
+        )
+
     def test_order_timestamp(self):
-        self.assertTrue(self.fmt_order == self.fmt_order)
+        self.assertFalse(self.fmt_order == self.fmt_order2)
         self.assertFalse(self.fmt_order > self.fmt_order2)
         self.assertTrue(self.fmt_order < self.fmt_order2)
 
