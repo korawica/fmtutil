@@ -2,6 +2,29 @@
 
 ## Latest Changes
 
+## 0.0.5
+
+### Features
+
+- :dart: feat: add make_order_fmt func that make new order formatter obj. (_2023-08-27_)
+- :dart: feat: add auto_serial in formatter ordered object. (_2023-08-27_)
+- :dart: feat: add FMTS class attr for dynamic foramtter mapping when ordered. (_2023-08-26_)
+
+### Code Changes
+
+- :construction: refactored: add type of formatter group argument. (_2023-08-27_)
+- :construction: refactored: split object of relative to objects file. (_2023-08-27_)
+- :test_tube: test: add test cases for relativeserial object. (_2023-08-26_)
+- :art: style: reformat code and comment message. (_2023-08-26_)
+- :art: style: change code style that make wrong newline issue. (_2023-08-26_)
+- :construction: refactored: add pre-commit message and change deps of test and dev optional deps. (_2023-08-25_)
+
+### Fix Bugs
+
+- :gear: fixed: change the version of dup-utils that fix import issue. (_2023-08-27_)
+- :gear: fixed: duplicate replaces to the previous value on format method. (_2023-08-26_)
+- :gear: fixed: add omit cli files for coverage process (_2023-08-25_)
+
 ## 0.0.4
 
 ### Features

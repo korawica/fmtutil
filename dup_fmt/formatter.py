@@ -32,14 +32,20 @@ from typing import (
 #  docs: https://pypi.org/project/semver/
 import packaging.version as pck_version
 from dateutil.relativedelta import relativedelta
+from dup_utils.core.base import remove_pad
 
-from dup_fmt.exceptions import (
+from .exceptions import (
     FormatterArgumentError,
     FormatterKeyError,
     FormatterTypeError,
     FormatterValueError,
 )
-from dup_fmt.utils import caller, concat, itself, remove_pad
+from .objects import relativeserial
+from .utils import (
+    caller,
+    concat,
+    itself,
+)
 
 FormatterType = Type["Formatter"]
 PriorityCallable = Union[Callable[[Any], Any], Callable[[], Any], partial]
@@ -310,7 +316,8 @@ class Formatter(MetaFormatter):
         pre_results: Dict[str, str] = {}
         for f, props in cls.formatter().items():
             # issue: https://github.com/python/mypy/issues/8887
-            # docs: https://mypy.readthedocs.io/en/stable/literal_types.html#tagged-unions
+            # docs: https://mypy.readthedocs.io/en/stable/ -
+            #   literal_types.html#tagged-unions
             if "regex" in props:
                 results[f] = props["regex"]  # type: ignore[typeddict-item]
             elif "cregex" in props:
@@ -323,10 +330,11 @@ class Formatter(MetaFormatter):
         for f, cr in pre_results.items():
             # TODO: improve pref of this line when `results` was large
             #  of mapping regex values
-            for rf in results:
+            cr = cr.replace("%%", "[ESCAPE]")
+            for rf in iter(results):
                 if rf in cr:
                     cr = cr.replace(rf, results[rf])
-            results[f] = cr
+            results[f] = cr.replace("[ESCAPE]", "%%")
         return results
 
     def format(self, fmt: str) -> str:
@@ -344,13 +352,11 @@ class Formatter(MetaFormatter):
         """
         _formatter: ReturnFormattersType = self.formatter(self.value)
         fmt = fmt.replace("%%", "[ESCAPE]")
-        for _sup_fmt in re.findall(r"(%[-+!*]?\w)", fmt):
+        for _sup_fmt in set(re.findall(r"(%[-+!*]?\w)", fmt)):
             try:
                 _value: Union[FormatterCallable, str] = _formatter[_sup_fmt][
                     "value"
                 ]
-                # FIXME: There shouldn't be any duplicate replaces to the
-                #  previous value
                 fmt = fmt.replace(
                     _sup_fmt,
                     (_value() if callable(_value) else _value),
@@ -396,11 +402,14 @@ class Formatter(MetaFormatter):
             attr = name.split("_", maxsplit=1)[0]
 
             # Set attr condition
-            # FIXME: the value in properties should defined input type!!!
             if getattr(self, f"_{self.base_attr_prefix}_{attr}"):
                 continue
             elif any(name.endswith(i) for i in {"_default", "_fix"}):
-                setattr(self, f"_{self.base_attr_prefix}_{attr}", props.value())  # type: ignore[call-arg]
+                setattr(
+                    self,
+                    f"_{self.base_attr_prefix}_{attr}",
+                    (props.value() if callable(props.value) else props.value),
+                )  # type: ignore[call-arg]
 
                 # Update level by default it will update at first level
                 _level.update(props.level)
@@ -481,12 +490,17 @@ class Formatter(MetaFormatter):
         """Return true if the value attribute from parser of string and
         fmt is valid with self.value.
         """
-        return self.value.__eq__(self.__class__.parse(string, fmt).value)  # type: ignore[no-any-return]
+        return self.value.__eq__(
+            self.__class__.parse(string, fmt).value,
+        )  # type: ignore[no-any-return]
 
     @property
     def level(self) -> SlotLevel:
         """Return the slot level object of any subclass."""
-        return getattr(self, f"_{self.base_attr_prefix}_level")  # type: ignore[no-any-return]
+        return getattr(
+            self,
+            f"_{self.base_attr_prefix}_level",
+        )  # type: ignore[no-any-return]
 
     @property
     def __priorities(self) -> Dict[str, PriorityData]:
@@ -1141,9 +1155,7 @@ class Version(Formatter):
             _fmt = f"{_fmt}%d"
         if self._vs_local:
             _fmt = f"{_fmt}%l"
-        return (
-            f"<{self.__class__.__name__}.parse(" f"'{self.string}', '{_fmt}')>"
-        )
+        return f"<{self.__class__.__name__}.parse('{self.string}', '{_fmt}')>"
 
     @property
     def value(self) -> pck_version.Version:
@@ -1799,129 +1811,9 @@ def extract_regex_with_value(
     }
 
 
-@total_ordering
-class relativeserial:
-    """Relative delta for the Serial object.
-
-    .. examples::
-
-        >>> 5 + relativeserial(**{"number": 5})
-        10
-
-        >>> relativeserial(**{"number": 5}) + 5
-        10
-
-        >>> relativeserial(**{"number": 5}) - 5
-        0
-
-        >>> relativeserial(**{"number": 5}) - 12
-        -7
-
-        >>> 10 - relativeserial(**{"number": 5})
-        5
-
-        >>> 2 - relativeserial(**{"number": 5})
-        -3
-
-        >>> -relativeserial(**{"number": 5})
-        <relativeserial(number=-5)>
-
-    """
-
-    def __init__(self, number: int = 0) -> None:
-        self.number: int = number
-
-    def __hash__(self) -> int:
-        return hash(self.number)
-
-    def __repr__(self) -> str:
-        return f"<{self.__class__.__name__}(number={self.number})>"
-
-    def __eq__(self, other: Any) -> bool:
-        if isinstance(other, int):
-            return self.number == other
-        if isinstance(other, relativeserial):
-            return self.number == other.number
-        raise NotImplementedError
-
-    def __lt__(self, other: relativeserial) -> bool:
-        return self.number < other.number
-
-    def __neg__(self) -> relativeserial:
-        return self.__class__(number=-self.number)
-
-    def __rsub__(self, other: int) -> int:
-        return other - self.number
-
-    def __sub__(
-        self,
-        other: Union[int, relativeserial],
-    ) -> Union[int, relativeserial]:
-        if isinstance(other, int):
-            return self.number - other
-        return self.__class__(number=(self.number - other.number))
-
-    def __radd__(self, other: int) -> int:
-        return other + self.number
-
-    def __add__(
-        self,
-        other: Union[int, relativeserial],
-    ) -> Union[int, relativeserial]:
-        if isinstance(other, int):
-            return self.__radd__(other)
-        return self.__class__(number=(self.number + other.number))
-
-
-# TODO: create relativeversion
-# @total_ordering
-class relativeversion:  # no cov
-    def __init__(
-        self,
-        major: Optional[int] = None,
-        minor: Optional[int] = None,
-        micro: Optional[int] = None,
-        alpha: Optional[int] = None,
-        beta: Optional[int] = None,
-        pre: Optional[int] = None,
-        post: Optional[int] = None,
-        dev: Optional[int] = None,
-        local: Optional[str] = None,
-    ):
-        self.major: Optional[int] = major
-        self.minor: Optional[int] = minor
-        self.micro: Optional[int] = micro
-        self.alpha: Optional[int] = alpha
-        self.beta: Optional[int] = beta
-        self.pre: Optional[int] = pre
-        self.post: Optional[int] = post
-        self.dev: Optional[int] = dev
-        self.local: Optional[str] = local
-
-    def __hash__(self) -> int:
-        return ...  # type: ignore
-
-    def __repr__(self) -> str:
-        return f"<{self.__class__.__name__}()>"
-
-    def __eq__(self, other) -> bool:  # type: ignore
-        return ...  # type: ignore
-
-    def __neg__(self) -> relativeversion:
-        return ...  # type: ignore
-
-    def __add__(self, other):  # type: ignore
-        return ...
-
-    def __sub__(self, other):  # type: ignore
-        return ...
-
-    def __lt__(self, other) -> bool:  # type: ignore
-        return ...  # type: ignore
-
-
 def adjust_datetime(
-    self: OrderFormatter, metrics: Optional[Dict[str, int]] = None
+    self: OrderFormatter,
+    metrics: Optional[Dict[str, int]] = None,
 ) -> OrderFormatter:
     """
     :param self: a OrderFormatter instance that want to adjust
@@ -1935,10 +1827,13 @@ def adjust_datetime(
     if "timestamp" not in self.data:
         raise FormatterArgumentError(
             "timestamp",
-            "order file object does not have `timestamp` in name " "formatter",
+            (
+                "order formatter object does not have `timestamp` in name "
+                "formatter"
+            ),
         )
     _replace: List[Formatter] = [
-        FORMATTERS["timestamp"].parse(
+        self.FMTS["timestamp"].parse(
             **{
                 "value": (
                     time_data.value
@@ -1954,7 +1849,8 @@ def adjust_datetime(
 
 
 def adjust_serial(
-    self: OrderFormatter, metrics: Optional[Dict[str, int]] = None
+    self: OrderFormatter,
+    metrics: Optional[Dict[str, int]] = None,
 ) -> OrderFormatter:
     """
     :param self: a OrderFormatter instance that want to adjust
@@ -1968,10 +1864,10 @@ def adjust_serial(
     if "serial" not in self.data:
         raise FormatterArgumentError(
             "serial",
-            "order file object does not have `serial` in name " "formatter",
+            "order formatter object does not have `serial` in name formatter",
         )
     _replace: List[Formatter] = [
-        FORMATTERS["serial"].parse(
+        self.FMTS["serial"].parse(
             **{
                 "value": (str(serial.value - relativeserial(**_metrics))),
                 "fmt": "%n",
@@ -1983,11 +1879,50 @@ def adjust_serial(
     return self
 
 
-# def adjust_version():
-#     ...
-#
-# def adjust_name():
-#     ...
+# TODO: implement adjust version logic when create relativeversion
+def adjust_version(
+    self: OrderFormatter,
+    metrics: Optional[Dict[str, int]] = None,
+):  # type: ignore  # no cov
+    _metrics: Dict[str, int] = metrics or {}
+    if "version" not in self.data:
+        raise FormatterArgumentError(
+            "version",
+            "order formatter object does not have `version` in name formatter",
+        )
+    _replace: List[Formatter] = [
+        self.FMTS["version"].parse(
+            **{
+                "value": "",
+                "fmt": "",
+            }
+        )
+    ]
+    self.data["version"] = _replace
+    return self
+
+
+def adjust_name(
+    self: OrderFormatter,
+    metrics: Optional[Dict[str, str]] = None,
+):  # type: ignore  # no cov
+    _metrics: Dict[str, str] = metrics or {}
+    if "name" not in self.data:
+        raise FormatterArgumentError(
+            "name",
+            "order formatter object does not have `name` in name formatter",
+        )
+    _replace: List[Formatter] = [
+        self.FMTS["name"].parse(
+            **{
+                "value": metrics,
+                "fmt": "",
+            }
+        )
+        for _ in self.data["name"]
+    ]
+    self.data["name"] = _replace
+    return self
 
 
 @total_ordering
@@ -2003,15 +1938,20 @@ class OrderFormatter:
 
     __slots__ = ("data",)
 
-    def __init__(self, formatters: Dict[str, Union[Formatter, Dict[str, Any]]]):
+    FMTS: Dict[str, FormatterType] = FORMATTERS
+
+    def __init__(
+        self,
+        formatters: Dict[str, Union[Formatter, Dict[str, Any]]],
+        *,
+        auto_serial: bool = False,
+    ):
         """Main initialize process of the ordering formatter object."""
         self.data: Dict[str, List[Formatter]] = {}
-        # TODO: add merge_dict function to mapping by {'serial': ...}
-        #  before for-loop process
         for name, value in formatters.items():
             _name: str = re.sub(r"(_\d+)$", "", name)
 
-            if _name not in FORMATTERS:
+            if _name not in self.FMTS:
                 raise FormatterValueError(
                     f"value of key {_name} does not support"
                 )
@@ -2020,19 +1960,23 @@ class OrderFormatter:
             if isinstance(value, Formatter):
                 name_value.append(value)
             elif isinstance(value, dict):
-                name_value.append(FORMATTERS[_name].parse(**value))
+                name_value.append(self.FMTS[_name].parse(**value))
             else:
                 raise FormatterTypeError(
                     f"value of key {_name} does not support for type "
                     f"{type(value)}"
                 )
 
+        if auto_serial and "serial" not in self.data:
+            self.data["serial"] = [Serial.parse("0", "%n")]
+
     def adjust(self, fmt: str, value: int):  # type: ignore  # no cov
         # TODO: merge adjust methods to dynamic method
+        _ = value
         if fmt not in self.data:
             raise FormatterArgumentError(
                 fmt,
-                f"order object does not have `{fmt}` in name " f"formatter",
+                f"order object does not have `{fmt}` in name formatter",
             )
         return self
 
@@ -2053,7 +1997,7 @@ class OrderFormatter:
         if "version" not in self.data:
             raise FormatterArgumentError(
                 "version",
-                "order file object does not have `version` "
+                "order formatter object does not have `version` "
                 "in name formatter",
             )
         _replace: List[Formatter] = []
@@ -2076,7 +2020,7 @@ class OrderFormatter:
                 else:
                     _results.append(str(major))
             _replace.append(
-                FORMATTERS["version"].parse(
+                self.FMTS["version"].parse(
                     **{"value": ".".join(_results), "fmt": "%m.%n.%c"}
                 )
             )
@@ -2094,16 +2038,19 @@ class OrderFormatter:
         return f"<{self.__class__.__name__}(formatters={self.data})>"
 
     def __str__(self) -> str:
-        return f"({', '.join([f'{k}={list(map(str, v))}' for k, v in self.data.items()])})"
+        make_str: List[str] = [
+            f"{k}={list(map(str, v))}" for k, v in self.data.items()
+        ]
+        return f"({', '.join(make_str)})"
 
-    def __eq__(self, other: object) -> bool:
+    def __eq__(self, other: Any) -> bool:
         return isinstance(other, self.__class__) and self.data == other.data
 
     def __lt__(self, other: OrderFormatter) -> bool:
         return next(
             (
                 self.data[name] < other.data[name]
-                for name in FORMATTERS
+                for name in self.FMTS
                 if (name in self.data and name in other.data)
             ),
             False,
@@ -2113,16 +2060,29 @@ class OrderFormatter:
         return next(
             (
                 self.data[name] <= other.data[name]
-                for name in FORMATTERS
+                for name in self.FMTS
                 if (name in self.data and name in other.data)
             ),
             self.__eq__(other),
         )
 
 
+def make_order_fmt(formats: Dict[str, FormatterType]) -> Type[OrderFormatter]:
+    """Create new OrderFormatter class with a custom formatter mapping."""
+
+    class CustomOrderFormatter(OrderFormatter):
+        FMTS = formats
+
+    return CustomOrderFormatter
+
+
 class FormatterGroupParseArgs(TypedDict):
     fmt: FormatterType
-    value: Optional[str]
+    value: Optional[Union[str, Any]]
+
+
+class FormatterGroupParseArgsDefault(TypedDict):
+    fmt: FormatterType
 
 
 @dataclass
@@ -2134,7 +2094,12 @@ class FormatterGroupData:
 
     @classmethod
     def parse(
-        cls, value: Union[FormatterGroupParseArgs, Type[Formatter]]
+        cls,
+        value: Union[
+            FormatterGroupParseArgs,
+            FormatterGroupParseArgsDefault,
+            FormatterType,
+        ],
     ) -> FormatterGroupData:
         """Parse any value to this FormatterGroupData class
 
@@ -2149,7 +2114,13 @@ class FormatterGroupData:
         )
 
     @classmethod
-    def parse_dict(cls, values: FormatterGroupParseArgs) -> FormatterGroupData:
+    def parse_dict(
+        cls,
+        values: Union[
+            FormatterGroupParseArgs,
+            FormatterGroupParseArgsDefault,
+        ],
+    ) -> FormatterGroupData:
         """Parse dict value to this FormatterGroupData class
 
         :param values: a dict value
@@ -2161,6 +2132,7 @@ class FormatterGroupData:
         )
 
 
+# TODO: Can FormatterGroup handle order formatter property?
 class FormatterGroup:
     """Group of any Formatters together with dynamic naming like timestamp
     for Datetime formatter object.
@@ -2175,9 +2147,14 @@ class FormatterGroup:
         self,
         formatters: Dict[
             str,
-            Union[FormatterGroupData, FormatterGroupParseArgs, Type[Formatter]],
+            Union[
+                FormatterGroupData,
+                FormatterGroupParseArgs,
+                FormatterGroupParseArgsDefault,
+                FormatterType,
+            ],
         ],
-    ):
+    ) -> None:
         """Main initialization get the formatter value, a mapping of name
         and formatter from input argument and generate the necessary
         attributes for define the value of this formatter group object.
@@ -2193,6 +2170,11 @@ class FormatterGroup:
         return f"{self.__class__.__name__}({', '.join(self.formatters)})"
 
     @property
+    def formats(self) -> Dict[str, FormatterType]:
+        """Return the mapping of formatter and alias name of that format"""
+        return {k: v.fmt for k, v in self.formatters.items()}
+
+    @property
     def groups(self) -> Dict[str, Dict[str, RegexValue]]:
         """Return the groups of format value and extract Formatter
         values.
@@ -2203,7 +2185,10 @@ class FormatterGroup:
         }
 
     def parser(
-        self, value: str, fmt: str, _max: bool = True
+        self,
+        value: str,
+        fmt: str,
+        _max: bool = False,
     ) -> Dict[str, Formatter]:
         """Parse formatter by generator values like timestamp, version,
         or serial.
@@ -2214,7 +2199,7 @@ class FormatterGroup:
         :type fmt: str
         :param _max: the max strategy for pick the maximum level from
             duplication formats in parser method.
-        :type _max: bool(=True)
+        :type _max: bool(=False)
         """
         results, _ = self.__parser_all(value, fmt)
         if _max:
@@ -2232,6 +2217,12 @@ class FormatterGroup:
     def __parser_max(
         self, results: Dict[str, Dict[str, str]]
     ) -> Dict[str, Formatter]:
+        """Parser with the max strategy that combine all string value and
+        format value together before parsing.
+
+        :param results: result mapping of name and a pair of format values
+        :type results: Dict[str, Dict[str, str]]
+        """
         rs: Dict[str, List[Formatter]] = {}
         for result in results:
             if (k := result.split("__", maxsplit=1)[0]) in rs:
@@ -2428,6 +2419,10 @@ class FormatterGroup:
         return _search_re
 
 
+class Formatters:  # type: ignore  # no cov
+    ...
+
+
 __all__ = (
     "FORMATTERS",
     "FORMATTERS_ADJUST",
@@ -2444,4 +2439,5 @@ __all__ = (
     "OrderFormatter",
     "ReturnPrioritiesType",
     "ReturnFormattersType",
+    "make_order_fmt",
 )

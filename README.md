@@ -17,7 +17,7 @@
   - [Constant](#constant)
 - [Ordered Formatter](#ordered-formatter)
 - [Formatter Group](#formatter-group)
-- [Make your Formatter Object](#make-your-formatter-object)
+- [Custom Formatter Object](#custom-formatter-object)
 
 This **Formatter** package was created for `parse` and `format` any string values
 that able to design format pattern with regular expression. This package be the
@@ -202,8 +202,38 @@ assert ordered_1 > ordered_2
 
 > **Warning**: \
 > This object support for any formatter object only in `FORMATTERS` mapping constant,
-> this mapping constant contain; `Datetime` - timestamp, `Serial` - serial,
-> `Version` - version, `Naming` - naming, and `EnvConstant` - envconst.
+> this mapping constant contain;
+> - `Datetime` - timestamp
+> - `Serial` - serial,
+> - `Version` - version
+> - `Naming` - naming
+> - `EnvConstant` - envconst
+
+If you want to override this mapping constant, you can create new OrderFormatter
+object:
+
+```python
+from dup_fmt import OrderFormatter, Naming
+
+class MyOrderFormatter(OrderFormatter):
+
+    FMTS = {
+        'name': Naming,
+        'domain': Naming,
+    }
+
+ordered_1 = MyOrderFormatter({
+    'name': Naming.parse("test", "%n"),
+    'domain': Naming.parse("A", "%N"),
+})
+ordered_2 = MyOrderFormatter({
+    'name': Naming.parse("test", "%n"),
+    'domain': Naming.parse("B", "%N"),
+})
+
+assert ordered_1 > ordered_2
+```
+
 
 ## Formatter Group
 
@@ -257,7 +287,7 @@ group.format('{name:%c}_{timestamp:%Y_%m_%d}_{name}')
 > This formatter group object does not good enough for implement order principle.
 > If you want it, you can use `OrderFormatter` together with `FormatterGroup`.
 
-## Make your Formatter Object
+## Custom Formatter Object
 
 If this implemented formatter objects in this package does not help you all scenario
 of a formatted value, you can create your formatter object by yourself.
