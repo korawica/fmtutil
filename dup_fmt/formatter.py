@@ -32,7 +32,7 @@ from typing import (
 #  docs: https://pypi.org/project/semver/
 import packaging.version as pck_version
 from dateutil.relativedelta import relativedelta
-from dup_utils.core.base import remove_pad
+from dup_utils.core import remove_pad
 
 from .exceptions import (
     FormatterArgumentError,
