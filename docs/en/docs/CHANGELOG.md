@@ -2,6 +2,26 @@
 
 ## Latest Changes
 
+## 0.0.5.post0
+
+### Code Changes
+
+- :construction: refactored: change import layer of dup-uitls deps package. (_2023-08-28_)
+
+### Fix Bugs
+
+- :gear: fixed: generate Constant instance does not separate class attr. (_2023-08-31_)
+
+## 0.0.5
+
+### Code Changes
+
+- :construction: refactored: change import layer of dup-uitls deps package. (_2023-08-28_)
+
+### Fix Bugs
+
+- :gear: fixed: generate Constant instance does not separate class attr. (_2023-08-31_)
+
 ## 0.0.5
 
 ### Features
