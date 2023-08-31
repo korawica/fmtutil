@@ -7,7 +7,6 @@
 Test the Constant formatter object.
 """
 import unittest
-from typing import Type
 
 import dup_fmt.formatter as fmt
 from dup_fmt.exceptions import FormatterValueError
@@ -15,13 +14,24 @@ from dup_fmt.exceptions import FormatterValueError
 
 class ConstantTestCase(unittest.TestCase):
     def setUp(self) -> None:
-        self.const: Type["fmt.Constant"] = fmt.Constant(
+        self.const: fmt.ConstantType = fmt.Constant(
             {
                 "%n": "normal",
                 "%s": "special",
             }
         )
+        self.const02: fmt.ConstantType = fmt.Constant(
+            {
+                "%g": "gzip",
+                "%-g": "gz",
+                "%b": "bz2",
+                "%r": "rar",
+                "%x": "xz",
+                "%z": "zip",
+            }
+        )
         self.ct = self.const.parse("normal_life", "%n_life")
+        self.ct02 = self.const02.parse("gzip_life", "%g_life")
 
     def test_const_parser_raise(self):
         with self.assertRaises(FormatterValueError) as context:

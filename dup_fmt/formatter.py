@@ -1689,18 +1689,6 @@ class __BaseConstant(Formatter):
         "_ct_constant",
     )
 
-    @classmethod
-    def create(cls, formatter: Dict[str, str]) -> ConstantType:
-        """Set formatter"""
-        cls.base_formatter = {
-            fmt: {
-                "regex": f"(?P<constant>{formatter[fmt]})",
-                "value": formatter[fmt],
-            }
-            for fmt in formatter.copy()
-        }
-        return cls
-
     @property
     def priorities(
         self,
@@ -1739,7 +1727,20 @@ class __BaseConstant(Formatter):
         return cls.base_formatter
 
 
-Constant = __BaseConstant.create
+def create_const(formatter: Dict[str, str]) -> ConstantType:
+    class CustomConstant(__BaseConstant):
+        base_formatter = {
+            fmt: {
+                "regex": f"(?P<constant>{formatter[fmt]})",
+                "value": formatter[fmt],
+            }
+            for fmt in formatter.copy()
+        }
+
+    return CustomConstant
+
+
+Constant = create_const
 
 EnvConstant: ConstantType = Constant(
     {
