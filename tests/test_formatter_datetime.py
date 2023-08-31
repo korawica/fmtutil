@@ -95,6 +95,12 @@ class DatetimeTestCase(unittest.TestCase):
 
         self.assertTrue(self.dt2.valid("20220115-00", "%Y%m%d-%S"))
 
+    def test_datetime_parser(self):
+        self.assertEqual(
+            fmt.Datetime.parse("2021-01-01 20210101", "%Y-%m-%d %Y%m%d"),
+            fmt.Datetime.parse("2021-01-01", "%Y-%m-%d"),
+        )
+
     def test_datetime_format(self):
         self.assertEqual("22", self.dt.format("%-y"))
         self.assertEqual("19900101", self.dt_default.format("%Y%m%d"))

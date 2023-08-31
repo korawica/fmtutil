@@ -14,7 +14,7 @@ import re
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from functools import lru_cache, partial, reduce, total_ordering
+from functools import lru_cache, partial, total_ordering
 from typing import (
     Any,
     Callable,
@@ -268,7 +268,7 @@ class Formatter(MetaFormatter):
         fmt: Optional[str] = None,
     ) -> Formatter:
         """Parse string value with its format to subclass of base formatter
-        object.
+        object. This method generates the standard value for itself data.
 
         :param value: a string value that match with fmt.
         :type value: str
@@ -290,11 +290,7 @@ class Formatter(MetaFormatter):
         if not _fmt or isinstance(_fmt, NotImplementedError):
             raise NotImplementedError("This class does not set default format")
 
-        _fmt = reduce(
-            lambda x, y: x.replace(y, cls.regex()[y]),
-            re.findall(r"(%[-+!*]?\w)", _fmt),
-            _fmt,
-        )
+        _fmt = cls.__parse(_fmt)
 
         if _search := re.search(rf"^{_fmt}$", value):
             return cls(_search.groupdict())
@@ -302,6 +298,28 @@ class Formatter(MetaFormatter):
         raise FormatterValueError(
             f"value {value!r} does not match with format {_fmt!r}"
         )
+
+    @classmethod
+    def __parse(cls, fmt: str) -> str:
+        _cache: Dict[str, int] = {}
+        for fmt_search in re.findall(r"(%[-+!*]?\w)", fmt):
+            regex: str = cls.regex()[fmt_search]
+            if fmt_search in _cache:
+                _rgn = re.search(
+                    r"\(\?P<(?P<alias_name>\w+)>",
+                    regex,
+                )
+                _sr_re: str = _rgn.group("alias_name")
+                regex = re.sub(
+                    rf"\(\?P<{_sr_re}>",
+                    rf"(?P<{_sr_re}__{_cache[fmt_search]}>",
+                    regex,
+                )
+                _cache[fmt_search] += 1
+            else:
+                _cache[fmt_search] = 1
+            fmt = fmt.replace(fmt_search, regex, 1)
+        return fmt
 
     @classmethod
     @lru_cache(maxsize=None)
@@ -379,6 +397,7 @@ class Formatter(MetaFormatter):
             The setter of attribute does not do anything to __slot__ variable.
         """
         _formats: Dict[str, Any] = formats or {}
+        self.__validate_format(_formats)
 
         # Set level of SlotLevel object that set from `base_level` and pass this
         # value to _level variable for update process in priorities loop.
@@ -508,6 +527,16 @@ class Formatter(MetaFormatter):
         `self.priorities` value.
         """
         return {k: PriorityData(**v) for k, v in self.priorities.items()}
+
+    @staticmethod
+    def __validate_format(formats: Dict[str, Any]):
+        """Raise error if any duplication format name do not all equal."""
+        for fmt in filter(lambda x: "__" in x, formats):
+            if formats[fmt.split("__")[0]] != formats[fmt]:
+                raise FormatterValueError(
+                    "Parsing with some duplicate format name that have value "
+                    "do not all equal."
+                )
 
     @property
     @abstractmethod
@@ -1740,7 +1769,7 @@ def create_const(formatter: Dict[str, str]) -> ConstantType:
     return CustomConstant
 
 
-Constant = create_const
+Constant: Callable[[Dict[str, str]], ConstantType] = create_const
 
 EnvConstant: ConstantType = Constant(
     {
@@ -2202,6 +2231,8 @@ class FormatterGroup:
             duplication formats in parser method.
         :type _max: bool(=False)
         """
+        # TODO: Change special character value in format string like: |,
+        #  () before passing to parser method.
         results, _ = self.__parser_all(value, fmt)
         if _max:
             return self.__parser_max(results=results)
@@ -2250,7 +2281,9 @@ class FormatterGroup:
                 fmt = fmt.replace(
                     f'{{{fmt_name}:{_search.groupdict()["format"]}}}',
                     self.__loop_sub_fmt(
-                        search=_search, mapping=fmt_mapping, key="value"
+                        search=_search.groupdict(),
+                        mapping=fmt_mapping,
+                        key="value",
                     ),
                 )
             # Case II: does not set any formatter value or duplicate format
@@ -2264,7 +2297,9 @@ class FormatterGroup:
         return fmt
 
     def __parser_all(
-        self, value: str, fmt: str
+        self,
+        value: str,
+        fmt: str,
     ) -> Tuple[Dict[str, Dict[str, str]], Dict[str, str]]:
         """Parse all formatter by generator that return getter and outer
         mapping.
@@ -2287,6 +2322,7 @@ class FormatterGroup:
         _fmt_filled, _fmt_getter = self.__stage_parser(fmt=fmt)
 
         # Parse regular expression to input value
+        print("Before raise error:", rf"^{_fmt_filled}$")
         if not (_search := re.search(rf"^{_fmt_filled}$", value)):
             raise FormatterArgumentError(
                 "format",
@@ -2295,6 +2331,9 @@ class FormatterGroup:
             )
 
         _searches: Dict[str, str] = _search.groupdict()
+        print("Group Dict:", _searches)
+        print("Format Getter:", _fmt_getter)
+        print("-----------")
         _fmt_outer: Dict[str, str] = {}
         for name in _searches.copy():
             if name in _fmt_getter:
@@ -2316,28 +2355,42 @@ class FormatterGroup:
         """
         _get_format: Dict[str, Dict[str, str]] = {}
         for fmt_name, fmt_mapping in self.groups.items():
+            print(
+                "Regex Search",
+                rf"(?P<name>{{{fmt_name}:?(?P<format>[^{{}}]+)?}})",
+            )
             for _index, _search in enumerate(
                 re.finditer(
-                    rf"(?P<name>{{{fmt_name}:?(?P<format>[^{{}}]+)?}})", fmt
+                    rf"(?P<name>{{{fmt_name}:?(?P<format>[^{{}}]+)?}})",
+                    fmt,
                 ),
                 start=1,
             ):
-                _search_fmt: str
-                _search_fmt_re: str
+                # Search with mapping group with example:
+                #   _search.groupdict() -->
+                #   {'name': '{datetime:%Y%m%d}', 'format': '%Y%m%d'}
+                _search_dict: Dict[str, str]
                 _search_fmt_old: str = ""
                 if _search_fmt := _search.group("format"):
                     # Case I: contain formatter values.
                     _search_fmt_old = f":{_search_fmt}"
-                    _search_fmt_re = self.__loop_sub_fmt(
-                        search=_search,
-                        mapping=fmt_mapping,
-                        key="regex",
-                        index=_index,
-                    )
+                    _search_dict = _search.groupdict()
                 else:
                     # Case II: does not set any formatter value.
                     _search_fmt = list(fmt_mapping.keys())[0]
-                    _search_fmt_re = fmt_mapping[_search_fmt]["regex"]
+                    _search_dict = {
+                        **_search.groupdict(),
+                        **{"format": _search_fmt},
+                    }
+
+                print("GroupDict:", _search_dict)
+                _search_fmt_re: str = self.__loop_sub_fmt(
+                    search=_search_dict,
+                    mapping=fmt_mapping,
+                    key="regex",
+                    index=_index,
+                    suffix=fmt_name,
+                )
 
                 # Replace old format value with new mapping formatter
                 # value.
@@ -2369,10 +2422,11 @@ class FormatterGroup:
 
     @staticmethod
     def __loop_sub_fmt(
-        search: re.Match[str],
+        search: Dict[str, str],
         mapping: Dict[str, RegexValue],
         key: Literal["regex", "value"],
         index: int = 1,
+        suffix: Optional[str] = None,
     ) -> str:
         """Loop method for find any sub-format from search input argument.
 
@@ -2394,27 +2448,28 @@ class FormatterGroup:
             "value",
             "regex",
         }, "the `key` argument should be 'value' or 'regex' only."
-        _search_dict: Dict[str, str] = search.groupdict()
-        _search_re: str = _search_dict["format"]
+        _suffix: str = f"__{suffix.lower()}" if suffix else ""
+        _search_re: str = search["format"]
         for _fmt in re.findall(r"(%[-+!*]?\w)", _search_re):
             try:
                 _fmt_replace: str = caller(mapping[_fmt][key])
-                if index > 1 and (
-                    _sr := re.search(
-                        r"\(\?P<(?P<alias_name>\w+)>", _fmt_replace
+                if suffix or (index > 1):
+                    _sr = re.search(
+                        r"\(\?P<(?P<alias_name>\w+)>",
+                        _fmt_replace,
                     )
-                ):
-                    _sr_re: str = _sr.groupdict()["alias_name"]
+                    _sr_re: str = _sr.group("alias_name")
+                    _sr_idx: str = f"__{str(index - 1)}" if index > 1 else ""
                     _fmt_replace = re.sub(
                         rf"\(\?P<{_sr_re}>",
-                        rf"(?P<{_sr_re}_{str(index - 1)}>",
+                        rf"(?P<{_sr_re}{_sr_idx}{_suffix}>",
                         _fmt_replace,
                     )
                 _search_re = _search_re.replace(_fmt, _fmt_replace)
             except KeyError as err:
                 raise FormatterArgumentError(
                     "format",
-                    f'string formatter of {_search_dict["name"]!r} does not '
+                    f"string formatter of {search['name']!r} does not "
                     f"support for key {str(err)} in configuration",
                 ) from err
         return _search_re

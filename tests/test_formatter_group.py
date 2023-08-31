@@ -37,6 +37,12 @@ class FormatterGroupTestCase(unittest.TestCase):
                 },
             }
         )
+        self.gp3 = fmt.FormatterGroup(
+            {
+                "name": {"fmt": fmt.Naming, "value": "foo bar"},
+                "role": {"fmt": fmt.Naming, "value": "data engineer"},
+            }
+        )
         self.gp_default = fmt.FormatterGroup(
             {
                 "version": {"fmt": fmt.Version},
@@ -82,8 +88,31 @@ class FormatterGroupTestCase(unittest.TestCase):
                 "version": fmt.Version.parse("v1.2.3", "v%m.%n.%c"),
             },
             self.gp2.parser(
-                "20220101_1_2_3",
-                fmt="{datetime:%Y%m%d}_{version}",
+                "20220101_1_2_3_00",
+                fmt="{datetime:%Y%m%d}_{version}_{datetime:%H}",
+                _max=True,
+            ),
+        )
+        self.assertEqual(
+            {
+                "name": fmt.Naming.parse("foo bar", "%n"),
+                "role": fmt.Naming.parse("data engineer", "%n"),
+            },
+            self.gp3.parser(
+                "foo_bar data_engineer",
+                fmt="{name:%s} {role:%s}",
+                _max=True,
+            ),
+        )
+        # FIXME: parser foo_bar_data to `name` and engineer to `role`
+        self.assertEqual(
+            {
+                "name": fmt.Naming.parse("foo bar", "%n"),
+                "role": fmt.Naming.parse("data engineer", "%n"),
+            },
+            self.gp3.parser(
+                "foo_bar_data_engineer",
+                fmt="{name:%s}_{role:%s}",
                 _max=True,
             ),
         )
@@ -133,13 +162,12 @@ class FormatterGroupTestCase(unittest.TestCase):
             )
         self.assertTrue(
             (
-                "with 'format', 'data_engineer_in_20220101_de' "
-                "does not match with the format: '^(?P<name>"
-                "(?P<strings_snake>[a-z0-9]+(?:_[a-z0-9]+)*))_in_"
-                "(?P<datetime>(?P<year>\\d{4})"
-                "(?P<month_pad>01|02|03|04|05|06|07|08|09|10|11|12)"
-                "(?P<day_pad>[0-3][0-9]))_"
-                "(?P<name__1>(?P<shorts_1>[a-z0-9]+))_extension$'"
+                r"with 'format', 'data_engineer_in_20220101_de' does not match "
+                r"with the format: '^(?P<name>(?P<strings_snake__name>[a-z0-9]+"
+                r"(?:_[a-z0-9]+)*))_in_(?P<datetime>(?P<year__datetime>\d{4})"
+                r"(?P<month_pad__datetime>01|02|03|04|05|06|07|08|09|10|11|12)"
+                r"(?P<day_pad__datetime>[0-3][0-9]))_"
+                r"(?P<name__1>(?P<shorts__1__name>[a-z0-9]+))_extension$'"
             )
             in str(context.exception)
         )
