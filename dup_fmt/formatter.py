@@ -2375,7 +2375,6 @@ class FormatterGroup:
         _fmt_filled, _fmt_getter = self.__gen_full_regex(fmt=fmt)
 
         # Parse regular expression to input value
-        print("Before raise error:", rf"^{_fmt_filled}$")
         if not (_search := re.search(rf"^{_fmt_filled}$", value)):
             raise FormatterArgumentError(
                 "format",
@@ -2384,9 +2383,6 @@ class FormatterGroup:
             )
 
         _searches: Dict[str, str] = _search.groupdict()
-        print("Group Dict:", _searches)
-        print("Format Getter:", _fmt_getter)
-        print("-----------")
         _fmt_outer: Dict[str, str] = {}
         for name in _searches.copy():
             if name in _fmt_getter:
@@ -2411,10 +2407,6 @@ class FormatterGroup:
         """
         _get_format: Dict[str, Dict[str, str]] = {}
         for fmt_name, fmt_mapping in self.groups.items():
-            print(
-                "Regex Search",
-                rf"(?P<name>{{{fmt_name}:?(?P<format>[^{{}}]+)?}})",
-            )
             for _index, _search in enumerate(
                 re.finditer(
                     rf"(?P<name>{{{fmt_name}:?(?P<format>[^{{}}]+)?}})",
@@ -2439,7 +2431,6 @@ class FormatterGroup:
                         **{"format": _search_fmt},
                     }
 
-                print("GroupDict:", _search_dict)
                 _search_fmt_re: str = self.__gen_sub_fmtter(
                     search=_search_dict,
                     mapping=fmt_mapping,

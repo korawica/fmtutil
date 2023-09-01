@@ -8,6 +8,14 @@ from .__about__ import (
     __version__,
     __version_tuple__,
 )
+from .exceptions import (
+    FormatterArgumentError,
+    FormatterError,
+    FormatterKeyError,
+    FormatterNotFoundError,
+    FormatterTypeError,
+    FormatterValueError,
+)
 from .formatter import (
     FORMATTERS,
     FORMATTERS_ADJUST,
@@ -46,6 +54,12 @@ __all__ = (
     "Serial",
     "Version",
     "make_order_fmt",
+    "FormatterArgumentError",
+    "FormatterError",
+    "FormatterKeyError",
+    "FormatterNotFoundError",
+    "FormatterTypeError",
+    "FormatterValueError",
     "__version__",
     "__version_tuple__",
 )

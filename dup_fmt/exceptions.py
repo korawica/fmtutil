@@ -21,7 +21,7 @@ class FormatterError(BaseError):
     """Core Base Error object"""
 
 
-class FormatterNotFound(FormatterError):
+class FormatterNotFoundError(FormatterError):
     """Error raise for a method not found the config file or data."""
 
 
