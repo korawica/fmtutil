@@ -39,11 +39,22 @@ class ConstantTestCase(unittest.TestCase):
                 }
             )
         )
+        self.const04: fmt.ConstantType = fmt.Constant(
+            fmt.Serial.parse("199", "%n")
+        )
         self.ct = self.const.parse("normal_life", "%n_life")
         self.ct02 = self.const02.parse("gzip_life", "%g_life")
         self.ct03 = self.const03.parse("data engineer", "%n")
+        self.ct04 = self.const04.parse("199", "%n")
 
     def test_const_regex(self):
+        self.assertDictEqual(
+            {
+                "%n": "(?P<november>normal)",
+                "%s": "(?P<sierra>special)",
+            },
+            self.const.regex(),
+        )
         self.assertDictEqual(
             {
                 "%n": "(?P<november>data engineer)",
@@ -72,10 +83,11 @@ class ConstantTestCase(unittest.TestCase):
         )
         self.assertDictEqual(
             {
-                "%n": "(?P<november>normal)",
-                "%s": "(?P<sierra>special)",
+                "%n": "(?P<november>199)",
+                "%p": "(?P<papa>199)",
+                "%b": "(?P<bravo>11000111)",
             },
-            self.const.regex(),
+            self.const04.regex(),
         )
 
     def test_const_parser(self):

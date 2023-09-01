@@ -79,6 +79,12 @@ class NamingTestCase(unittest.TestCase):
         # Test `cls.value` property
         self.assertEqual("data engineer", self.nm.value)
 
+    def test_naming_parser(self):
+        self.assertEqual(
+            "data engineer",
+            fmt.Naming.parse("dataEngineer%|data engineer", "%c%\\|%n").string,
+        )
+
     def test_naming_format(self):
         self.assertEqual("data_engineer", self.nm.format("%s"))
         self.assertEqual("DATA-ENGINEER", self.nm.format("%K"))

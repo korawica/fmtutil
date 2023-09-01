@@ -292,7 +292,6 @@ class Formatter(MetaFormatter):
             raise NotImplementedError("This class does not set default format")
 
         _fmt = cls.__parse(_fmt)
-
         if _search := re.search(rf"^{_fmt}$", value):
             return cls(_search.groupdict())
 
@@ -1702,7 +1701,11 @@ class Naming(Formatter):
         """Return a string value with camel case with lower case first
         letter.
         """
-        return snake_case[0].lower() + Naming.pascal_case(snake_case)[1:]
+        return (
+            (snake_case[0].lower() + Naming.pascal_case(snake_case)[1:])
+            if snake_case
+            else ""
+        )
 
     @staticmethod
     def __join_with(
