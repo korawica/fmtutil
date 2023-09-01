@@ -44,6 +44,7 @@ from .objects import relativeserial
 from .utils import (
     caller,
     concat,
+    convert_fmt_str,
     itself,
 )
 
@@ -329,6 +330,11 @@ class Formatter(MetaFormatter):
 
         :rtype: Dict[str, str]
         :return: a mapping of format, and it's regular expression string
+            like:
+                {
+                    "%n": "(?P<normal>...)",
+                    ...
+                }
         """
         results: Dict[str, str] = {}
         pre_results: Dict[str, str] = {}
@@ -354,6 +360,21 @@ class Formatter(MetaFormatter):
                     cr = cr.replace(rf, results[rf])
             results[f] = cr.replace("[ESCAPE]", "%%")
         return results
+
+    def values(self) -> Dict[str, str]:
+        """Return mapping of formats and formatter values of `cls.formatter`
+
+        :rtype: Dict[str, str]
+        :return: a mapping of formats and formatter values like:
+                {
+                    "%n": "normal-value",
+                    ...
+                }
+        """
+        return {
+            f: caller(props["value"])
+            for f, props in self.formatter(self.value).items()
+        }
 
     def format(self, fmt: str) -> str:
         """Return string value that was filled by the input format pattern
@@ -1713,21 +1734,7 @@ class __BaseConstant(Formatter):
 
     base_formatter: Optional[ReturnFormattersType] = None
 
-    __slots__ = (
-        "_ct_string",
-        "_ct_constant",
-    )
-
-    @property
-    def priorities(
-        self,
-    ) -> ReturnPrioritiesType:
-        return {
-            "constant": {
-                "value": lambda x: x,
-                "level": 1,
-            },
-        }
+    __slots__ = ("_ct_constant",)
 
     def __init__(
         self,
@@ -1746,7 +1753,24 @@ class __BaseConstant(Formatter):
 
     @property
     def string(self) -> str:
-        return str(self.base_formatter)
+        return str(
+            "|".join(
+                [
+                    getter
+                    for v in self.__slots__
+                    if (getter := getattr(self, v)) and v != "_ct_constant"
+                ]
+            )
+        )
+
+    @property
+    def priorities(
+        self,
+    ) -> ReturnPrioritiesType:
+        """"""
+        raise NotImplementedError(
+            "Please implement priorities property for this sub-formatter class"
+        )
 
     @classmethod
     def formatter(  # type: ignore[override]
@@ -1756,15 +1780,37 @@ class __BaseConstant(Formatter):
         return cls.base_formatter
 
 
-def create_const(formatter: Dict[str, str]) -> ConstantType:
+def create_const(formatter: Union[Dict[str, str], Formatter]) -> ConstantType:
+    if isinstance(formatter, Formatter):
+        formatter = formatter.values()
+
     class CustomConstant(__BaseConstant):
+        base_fmt: str = "".join(formatter.keys())
+
+        __slots__ = (
+            "_ct_constant",
+            *[f"_ct_{convert_fmt_str(fmt)}" for fmt in formatter],
+        )
+
         base_formatter = {
             fmt: {
-                "regex": f"(?P<constant>{formatter[fmt]})",
+                "regex": f"(?P<{convert_fmt_str(fmt)}>{formatter[fmt]})",
                 "value": formatter[fmt],
             }
             for fmt in formatter.copy()
         }
+
+        @property
+        def priorities(self) -> ReturnPrioritiesType:
+            return {
+                **{
+                    convert_fmt_str(fmt): {
+                        "value": lambda x: x,
+                        "level": 1,
+                    }
+                    for fmt in ["constant", *formatter]
+                },
+            }
 
     return CustomConstant
 
@@ -1812,7 +1858,6 @@ class ExpectRegexValue(TypedDict):
 def extract_regex_with_value(
     fmt: FormatterType,
     value: Optional[Any] = None,
-    called: bool = False,
 ) -> Dict[str, RegexValue]:
     """Return extract data from `cls.regex` method and `cls.formatter`
 
@@ -1820,8 +1865,6 @@ def extract_regex_with_value(
     :type fmt: FormatterType
     :param value:
     :type value: Optional[Any]
-    :param called: a called flag for extract value if it callable
-    :type called: bool(=False)
 
     :rtype: Dict[str, dict]
     :return: an extract data from `cls.regex` method and `cls.formatter`
@@ -1831,11 +1874,7 @@ def extract_regex_with_value(
     return {
         i: {
             "regex": regex[i],
-            "value": (
-                caller(formatter[i]["value"])
-                if called
-                else formatter[i]["value"]
-            ),
+            "value": caller(formatter[i]["value"]),
         }
         for i in formatter
     }
@@ -2230,13 +2269,26 @@ class FormatterGroup:
         :param _max: the max strategy for pick the maximum level from
             duplication formats in parser method.
         :type _max: bool(=False)
+
+        :rtype: Dict[str, Formatter]
         """
         # TODO: Change special character value in format string like: |,
         #  () before passing to parser method.
-        results, _ = self.__parser_all(value, fmt)
+        results, _ = self.__parser(value, fmt)
         if _max:
             return self.__parser_max(results=results)
+        return self.__parser_normal(results=results)
 
+    def __parser_normal(
+        self,
+        results: Dict[str, Dict[str, str]],
+    ) -> Dict[str, Formatter]:
+        """Parser with the normal strategy that combine all string value and
+        format value together before parsing.
+
+        :param results: result mapping of name and a pair of format values
+        :type results: Dict[str, Dict[str, str]]
+        """
         rs: Dict[str, Dict[str, str]] = {}
         for result in results:
             if (k := result.split("__", maxsplit=1)[0]) in rs:
@@ -2247,10 +2299,11 @@ class FormatterGroup:
         return {k: self.formatters[k].fmt.parse(**v) for k, v in rs.items()}
 
     def __parser_max(
-        self, results: Dict[str, Dict[str, str]]
+        self,
+        results: Dict[str, Dict[str, str]],
     ) -> Dict[str, Formatter]:
-        """Parser with the max strategy that combine all string value and
-        format value together before parsing.
+        """Parser with the max strategy that pick the maximum level from
+        duplication formats in parser method.
 
         :param results: result mapping of name and a pair of format values
         :type results: Dict[str, Dict[str, str]]
@@ -2280,7 +2333,7 @@ class FormatterGroup:
             ):
                 fmt = fmt.replace(
                     f'{{{fmt_name}:{_search.groupdict()["format"]}}}',
-                    self.__loop_sub_fmt(
+                    self.__gen_sub_fmtter(
                         search=_search.groupdict(),
                         mapping=fmt_mapping,
                         key="value",
@@ -2296,7 +2349,7 @@ class FormatterGroup:
                 )
         return fmt
 
-    def __parser_all(
+    def __parser(
         self,
         value: str,
         fmt: str,
@@ -2319,7 +2372,7 @@ class FormatterGroup:
             }
 
         """
-        _fmt_filled, _fmt_getter = self.__stage_parser(fmt=fmt)
+        _fmt_filled, _fmt_getter = self.__gen_full_regex(fmt=fmt)
 
         # Parse regular expression to input value
         print("Before raise error:", rf"^{_fmt_filled}$")
@@ -2343,7 +2396,10 @@ class FormatterGroup:
 
         return _fmt_getter, _fmt_outer
 
-    def __stage_parser(self, fmt: str) -> Tuple[str, Dict[str, Dict[str, str]]]:
+    def __gen_full_regex(
+        self,
+        fmt: str,
+    ) -> Tuple[str, Dict[str, Dict[str, str]]]:
         """Return the both of filled and getter format from the stage format
         value.
 
@@ -2384,7 +2440,7 @@ class FormatterGroup:
                     }
 
                 print("GroupDict:", _search_dict)
-                _search_fmt_re: str = self.__loop_sub_fmt(
+                _search_fmt_re: str = self.__gen_sub_fmtter(
                     search=_search_dict,
                     mapping=fmt_mapping,
                     key="regex",
@@ -2394,9 +2450,7 @@ class FormatterGroup:
 
                 # Replace old format value with new mapping formatter
                 # value.
-                _fmt_name_index: str = (
-                    f"{fmt_name}{self.__generate_index(_index)}"
-                )
+                _fmt_name_index: str = f"{fmt_name}{self.__gen_index(_index)}"
                 fmt = fmt.replace(
                     f"{{{fmt_name}{_search_fmt_old}}}",
                     f"(?P<{_fmt_name_index}>{_search_fmt_re})",
@@ -2408,7 +2462,7 @@ class FormatterGroup:
         return fmt, _get_format
 
     @staticmethod
-    def __generate_index(index: int) -> str:
+    def __gen_index(index: int) -> str:
         """Return generated suffix string for duplication values.
 
         :param index: an index value.
@@ -2421,7 +2475,7 @@ class FormatterGroup:
         return f"__{str(index - 1)}" if index > 1 else ""
 
     @staticmethod
-    def __loop_sub_fmt(
+    def __gen_sub_fmtter(
         search: Dict[str, str],
         mapping: Dict[str, RegexValue],
         key: Literal["regex", "value"],

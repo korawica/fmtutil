@@ -100,6 +100,15 @@ class DatetimeTestCase(unittest.TestCase):
             fmt.Datetime.parse("2021-01-01 20210101", "%Y-%m-%d %Y%m%d"),
             fmt.Datetime.parse("2021-01-01", "%Y-%m-%d"),
         )
+        with self.assertRaises(fmt.FormatterValueError) as context:
+            fmt.Datetime.parse("2021-01-01 20220101", "%Y-%m-%d %Y%m%d")
+        self.assertTrue(
+            (
+                "Parsing with some duplicate format name that have value "
+                "do not all equal."
+            )
+            in str(context.exception)
+        )
 
     def test_datetime_format(self):
         self.assertEqual("22", self.dt.format("%-y"))

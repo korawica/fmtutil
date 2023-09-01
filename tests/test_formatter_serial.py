@@ -40,7 +40,8 @@ class SerialTestCase(unittest.TestCase):
                 "%p": {"regex": "(?P<number_pad>[0-9]{3})", "value": "512"},
             },
             fmt.extract_regex_with_value(
-                fmt=fmt.Serial, value=512, called=True
+                fmt=fmt.Serial,
+                value=512,
             ),
         )
 

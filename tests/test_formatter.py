@@ -208,13 +208,13 @@ class FormatterTestCase(unittest.TestCase):
 
 class TypeConstructFormatterTestCase(unittest.TestCase):
     def setUp(self) -> None:
-        def value(self) -> int:  # no cov
-            return int(self.string)
+        def value(_s) -> int:  # no cov
+            return int(_s.string)
 
-        def string(self) -> str:  # no cov
-            return self._st_bit
+        def string(_s) -> str:  # no cov
+            return _s._st_bit
 
-        def priorities(self):  # no cov
+        def priorities(_s):  # no cov
             return {
                 "bit": {
                     "value": lambda x: str(x),
@@ -224,12 +224,12 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
                     "value": lambda x: str(int(x.replace("B", "")) * 8),
                     "level": 1,
                 },
-                "bit_default": {"value": self.default("0")},
-                "byte_default": {"value": self.default("0")},
+                "bit_default": {"value": _s.default("0")},
+                "byte_default": {"value": _s.default("0")},
             }
 
-        def formatter(value):  # no cov
-            size: int = value or 0
+        def formatter(v):  # no cov
+            size: int = v or 0
             return {
                 "%b": {
                     "value": lambda: str(size),
@@ -241,7 +241,7 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
                 },
             }
 
-        TypeConstructFormatter = type(  # no cov
+        type_construct_fmtter = type(  # no cov
             "TypeConstructFormatter",
             (fmt.Formatter,),
             {
@@ -258,7 +258,7 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
                 "formatter": staticmethod(formatter),
             },
         )
-        self.construct_with_type_cls = TypeConstructFormatter
+        self.construct_with_type_cls = type_construct_fmtter
 
         class TypeConstructFormatterMeta(fmt.Formatter, ABC):  # no cov
             __slots__ = (
@@ -269,7 +269,7 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
             base_fmt = "%b"
             base_attr_prefix = "st"
 
-        TypeConstructFormatter2 = type(  # no cov
+        type_construct_fmtter2 = type(  # no cov
             "TypeConstructFormatter2",
             (TypeConstructFormatterMeta,),
             {
@@ -280,7 +280,7 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
             },
         )
 
-        self.construct_with_type_cls2 = TypeConstructFormatter2
+        self.construct_with_type_cls2 = type_construct_fmtter2
 
     def test_type_formatter_init(self):
         self.assertEqual(

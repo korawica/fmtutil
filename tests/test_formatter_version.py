@@ -119,7 +119,8 @@ class VersionTestCase(unittest.TestCase):
                 },
             },
             fmt.extract_regex_with_value(
-                fmt=fmt.Version, value=Version(version="0.5.6"), called=True
+                fmt=fmt.Version,
+                value=Version(version="0.5.6"),
             ),
         )
 
