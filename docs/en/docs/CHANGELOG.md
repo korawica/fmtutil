@@ -2,6 +2,16 @@
 
 ## Latest Changes
 
+## 0.0.5.post1
+
+### Features
+
+- :dart: feat: create_const function can receive Formatter instance. (_2023-09-01_)
+
+### Fix Bugs
+
+- :gear: fixed: fix parser method of formatter object that riase if duplicate format str. (_2023-09-01_)
+
 ## 0.0.5.post0
 
 ### Code Changes
