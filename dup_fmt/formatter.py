@@ -447,8 +447,12 @@ class Formatter(MetaFormatter):
                 setattr(
                     self,
                     f"_{self.base_attr_prefix}_{attr}",
-                    (props.value() if callable(props.value) else props.value),
-                )  # type: ignore[call-arg]
+                    (
+                        props.value()  # type: ignore[call-arg]
+                        if callable(props.value)
+                        else props.value
+                    ),
+                )
 
                 # Update level by default it will update at first level
                 _level.update(props.level)
@@ -529,17 +533,17 @@ class Formatter(MetaFormatter):
         """Return true if the value attribute from parser of string and
         fmt is valid with self.value.
         """
-        return self.value.__eq__(
+        return self.value.__eq__(  # type: ignore[no-any-return]
             self.__class__.parse(string, fmt).value,
-        )  # type: ignore[no-any-return]
+        )
 
     @property
     def level(self) -> SlotLevel:
         """Return the slot level object of any subclass."""
-        return getattr(
+        return getattr(  # type: ignore[no-any-return]
             self,
             f"_{self.base_attr_prefix}_level",
-        )  # type: ignore[no-any-return]
+        )
 
     @property
     def __priorities(self) -> Dict[str, PriorityData]:
@@ -549,7 +553,7 @@ class Formatter(MetaFormatter):
         return {k: PriorityData(**v) for k, v in self.priorities.items()}
 
     @staticmethod
-    def __validate_format(formats: Dict[str, Any]):
+    def __validate_format(formats: Dict[str, Any]) -> None:
         """Raise error if any duplication format name do not all equal."""
         for fmt in filter(lambda x: "__" in x, formats):
             if formats[fmt.split("__")[0]] != formats[fmt]:
@@ -1148,7 +1152,7 @@ class Datetime(Formatter):
     @staticmethod
     def remove_pad_dt(_dt: datetime, fmt: str) -> str:
         """Return padded datetime string that was formatted"""
-        return remove_pad(_dt.strftime(fmt))
+        return str(remove_pad(_dt.strftime(fmt)))
 
 
 class Version(Formatter):
@@ -1789,30 +1793,34 @@ def create_const(
     fmt: Optional[FormatterType] = None,
     value: Optional[Any] = None,
 ) -> ConstantType:
-    if formatter and isinstance(formatter, Formatter):
-        formatter = formatter.values()
-    elif not formatter:
+    _fmt: Dict[str, str]
+    if formatter:
+        if isinstance(formatter, Formatter):
+            _fmt = formatter.values()
+        else:
+            _fmt = formatter
+    else:
         if fmt and value:
-            formatter = fmt().values(value=value)
+            _fmt = fmt().values(value=value)
         else:
             raise FormatterValueError(
                 "The Constant want formatter nor fmt and value arguments"
             )
 
     class CustomConstant(__BaseConstant):
-        base_fmt: str = "".join(formatter.keys())
+        base_fmt: str = "".join(_fmt.keys())
 
         __slots__ = (
             "_ct_constant",
-            *[f"_ct_{convert_fmt_str(fmt)}" for fmt in formatter],
+            *[f"_ct_{convert_fmt_str(fmt)}" for fmt in _fmt],
         )
 
         base_formatter = {
             fmt: {
-                "regex": f"(?P<{convert_fmt_str(fmt)}>{formatter[fmt]})",
-                "value": formatter[fmt],
+                "regex": f"(?P<{convert_fmt_str(fmt)}>{_fmt[fmt]})",
+                "value": _fmt[fmt],
             }
-            for fmt in formatter.copy()
+            for fmt in _fmt.copy()
         }
 
         @property
@@ -1823,7 +1831,7 @@ def create_const(
                         "value": lambda x: x,
                         "level": 1,
                     }
-                    for fmt in ["constant", *formatter]
+                    for fmt in ["constant", *_fmt]
                 },
             }
 
@@ -1964,10 +1972,10 @@ def adjust_serial(
 
 
 # TODO: implement adjust version logic when create relativeversion
-def adjust_version(
+def adjust_version(  # type: ignore
     self: OrderFormatter,
     metrics: Optional[Dict[str, int]] = None,
-):  # type: ignore  # no cov
+):  # no cov
     _metrics: Dict[str, int] = metrics or {}
     if "version" not in self.data:
         raise FormatterArgumentError(
@@ -1986,10 +1994,10 @@ def adjust_version(
     return self
 
 
-def adjust_name(
+def adjust_name(  # type: ignore
     self: OrderFormatter,
     metrics: Optional[Dict[str, str]] = None,
-):  # type: ignore  # no cov
+):  # no cov
     _metrics: Dict[str, str] = metrics or {}
     if "name" not in self.data:
         raise FormatterArgumentError(
@@ -1998,7 +2006,7 @@ def adjust_name(
         )
     _replace: List[Formatter] = [
         self.FMTS["name"].parse(
-            **{
+            **{  # type: ignore
                 "value": metrics,
                 "fmt": "",
             }
@@ -2535,7 +2543,7 @@ class FormatterGroup:
         return _search_re
 
 
-class Formatters:  # type: ignore  # no cov
+class Formatters:  # no cov
     ...
 
 

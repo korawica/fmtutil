@@ -114,6 +114,7 @@ pretty = true
 strict = true
 warn_unreachable = true
 
+
 [tool.black]
 line-length = 80
 target-version = ['py38']
