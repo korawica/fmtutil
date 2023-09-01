@@ -360,7 +360,7 @@ class Formatter(MetaFormatter):
             results[f] = cr.replace("[ESCAPE]", "%%")
         return results
 
-    def values(self) -> Dict[str, str]:
+    def values(self, value: Optional[Any] = None) -> Dict[str, str]:
         """Return mapping of formats and formatter values of `cls.formatter`
 
         :rtype: Dict[str, str]
@@ -372,7 +372,7 @@ class Formatter(MetaFormatter):
         """
         return {
             f: caller(props["value"])
-            for f, props in self.formatter(self.value).items()
+            for f, props in self.formatter(value or self.value).items()
         }
 
     def format(self, fmt: str) -> str:
@@ -1783,9 +1783,21 @@ class __BaseConstant(Formatter):
         return cls.base_formatter
 
 
-def create_const(formatter: Union[Dict[str, str], Formatter]) -> ConstantType:
-    if isinstance(formatter, Formatter):
+def create_const(
+    formatter: Optional[Union[Dict[str, str], Formatter]] = None,
+    *,
+    fmt: Optional[FormatterType] = None,
+    value: Optional[Any] = None,
+) -> ConstantType:
+    if formatter and isinstance(formatter, Formatter):
         formatter = formatter.values()
+    elif not formatter:
+        if fmt and value:
+            formatter = fmt().values(value=value)
+        else:
+            raise FormatterValueError(
+                "The Constant want formatter nor fmt and value arguments"
+            )
 
     class CustomConstant(__BaseConstant):
         base_fmt: str = "".join(formatter.keys())
