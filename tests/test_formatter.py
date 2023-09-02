@@ -164,7 +164,8 @@ class FormatterTestCase(unittest.TestCase):
         with self.assertRaises(NotImplementedError) as context:
             fmt.Formatter.parse("dummy")
         self.assertTrue(
-            "This class does not set default format" in str(context.exception)
+            "This Formatter class does not set default format string value."
+            in str(context.exception)
         )
 
     def test_base_formatter_parse_with_fmt(self):

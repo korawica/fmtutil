@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import re
 from abc import ABCMeta, abstractmethod
+from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from functools import lru_cache, partial, total_ordering
@@ -202,7 +203,13 @@ class PriorityData:
 
 
 class MetaFormatter(metaclass=ABCMeta):
-    """Metaclass Formatter object"""
+    """Metaclass Formatter object that implement `__slots__` attribute for any
+    instance classes.
+
+    .. meta-class attributes::
+
+        - __slots__: Tuple[str, ...]
+    """
 
     __slots__: Tuple[str, ...] = ()
 
@@ -214,7 +221,7 @@ class Formatter(MetaFormatter):
     properties and method for subclass that should implement or enhance such
     as `the cls.formatter()` method or the `cls.priorities` property.
 
-    :param formats: A mapping value of attributes
+    :param formats: A mapping value of priority attribute data.
     :type formats: Optional[dict](=None)
 
     .. class attributes::
@@ -258,7 +265,7 @@ class Formatter(MetaFormatter):
     base_level: int = 1
 
     class Config:
-        """Base Configuration"""
+        """Base Configuration for any subclass of formatter"""
 
         base_config_value: Optional[Any] = None
 
@@ -268,8 +275,9 @@ class Formatter(MetaFormatter):
         value: str,
         fmt: Optional[str] = None,
     ) -> Formatter:
-        """Parse string value with its format to subclass of base formatter
-        object. This method generates the standard value for itself data.
+        """Parse string value with its format to subclass of formatter object.
+        This method generates the value for itself data that can be formatted
+        to another format string values.
 
         :param value: a string value that match with fmt.
         :type value: str
@@ -289,9 +297,12 @@ class Formatter(MetaFormatter):
         _fmt: Union[str, NotImplementedError] = fmt or cls.base_fmt
 
         if not _fmt or isinstance(_fmt, NotImplementedError):
-            raise NotImplementedError("This class does not set default format")
+            raise NotImplementedError(
+                "This Formatter class does not set default format string "
+                "value."
+            )
 
-        _fmt = cls.__parse(_fmt)
+        _fmt = cls.__parse_format(_fmt)
         if _search := re.search(rf"^{_fmt}$", value):
             return cls(_search.groupdict())
 
@@ -300,25 +311,29 @@ class Formatter(MetaFormatter):
         )
 
     @classmethod
-    def __parse(cls, fmt: str) -> str:
-        _cache: Dict[str, int] = {}
-        for fmt_search in re.findall(r"(%[-+!*]?\w)", fmt):
-            regex: str = cls.regex()[fmt_search]
-            if fmt_search in _cache:
-                _rgn = re.search(
-                    r"\(\?P<(?P<alias_name>\w+)>",
-                    regex,
-                )
-                _sr_re: str = _rgn.group("alias_name")
+    def __parse_format(cls, fmt: str) -> str:
+        """Parse format string value to regular expression value that able to
+        search with any input value.
+
+        :param fmt: a format string value pass from input argument.
+        :type fmt: str
+        """
+        _cache: Dict[str, int] = defaultdict(lambda: 0)
+        for fmt_match in re.finditer(r"(%[-+!*]?[A-Za-z])", fmt):
+            fmt_str: str = fmt_match.group()
+            regex: str = cls.regex()[fmt_str]
+            if _alias_match := re.search(
+                r"^\(\?P<(?P<alias_name>\w+)>(?P<fmt_regex>.+)?\)$",
+                regex,
+            ):
+                _sr_re: str = _alias_match.group("alias_name")
                 regex = re.sub(
                     rf"\(\?P<{_sr_re}>",
-                    rf"(?P<{_sr_re}__{_cache[fmt_search]}>",
+                    f"(?P<{_sr_re}__{_cache[fmt_str]}>",
                     regex,
                 )
-                _cache[fmt_search] += 1
-            else:
-                _cache[fmt_search] = 1
-            fmt = fmt.replace(fmt_search, regex, 1)
+            _cache[fmt_str] += 1
+            fmt = fmt.replace(fmt_str, regex, 1)
         return fmt
 
     @classmethod
@@ -388,20 +403,16 @@ class Formatter(MetaFormatter):
         :rtype: str
         :return: a formatted string value
         """
-        _formatter: ReturnFormattersType = self.formatter(self.value)
+        _fmts: ReturnFormattersType = self.formatter(self.value)
         fmt = fmt.replace("%%", "[ESCAPE]")
-        for _sup_fmt in set(re.findall(r"(%[-+!*]?\w)", fmt)):
+        for _fmt_match in re.finditer(r"(%[-+!*]?[A-Za-z])", fmt):
+            _fmt_str: str = _fmt_match.group()
             try:
-                _value: Union[FormatterCallable, str] = _formatter[_sup_fmt][
-                    "value"
-                ]
-                fmt = fmt.replace(
-                    _sup_fmt,
-                    (_value() if callable(_value) else _value),
-                )
+                _value: Union[FormatterCallable, str] = _fmts[_fmt_str]["value"]
+                fmt = fmt.replace(_fmt_str, caller(_value))
             except KeyError as err:
                 raise FormatterKeyError(
-                    f"the format: {_sup_fmt!r} does not support for "
+                    f"the format: {_fmt_str!r} does not support for "
                     f"{self.__class__.__name__!r}"
                 ) from err
         return fmt.replace("[ESCAPE]", "%")
@@ -416,8 +427,7 @@ class Formatter(MetaFormatter):
 
             The setter of attribute does not do anything to __slot__ variable.
         """
-        _formats: Dict[str, Any] = formats or {}
-        self.__validate_format(_formats)
+        _formats: Dict[str, Any] = self.__validate_format(formats or {})
 
         # Set level of SlotLevel object that set from `base_level` and pass this
         # value to _level variable for update process in priorities loop.
@@ -525,16 +535,15 @@ class Formatter(MetaFormatter):
         """Validate method that will run after setup all attributes"""
         return True
 
-    def valid(
-        self,
-        string: str,
-        fmt: str,
-    ) -> bool:
+    def valid(self, value: str, fmt: str) -> bool:
         """Return true if the value attribute from parser of string and
         fmt is valid with self.value.
+
+        :param value:
+        :param fmt:
         """
         return self.value.__eq__(  # type: ignore[no-any-return]
-            self.__class__.parse(string, fmt).value,
+            self.__class__.parse(value, fmt).value,
         )
 
     @property
@@ -553,21 +562,27 @@ class Formatter(MetaFormatter):
         return {k: PriorityData(**v) for k, v in self.priorities.items()}
 
     @staticmethod
-    def __validate_format(formats: Dict[str, Any]) -> None:
+    def __validate_format(formats: Dict[str, Any]) -> Dict[str, Any]:
         """Raise error if any duplication format name do not all equal."""
-        for fmt in filter(lambda x: "__" in x, formats):
-            if formats[fmt.split("__")[0]] != formats[fmt]:
+        results: Dict[str, Any] = {}
+        for fmt in formats:
+            _fmt: str = fmt.split("__", maxsplit=1)[0]
+            if _fmt not in results:
+                results[_fmt] = formats[fmt]
+                continue
+            if results[_fmt] != formats[fmt]:
                 raise FormatterValueError(
-                    "Parsing with some duplicate format name that have value "
-                    "do not all equal."
+                    "Parsing with some duplicate format name that have "
+                    "value do not all equal."
                 )
+        return results
 
     @property
     @abstractmethod
     def priorities(
         self,
     ) -> ReturnPrioritiesType:
-        """"""
+        """Return priorities"""
         raise NotImplementedError(
             "Please implement priorities property for this sub-formatter class"
         )
@@ -577,7 +592,7 @@ class Formatter(MetaFormatter):
     def formatter(
         value: Optional[Any] = None,
     ) -> ReturnFormattersType:
-        """"""
+        """Return formatter"""
         raise NotImplementedError(
             "Please implement formatter static method for this "
             "sub-formatter class"
@@ -2522,17 +2537,19 @@ class FormatterGroup:
             try:
                 _fmt_replace: str = caller(mapping[_fmt][key])
                 if suffix or (index > 1):
-                    _sr = re.search(
+                    if _sr := re.search(
                         r"\(\?P<(?P<alias_name>\w+)>",
                         _fmt_replace,
-                    )
-                    _sr_re: str = _sr.group("alias_name")
-                    _sr_idx: str = f"__{str(index - 1)}" if index > 1 else ""
-                    _fmt_replace = re.sub(
-                        rf"\(\?P<{_sr_re}>",
-                        rf"(?P<{_sr_re}{_sr_idx}{_suffix}>",
-                        _fmt_replace,
-                    )
+                    ):
+                        _sr_re: str = _sr.group("alias_name")
+                        _sr_idx: str = (
+                            f"__{str(index - 1)}" if index > 1 else ""
+                        )
+                        _fmt_replace = re.sub(
+                            rf"\(\?P<{_sr_re}>",
+                            rf"(?P<{_sr_re}{_sr_idx}{_suffix}>",
+                            _fmt_replace,
+                        )
                 _search_re = _search_re.replace(_fmt, _fmt_replace)
             except KeyError as err:
                 raise FormatterArgumentError(
