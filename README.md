@@ -20,7 +20,7 @@
 - [Custom Formatter Object](#custom-formatter-object)
 
 This **Formatter** package was created for `parse` and `format` any string values
-that able to design format pattern with regular expression. This package be the
+that match format pattern with Python regular expression. This package be the
 co-pylot project for stating to my **Python Software Developer** role.
 
 **Install from PyPI**:
@@ -29,22 +29,24 @@ co-pylot project for stating to my **Python Software Developer** role.
 pip install dup-fmt
 ```
 
-:dart: First objective of this project is include necessary formatter objects for data
-components of the framework engine package. We can use `parse` any filename on source
-server machine and ingest the right filename to target landing zone.
+:dart: First objective of this project is include necessary formatter objects for
+any data components package which mean we can `parse` any complicate names on
+data source and ingest the right names to in-house or data target.
 
-For example, we want to get filename with the format like, `filename_20220101.csv`, on
-the file system storage, and we want to incremental ingest the latest file with date **2022-03-25**
-date. So we will implement `Datetime` object and parse that filename to it,
+For example, we want to get filename with the format like, `filename_20220101.csv`,
+on the file system storage, and we want to incremental ingest the latest file with
+date **2022-03-25** date. So we will implement `Datetime` object and parse
+that filename to it,
 
 ```python
 Datetime.parse('filename_20220101.csv', 'filename_%Y%m%d.csv').value == datetime.today()
 ```
 
-The above example is :yawning_face: **NOT SURPRISE!!!** for us because Python already provide build-in package
-`datetime` to parse by `.strptime` and format by `.strftime` with any string datetime value.
-This package will the special thing when we combine more than one formatter objects such as `Naming`,
-`Version`, or `Constant` together.
+The above example is :yawning_face: **NOT SURPRISE!!!** for us because Python
+already provide build-in package `datetime` to parse by `{dt}.strptime` and
+format by `{dt}.strftime` with any datetime string value. This package will the
+special thing when we group more than one formatter objects together as
+`Naming`, `Version`, and `Datetime`.
 
 **For complex filename format like**:
 
@@ -52,8 +54,9 @@ This package will the special thing when we combine more than one formatter obje
 {filename:%s}_{datetime:%Y_%m_%d}.{version:%m.%n.%c}.csv
 ```
 
-From above format filename, the `datetime` package does not enough for this scenario right?
-but you can handle by your hard-code object or create the better package than this project.
+From above filename format string, the `datetime` package does not enough for
+this scenario right? but you can handle by your hard-code object or create the
+better package than this project.
 
 > **Note**: \
 > Any formatter object was implemented the `self.valid` method for help us validate

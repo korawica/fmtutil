@@ -20,7 +20,7 @@ from typing import (
 )
 
 
-class VersionFormat:  # type: ignore  # no cov
+class VersionFormat:  # no cov
     """Version object that build from below packages:
     - packaging
     - semver
@@ -180,7 +180,7 @@ class relativeversion:  # no cov
             release = f"{release}.pre{self.pre}"
         if self.post:
             release = f"{release}.post{self.post}"
-        return hash(release)  # type: ignore
+        return hash(release)
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__}()>"
@@ -196,10 +196,10 @@ class relativeversion:  # no cov
             )
         return ...  # type: ignore
 
-    def __lt__(self, other: Any) -> bool:  # type: ignore
+    def __lt__(self, other: Any) -> bool:
         return ...  # type: ignore
 
-    def __le__(self, other: Any) -> bool:  # type: ignore
+    def __le__(self, other: Any) -> bool:
         return ...  # type: ignore
 
     def __neg__(self) -> relativeversion:
@@ -212,18 +212,12 @@ class relativeversion:  # no cov
             beta=(-self.beta if self.beta else None),
             pre=(-self.pre if self.pre else None),
             post=(-self.post if self.post else None),
-        )  # type: ignore
+        )
 
-    def __add__(
-        self,
-        other: Union[relativeversion],
-    ):  # type: ignore
+    def __add__(self, other: Union[relativeversion]):  # type: ignore
         return ...
 
-    def __sub__(
-        self,
-        other: Union[relativeversion],
-    ):  # type: ignore
+    def __sub__(self, other: Union[relativeversion]):  # type: ignore
         return ...
 
     def __radd__(self, other):  # type: ignore

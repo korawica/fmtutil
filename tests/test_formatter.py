@@ -8,7 +8,7 @@ Test the formatter object.
 """
 import unittest
 from abc import ABC
-from typing import Dict, Optional
+from typing import Any, Dict, Optional, Type
 
 import dup_fmt.formatter as fmt
 from dup_fmt.exceptions import FormatterValueError
@@ -164,7 +164,8 @@ class FormatterTestCase(unittest.TestCase):
         with self.assertRaises(NotImplementedError) as context:
             fmt.Formatter.parse("dummy")
         self.assertTrue(
-            "This class does not set default format" in str(context.exception)
+            "This Formatter class does not set default format string value."
+            in str(context.exception)
         )
 
     def test_base_formatter_parse_with_fmt(self):
@@ -214,21 +215,34 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
         def string(_s) -> str:  # no cov
             return _s._st_bit
 
+        def validate(_s) -> bool:
+            if (
+                _s._st_bit != 0
+                and _s._st_byte != 0
+                and _s._st_bit != _s._st_byte
+            ):
+                return False
+            if _s._st_bit == 0 and _s._st_byte != 0:
+                _s._st_bit = _s._st_byte
+            elif _s._st_bit != 0 and _s._st_byte == 0:
+                _s._st_byte = _s._st_bit
+            return True
+
         def priorities(_s):  # no cov
             return {
                 "bit": {
-                    "value": lambda x: str(x),
+                    "value": lambda x: int(x),
                     "level": 1,
                 },
                 "byte": {
-                    "value": lambda x: str(int(x.replace("B", "")) * 8),
+                    "value": lambda x: (int(x.replace("B", "")) * 8),
                     "level": 1,
                 },
-                "bit_default": {"value": _s.default("0")},
-                "byte_default": {"value": _s.default("0")},
+                "bit_default": {"value": _s.default(0)},
+                "byte_default": {"value": _s.default(0)},
             }
 
-        def formatter(v):  # no cov
+        def formatter(v: Optional[Any] = None):  # no cov
             size: int = v or 0
             return {
                 "%b": {
@@ -241,53 +255,101 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
                 },
             }
 
+        def formatter_raise(v: Optional[Any] = None):  # no cov
+            size: int = v or 0
+            return {
+                "%b": {
+                    "value": lambda: str(size),
+                    "regex": r"([0-9]*)",
+                },
+                "%B": {
+                    "value": lambda: f"{str(round(size / 8))}B",
+                    "regex": r"([0-9]*B)",
+                },
+            }
+
         type_construct_fmtter = type(  # no cov
-            "TypeConstructFormatter",
+            "Storage",
             (fmt.Formatter,),
             {
                 "__slots__": (
                     "_st_bit",
                     "_st_byte",
-                    "_st_storge",
+                    "_st_storage",
                 ),
                 "base_fmt": "%b",
                 "base_attr_prefix": "st",
                 "string": property(string),
                 "value": property(value),
+                "validate": property(validate),
                 "priorities": property(priorities),
                 "formatter": staticmethod(formatter),
             },
         )
-        self.construct_with_type_cls = type_construct_fmtter
+        self.cst_with_type_cls: Type[fmt.Formatter] = type_construct_fmtter
 
         class TypeConstructFormatterMeta(fmt.Formatter, ABC):  # no cov
             __slots__ = (
                 "_st_bit",
                 "_st_byte",
-                "_st_storge",
+                "_st_storage",
             )
             base_fmt = "%b"
             base_attr_prefix = "st"
 
         type_construct_fmtter2 = type(  # no cov
-            "TypeConstructFormatter2",
+            "Storage",
             (TypeConstructFormatterMeta,),
             {
                 "string": property(string),
                 "value": property(value),
+                "validate": property(validate),
                 "priorities": property(priorities),
                 "formatter": staticmethod(formatter),
             },
         )
 
-        self.construct_with_type_cls2 = type_construct_fmtter2
+        self.cst_with_type_cls2: Type[fmt.Formatter] = type_construct_fmtter2
+
+        type_construct_fmtter_raise: Type[fmt.Formatter] = type(  # no cov
+            "Storage",
+            (TypeConstructFormatterMeta,),
+            {
+                "string": property(string),
+                "value": property(value),
+                "priorities": property(priorities),
+                "formatter": staticmethod(formatter_raise),
+            },
+        )
+
+        self.cst_with_type_cls_raise = type_construct_fmtter_raise
 
     def test_type_formatter_init(self):
         self.assertEqual(
             "250B",
-            self.construct_with_type_cls({"bit": 2000}).format("%B"),
+            self.cst_with_type_cls({"bit": "2000"}).format("%B"),
         )
         self.assertEqual(
             "250B",
-            self.construct_with_type_cls2({"bit": 2000}).format("%B"),
+            self.cst_with_type_cls2({"bit": "2000"}).format("%B"),
+        )
+
+    def test_type_formatter_parse(self):
+        self.assertEqual(
+            2000,
+            self.cst_with_type_cls2.parse("250B", "%B").value,
+        )
+        self.assertEqual(
+            10000,
+            self.cst_with_type_cls2.parse("10000", "%b").value,
+        )
+
+        with self.assertRaises(FormatterValueError) as context:
+            self.cst_with_type_cls_raise.parse("2000B", "%B")
+        self.assertTrue(
+            (
+                "Regex format string does not set group name for parsing value "
+                "to its class."
+            )
+            in str(context.exception)
         )

@@ -99,8 +99,8 @@ class FormatterGroupTestCase(unittest.TestCase):
                 "role": fmt.Naming.parse("data engineer", "%n"),
             },
             self.gp3.parser(
-                "foo_bar data_engineer",
-                fmt="{name:%s} {role:%s}",
+                "foo_bar|data_engineer",
+                fmt="{name:%s}\\|{role:%s}",
                 _max=True,
             ),
         )
