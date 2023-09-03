@@ -33,7 +33,7 @@ from typing import (
 #  docs: https://pypi.org/project/semver/
 import packaging.version as pck_version
 from dateutil.relativedelta import relativedelta
-from dup_utils.core import remove_pad
+from dup_utils.core import remove_pad  # type: ignore
 
 from .exceptions import (
     FormatterArgumentError,
@@ -332,6 +332,11 @@ class Formatter(MetaFormatter):
                     f"(?P<{_sr_re}__{_cache[fmt_str]}>",
                     regex,
                 )
+            else:
+                raise FormatterValueError(
+                    "Regex format string does not set group name for parsing "
+                    "value to its class."
+                )
             _cache[fmt_str] += 1
             fmt = fmt.replace(fmt_str, regex, 1)
         return fmt
@@ -476,18 +481,18 @@ class Formatter(MetaFormatter):
                 # Update level by default it will update at first level
                 _level.update(props.level)
 
+        # Run validate method.
+        if not self.validate:
+            raise FormatterValueError(
+                "Parsing value does not valid from validator"
+            )
+
         # Set standard property by default is string value or `self.string`
         setattr(
             self,
             f"_{self.base_attr_prefix}_{self.__class__.__name__.lower()}",
             str(self.string),
         )
-
-        # Run validate method.
-        if not self.validate:
-            raise FormatterValueError(
-                "Parsing value does not valid from validator"
-            )
 
     def __setattr__(self, name: str, value: Any) -> None:
         super().__setattr__(name, value)
@@ -2549,6 +2554,11 @@ class FormatterGroup:
                             rf"\(\?P<{_sr_re}>",
                             rf"(?P<{_sr_re}{_sr_idx}{_suffix}>",
                             _fmt_replace,
+                        )
+                    else:
+                        raise FormatterValueError(
+                            "Regex format string does not set group name for "
+                            "parsing value to its class."
                         )
                 _search_re = _search_re.replace(_fmt, _fmt_replace)
             except KeyError as err:
