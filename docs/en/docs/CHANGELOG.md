@@ -2,6 +2,23 @@
 
 ## Latest Changes
 
+## 0.0.6
+
+### Features
+
+- :dart: feat: add new constructor of Constant object that receive fmt and value. (_2023-09-01_)
+
+### Code Changes
+
+- :test_tube: test: add test-case for parsing when formatter does not set group name. (_2023-09-03_)
+- :construction: refactored: add suffix index on regex group name when parsing format. (_2023-09-03_)
+- :construction: refactored: edit code statement that support mypy. (_2023-09-01_)
+
+### Fix Bugs
+
+- :gear: fixed: add condition of camel convert function if case empty string value. (_2023-09-01_)
+- :gear: fixed: remove print debug stage from main code. (_2023-09-01_)
+
 ## 0.0.5.post1
 
 ### Features
