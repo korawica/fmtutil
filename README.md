@@ -216,14 +216,13 @@ If you want to override this mapping constant, you can create new OrderFormatter
 object:
 
 ```python
-from dup_fmt import OrderFormatter, Naming
+from typing import Type
+from dup_fmt import OrderFormatter, Naming, make_order_fmt
 
-class MyOrderFormatter(OrderFormatter):
-
-    FMTS = {
-        'name': Naming,
-        'domain': Naming,
-    }
+MyOrderFormatter: Type[OrderFormatter] =  make_order_fmt({
+    'name': Naming,
+    'domain': Naming,
+})
 
 ordered_1 = MyOrderFormatter({
     'name': Naming.parse("test", "%n"),
@@ -322,6 +321,20 @@ class Storage(Formatter):
     @property
     def string(self) -> str:
         return self._st_bit
+
+    @property
+    def validate(self) -> bool:
+        if (
+            self._st_bit != 0
+            and self._st_byte != 0
+            and self._st_bit != self._st_byte
+        ):
+            return False
+        if self._st_bit == 0 and self._st_byte != 0:
+            self._st_bit = self._st_byte
+        elif self._st_bit != 0 and self._st_byte == 0:
+            self._st_byte = self._st_bit
+        return True
 
     @property
     def priorities(self) -> ReturnPrioritiesType:
