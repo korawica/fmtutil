@@ -27,7 +27,6 @@ from typing import (
     Type,
     TypedDict,
     Union,
-    final,  # docs: https://github.com/python/mypy/issues/9953
 )
 
 # TODO: Review ``semver`` package instead ``packaging``.
@@ -64,7 +63,6 @@ class PriorityValue(TypedDict):
     level: Optional[Union[int, Tuple[int, ...]]]
 
 
-@final
 class CRegexValue(TypedDict):
     """Type Dictionary for value of mapping of ``cls.formatter``"""
 
@@ -72,7 +70,6 @@ class CRegexValue(TypedDict):
     cregex: str
 
 
-@final
 class RegexValue(TypedDict):
     """Type Dictionary for value of mapping of ``cls.formatter``"""
 
@@ -361,8 +358,11 @@ class Formatter(MetaFormatter):
         results: Dict[str, str] = {}
         pre_results: Dict[str, str] = {}
         for f, props in cls.formatter().items():
+            # issue: https://github.com/python/mypy/issues/8887
+            # docs: https://mypy.readthedocs.io/en/stable/ -
+            #   literal_types.html#tagged-unions
             if "regex" in props:
-                results[f] = props["regex"]
+                results[f] = props["regex"]  # type: ignore[typeddict-item]
             elif "cregex" in props:
                 pre_results[f] = props["cregex"]
             else:
@@ -371,19 +371,12 @@ class Formatter(MetaFormatter):
                     "in dict value"
                 )
         for f, cr in pre_results.items():
+            # TODO: improve pref of this line when `results` was large
+            #  of mapping regex values
             cr = cr.replace("%%", "[ESCAPE]")
-            for cm in re.finditer(r"(%[-+!*]?[A-Za-z])", cr):
-                cs: str = cm.group()
-                if cs in results:
-                    cr = cr.replace(cs, results[cs], 1)
-                else:
-                    raise FormatterArgumentError(
-                        "format",
-                        (
-                            f"format cregex string that contain {cs} regex "
-                            f"does not found."
-                        ),
-                    )
+            for rf in iter(results):
+                if rf in cr:
+                    cr = cr.replace(rf, results[rf])
             results[f] = cr.replace("[ESCAPE]", "%%")
         return results
 
@@ -681,10 +674,7 @@ class Serial(Formatter):
         """
         _value: str = str(serial or 0)
         return {
-            "%n": {
-                "value": lambda: _value,
-                "regex": r"(?P<number>[0-9]*)",
-            },
+            "%n": {"value": lambda: _value, "regex": r"(?P<number>[0-9]*)"},
             "%p": {
                 "value": partial(Serial.to_padding, _value),
                 "regex": (
@@ -1562,19 +1552,26 @@ class Naming(Formatter):
             %u  : Upper case format
             %l  : Lower case format
             %t  : Title case format
+
             %a  : Shortname format
             %A  : Shortname upper case format
+
             %f  : Flat case format
             %F  : Flat upper case format
+
             %c  : Camel case format
             %-c : Upper first Camel case format
+
             %p  : Pascal case format
+
             %s  : Snake case format
             %S  : Snake upper case format
             %-S  : Snake title case format
+
             %k  : Kebab case format
             %K  : Kebab upper case format
             %-K  : Kebab title case format
+
             %v  : normal name removed vowel
             %V  : normal name removed vowel with upper case
 
@@ -1743,7 +1740,7 @@ class Naming(Formatter):
     @staticmethod
     def __prepare_value(value: str) -> List[str]:
         """Return list of word that split from input value string"""
-        result: str = re.sub(r"[^\-.\w\s]+", "", value)
+        result = re.sub(r"[^\-.\w\s]+", "", value)
         return re.sub(r"[\-._\s]]", " ", result).strip().split()
 
     @staticmethod
