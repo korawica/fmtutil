@@ -37,6 +37,7 @@ from dup_utils.core import remove_pad  # type: ignore
 
 from .exceptions import (
     FormatterArgumentError,
+    FormatterGroupArgumentError,
     FormatterGroupTypeError,
     FormatterGroupValueError,
     FormatterKeyError,
@@ -200,7 +201,13 @@ class SlotLevel:
 
 @dataclass(frozen=True)
 class PriorityData:
-    """Priority Data class"""
+    """Priority Data class
+
+    .. dataclass attributes::
+
+        - value: PriorityCallable
+        - level: Optional[Union[int, Tuple[int, ...]]]
+    """
 
     value: PriorityCallable = field(default=itself, repr=False)
     level: Optional[Union[int, Tuple[int, ...]]] = field(default=(0,))
@@ -272,6 +279,16 @@ class Formatter(MetaFormatter):
         """Base Configuration for any subclass of formatter"""
 
         base_config_value: Optional[Any] = None
+
+    @classmethod
+    def passer(
+        cls,
+        value: Any,
+    ) -> Formatter:
+        raise NotImplementedError(
+            f"This {cls.__name__} sub-class does not implement "
+            f"passer method."
+        )
 
     @classmethod
     def parse(
@@ -1036,12 +1053,7 @@ class Datetime(Formatter):
         return {
             "%n": {
                 "value": partial(_dt.strftime, "%Y%m%d_%H%M%S"),
-                "regex": (
-                    r"(?P<year>\d{4})"
-                    r"(?P<month_pad>01|02|03|04|05|06|07|08|09|10|11|12)"
-                    r"(?P<day_pad>[0-3][0-9])_(?P<hour_pad>[0-2][0-9])"
-                    r"(?P<minute_pad>[0-6][0-9])(?P<second_pad>[0-6][0-9])"
-                ),
+                "cregex": "%Y%m%d_%H%M%S",
             },
             "%Y": {
                 "value": partial(_dt.strftime, "%Y"),
@@ -2206,60 +2218,13 @@ def make_order_fmt(formats: Dict[str, FormatterType]) -> Type[OrderFormatter]:
     return CustomOrderFormatter
 
 
-# class FormatterGroupParseArgs(TypedDict):
-#     fmt: FormatterType
-#     value: Optional[Union[str, Any]]
-#
-#
-# class FormatterGroupParseArgsDefault(TypedDict):
-#     fmt: FormatterType
-#
-#
-# @dataclass
-# class FormatterGroupData:
-#     """Formatter Data"""
-#
-#     fmt: FormatterType
-#     value: Any
-#
-#     @classmethod
-#     def parse(
-#         cls,
-#         value: Union[
-#             FormatterGroupParseArgs,
-#             FormatterGroupParseArgsDefault,
-#             FormatterType,
-#         ],
-#     ) -> FormatterGroupData:
-#         """Parse any value to this FormatterGroupData class
-#
-#         :param value: a value that want to parse
-#         :type value: Union[dict, Type[Formatter]]
-#         """
-#         if isinstance(value, dict):
-#             return cls.parse_dict(value)
-#         return cls(
-#             fmt=value,
-#             value=None,
-#         )
-#
-#     @classmethod
-#     def parse_dict(
-#         cls,
-#         values: Union[
-#             FormatterGroupParseArgs,
-#             FormatterGroupParseArgsDefault,
-#         ],
-#     ) -> FormatterGroupData:
-#         """Parse dict value to this FormatterGroupData class
-#
-#         :param values: a dict value
-#         :type values: dict
-#         """
-#         return cls(
-#             fmt=values["fmt"],
-#             value=values.get("value"),
-#         )
+class FormatterGroupParseArgs(TypedDict):
+    fmt: FormatterType
+    value: Optional[Union[str, Any]]
+
+
+class FormatterGroupParseArgsDefault(TypedDict):
+    fmt: FormatterType
 
 
 @total_ordering
@@ -2280,7 +2245,7 @@ class FormatterGroup:
         cls,
         value: str,
         fmt: str,
-    ) -> Dict[str, Formatter]:
+    ) -> FormatterGroup:
         """Parse formatter by generator values like timestamp, version,
         or serial.
 
@@ -2308,7 +2273,7 @@ class FormatterGroup:
     ) -> Dict[str, Dict[str, Dict[str, str]]]:
         _fmt, _fmt_getter = cls.gen_format(fmt=fmt)
         if not (_search := re.search(rf"^{_fmt}$", value)):
-            raise FormatterArgumentError(
+            raise FormatterGroupArgumentError(
                 "format",
                 f"{value!r} does not match with the format: '^{_fmt}$'",
             )
@@ -2388,14 +2353,30 @@ class FormatterGroup:
             if not (fmt_str := fmt_dict["format"]):
                 fmt_str = formatter.base_fmt
 
-            fmt = fmt.replace(
-                fmt_dict["found"],
-                formatter.format(fmt=fmt_str),
-                1,
-            )
+            try:
+                fmt = fmt.replace(
+                    fmt_dict["found"],
+                    formatter.format(fmt=fmt_str),
+                    1,
+                )
+            except FormatterKeyError as err:
+                raise FormatterGroupArgumentError(
+                    "format", f"{err} in {fmt_dict['found']}"
+                ) from err
         return fmt
 
-    def __init__(self, formatters: Dict[str, Dict[str, str]]) -> None:
+    def __init__(
+        self,
+        formatters: Dict[
+            str,
+            Union[
+                Dict[str, str],
+                FormatterGroupParseArgs,
+                FormatterGroupParseArgsDefault,
+                Formatter,
+            ],
+        ],
+    ) -> None:
         """Main initialization get the formatter value, a mapping of name
         and formatter from input argument and generate the necessary
         attributes for define the value of this formatter group object.
@@ -2412,6 +2393,7 @@ class FormatterGroup:
             if isinstance(v, Formatter):
                 self.groups[k] = v
             elif isinstance(v, dict):
+                # TODO: Dynamic value of dict that support str or
                 self.groups[k] = self.base_groups[k](v)
             else:
                 raise FormatterGroupTypeError(
@@ -2472,11 +2454,27 @@ class FormatterGroup:
         )
 
 
+FormatterGroupType = Type[FormatterGroup]
+
+
+def make_group(group: Dict[str, FormatterType]) -> FormatterGroupType:
+    class CustomGroup(FormatterGroup):
+        base_groups: Dict[str, FormatterType] = group
+
+    return CustomGroup
+
+
+Group: Callable[[Dict[str, FormatterType]], FormatterGroupType] = make_group
+
+
 __all__ = (
     "FORMATTERS",
     "FORMATTERS_ADJUST",
+    # Formatter
     "Formatter",
     "FormatterType",
+    "ReturnPrioritiesType",
+    "ReturnFormattersType",
     "Serial",
     "Datetime",
     "Version",
@@ -2484,9 +2482,11 @@ __all__ = (
     "ConstantType",
     "Constant",
     "EnvConstant",
+    # Formatter Group
     "FormatterGroup",
+    "FormatterGroupType",
+    "Group",
+    # Order Formatter
     "OrderFormatter",
-    "ReturnPrioritiesType",
-    "ReturnFormattersType",
     "make_order_fmt",
 )

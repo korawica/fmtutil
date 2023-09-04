@@ -13,21 +13,21 @@ import dup_fmt.formatter as fmt
 
 class FormatterGroupWithOrder(unittest.TestCase):
     def setUp(self) -> None:
-        self.gp = fmt.FormatterGroup(
+        self.DateVersion = fmt.Group(
             {
                 "version": fmt.Version,
                 "datetime": fmt.Datetime,
             }
         )
 
-        self.my_order_cls = fmt.make_order_fmt(self.gp.formats)
+        self.my_order_cls = fmt.make_order_fmt(self.DateVersion.base_groups)
 
     def test_group_order(self):
-        parser = self.gp.parser(
+        parser = self.DateVersion.parse(
             "20221121_1_0_0",
             fmt="{datetime:%Y%m%d}_{version}",
         )
         self.assertEqual(
             "(version=['v1.0.0'], datetime=['2022-11-21 00:00:00.000'])",
-            self.my_order_cls(parser).__str__(),
+            self.my_order_cls(parser.groups).__str__(),
         )
