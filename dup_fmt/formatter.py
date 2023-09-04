@@ -49,10 +49,11 @@ from .utils import (
 )
 
 FormatterType = Type["Formatter"]
+FormatterGroupType = Type["FormatterGroup"]
+ConstantType = Type["__BaseConstant"]
+
 PriorityCallable = Union[Callable[[Any], Any], Callable[[], Any], partial]
 FormatterCallable = Union[Callable[[], Any], partial]
-
-ConstantType = Type["__BaseConstant"]
 
 
 class PriorityValue(TypedDict):
@@ -260,13 +261,7 @@ class Formatter(MetaFormatter):
     """
 
     # This value must reassign from child class
-    base_fmt: Union[str, NotImplementedError] = NotImplementedError(
-        "Please implement base_fmt class property "
-        "for this sub-formatter class"
-    )
-
-    # This value must reassign from child class
-    base_attr_prefix: str = ""
+    base_fmt: Union[str, NotImplemented] = NotImplemented
 
     # This value must reassign from child class
     base_level: int = 1
@@ -275,6 +270,20 @@ class Formatter(MetaFormatter):
         """Base Configuration for any subclass of formatter"""
 
         base_config_value: Optional[Any] = None
+
+    def __init_subclass__(cls, **kwargs) -> None:
+        super().__init_subclass__(**kwargs)
+
+        if cls.base_fmt is NotImplemented:
+            raise NotImplementedError(
+                "Please implement base_fmt class property for this "
+                "sub-formatter class."
+            )
+        if not cls.__slots__:
+            raise NotImplementedError(
+                "Please implement `__slots__` class property for this "
+                "sub-formatter class."
+            )
 
     @classmethod
     def passer(
@@ -315,9 +324,9 @@ class Formatter(MetaFormatter):
         :return: an instance of Formatter that parse from string value by
             format string.
         """
-        _fmt: Union[str, NotImplementedError] = fmt or cls.base_fmt
+        _fmt: Union[str, NotImplemented] = fmt or cls.base_fmt
 
-        if not _fmt or isinstance(_fmt, NotImplementedError):
+        if not _fmt or (_fmt is NotImplemented):
             raise NotImplementedError(
                 "This Formatter class does not set default format string "
                 "value."
@@ -479,18 +488,12 @@ class Formatter(MetaFormatter):
 
         # Set level of SlotLevel object that set from `base_level` and pass this
         # value to _level variable for update process in priorities loop.
-        setattr(
-            self,
-            f"_{self.base_attr_prefix}_level",
-            SlotLevel(level=self.base_level),
-        )
-        _level: SlotLevel = getattr(self, f"_{self.base_attr_prefix}_level")
+        self._level = SlotLevel(level=self.base_level)
+        _level: SlotLevel = self._level
 
         # Set None default of any set up value in `cls.__slots__`
         for attr in getattr(self, "__slots__", ()):
-            if attr != (
-                f"_{self.base_attr_prefix}_{self.__class__.__name__.lower()}"
-            ):
+            if attr != (self.__class__.__name__.lower()):
                 setattr(self, attr, None)
 
         for name, props in self.__priorities.items():
@@ -499,21 +502,17 @@ class Formatter(MetaFormatter):
             attr = name.split("_", maxsplit=1)[0]
 
             # Set attr condition
-            if getattr(self, f"_{self.base_attr_prefix}_{attr}"):
+            if getattr(self, attr):
                 continue
             elif any(name.endswith(i) for i in {"_default", "_fix"}):
-                setattr(
-                    self,
-                    f"_{self.base_attr_prefix}_{attr}",
-                    caller(props.value),
-                )
+                setattr(self, attr, caller(props.value))
 
                 # Update level by default it will update at first level
                 _level.update(props.level)
             elif name in _formats:
                 setattr(
                     self,
-                    f"_{self.base_attr_prefix}_{attr}",
+                    attr,
                     props.value(_formats[name]),  # type: ignore[call-arg]
                 )
 
@@ -529,7 +528,7 @@ class Formatter(MetaFormatter):
         # Set standard property by default is string value or `self.string`
         setattr(
             self,
-            f"_{self.base_attr_prefix}_{self.__class__.__name__.lower()}",
+            self.__class__.__name__.lower(),
             str(self.string),
         )
 
@@ -593,10 +592,7 @@ class Formatter(MetaFormatter):
     @property
     def level(self) -> SlotLevel:
         """Return the slot level object of any subclass."""
-        return getattr(  # type: ignore[no-any-return]
-            self,
-            f"_{self.base_attr_prefix}_level",
-        )
+        return self._level
 
     @property
     def __priorities(self) -> Dict[str, PriorityData]:
@@ -655,8 +651,6 @@ class Serial(Formatter):
 
     base_fmt: str = "%n"
 
-    base_attr_prefix: str = "sr"
-
     class Config(Formatter.Config):
         """Configuration of Serial object"""
 
@@ -664,8 +658,8 @@ class Serial(Formatter):
         serial_max_binary: int = 8
 
     __slots__ = (
-        "_sr_number",
-        "_sr_serial",
+        "number",
+        "serial",
     )
 
     @property
@@ -674,7 +668,7 @@ class Serial(Formatter):
 
     @property
     def string(self) -> str:
-        return self._sr_number  # type: ignore[no-any-return]
+        return self.number  # type: ignore[no-any-return]
 
     @property
     def priorities(
@@ -780,22 +774,20 @@ class Datetime(Formatter):
 
     base_fmt: str = "%Y-%m-%d %H:%M:%S.%f"
 
-    base_attr_prefix: str = "dt"
-
     base_level: int = 8
 
     __slots__ = (
-        "_dt_year",
-        "_dt_month",
-        "_dt_week",
-        "_dt_weeks",
-        "_dt_day",
-        "_dt_hour",
-        "_dt_minute",
-        "_dt_second",
-        "_dt_microsecond",
-        "_dt_local",
-        "_dt_datetime",
+        "year",
+        "month",
+        "week",
+        "weeks",
+        "day",
+        "hour",
+        "minute",
+        "second",
+        "microsecond",
+        "local",
+        "datetime",
     )
 
     def __repr__(self) -> str:
@@ -812,14 +804,14 @@ class Datetime(Formatter):
     @property
     def string(self) -> str:
         return (
-            f"{self._dt_year}-{self._dt_month}-{self._dt_day} "
-            f"{self._dt_hour}:{self._dt_minute}:{self._dt_second}."
-            f"{self._dt_microsecond[:3]}"
+            f"{self.year}-{self.month}-{self.day} "
+            f"{self.hour}:{self.minute}:{self.second}."
+            f"{self.microsecond[:3]}"
         )
 
     @property
     def iso_date(self) -> str:
-        return f"{self._dt_year}-{self._dt_month}-{self._dt_day}"
+        return f"{self.year}-{self.month}-{self.day}"
 
     @property
     def validate(self) -> bool:  # no cov
@@ -957,7 +949,7 @@ class Datetime(Formatter):
             "hour_12": {
                 "value": (
                     lambda x: str(int(x) + 12).rjust(2, "0")
-                    if self._dt_local == "PM"
+                    if self.local == "PM"
                     else x.rjust(2, "0")
                 ),
                 "level": 5,
@@ -965,7 +957,7 @@ class Datetime(Formatter):
             "hour_12_pad": {
                 "value": (
                     lambda x: str(int(x) + 12).rjust(2, "0")
-                    if self._dt_local == "PM"
+                    if self.local == "PM"
                     else x
                 ),
                 "level": 5,
@@ -1182,31 +1174,31 @@ class Datetime(Formatter):
 
     def _from_day_year(self, value: str) -> str:
         """Return date of year"""
-        _this_year: datetime = datetime.strptime(
-            self._dt_year, "%Y"
-        ) + timedelta(days=int(value))
-        self._dt_month = _this_year.strftime("%m")
+        _this_year: datetime = datetime.strptime(self.year, "%Y") + timedelta(
+            days=int(value)
+        )
+        self.month = _this_year.strftime("%m")
         return _this_year.strftime("%d")
 
     def _from_week_year_mon(self, value: str) -> str:
         """Return validate week year with Monday value"""
         _this_week: str = (
-            str(((int(self._dt_week) - 1) % 7) + 1) if self._dt_week else "1"
+            str(((int(self.week) - 1) % 7) + 1) if self.week else "1"
         )
         _this_year: datetime = datetime.strptime(
-            f"{self._dt_year}-W{value}-{_this_week}", "%G-W%V-%u"
+            f"{self.year}-W{value}-{_this_week}", "%G-W%V-%u"
         )
-        self._dt_month = _this_year.strftime("%m")
-        self._dt_day = _this_year.strftime("%d")
+        self.month = _this_year.strftime("%m")
+        self.day = _this_year.strftime("%d")
         return _this_year.strftime("%w")
 
     def _from_week_year_sun(self, value: str) -> str:
         """Return validate week year with Sunday value"""
         _this_year: datetime = datetime.strptime(
-            f"{self._dt_year}-W{value}-{self._dt_week or '0'}", "%Y-W%U-%w"
+            f"{self.year}-W{value}-{self.week or '0'}", "%Y-W%U-%w"
         )
-        self._dt_month = _this_year.strftime("%m")
-        self._dt_day = _this_year.strftime("%d")
+        self.month = _this_year.strftime("%m")
+        self.day = _this_year.strftime("%d")
         return _this_year.strftime("%w")
 
     @staticmethod
@@ -1240,33 +1232,31 @@ class Version(Formatter):
 
     base_fmt: str = "%m_%n_%c"
 
-    base_attr_prefix: str = "vs"
-
     base_level: int = 3
 
     __slots__ = (
-        "_vs_version",
-        "_vs_epoch",
-        "_vs_major",
-        "_vs_minor",
-        "_vs_micro",
-        "_vs_pre",
-        "_vs_post",
-        "_vs_dev",
-        "_vs_local",
+        "version",
+        "epoch",
+        "major",
+        "minor",
+        "micro",
+        "pre",
+        "post",
+        "dev",
+        "local",
     )
 
     def __repr__(self) -> str:
         _fmt: str = "v%m.%n.%c"
-        if self._vs_epoch != "0":
+        if self.epoch != "0":
             _fmt = f"%e{_fmt[1:]}"
-        if self._vs_pre:
+        if self.pre:
             _fmt = f"{_fmt}%q"
-        if self._vs_post:
+        if self.post:
             _fmt = f"{_fmt}%p"
-        if self._vs_dev:
+        if self.dev:
             _fmt = f"{_fmt}%d"
-        if self._vs_local:
+        if self.local:
             _fmt = f"{_fmt}%l"
         return f"<{self.__class__.__name__}.parse('{self.string}', '{_fmt}')>"
 
@@ -1277,17 +1267,17 @@ class Version(Formatter):
 
     @property
     def string(self) -> str:
-        _release: str = f"v{self._vs_major}.{self._vs_minor}.{self._vs_micro}"
-        if self._vs_epoch != "0":
-            _release = f"{self._vs_epoch}!{_release[1:]}"
-        if self._vs_pre:
-            _release = f"{_release}{self._vs_pre}"
-        if self._vs_post:
-            _release = f"{_release}{self._vs_post}"
-        if self._vs_dev:
-            _release = f"{_release}.{self._vs_dev}"
-        if self._vs_local:
-            _release = f"{_release}+{self._vs_local}"
+        _release: str = f"v{self.major}.{self.minor}.{self.micro}"
+        if self.epoch != "0":
+            _release = f"{self.epoch}!{_release[1:]}"
+        if self.pre:
+            _release = f"{_release}{self.pre}"
+        if self.post:
+            _release = f"{_release}{self.post}"
+        if self.dev:
+            _release = f"{_release}.{self.dev}"
+        if self.local:
+            _release = f"{_release}+{self.local}"
         return _release
 
     @property
@@ -1479,32 +1469,30 @@ class Naming(Formatter):
 
     base_fmt: str = "%n"
 
-    base_attr_prefix: str = "nm"
-
     base_level: int = 5
 
     __slots__ = (
-        "_nm_naming",
-        "_nm_strings",
-        "_nm_flats",
-        "_nm_shorts",
-        "_nm_vowels",
+        "naming",
+        "strings",
+        "flats",
+        "shorts",
+        "vowels",
     )
 
     @property
-    def value(self) -> str:
-        return self.string
+    def value(self) -> List[str]:
+        return self.string.split(" ")
 
     @property
     def string(self) -> str:
-        if self._nm_strings:
-            return " ".join(self._nm_strings)
-        elif self._nm_flats:
-            return self._nm_flats[0]  # type: ignore[no-any-return]
-        elif self._nm_shorts:
-            return " ".join(self._nm_shorts)
-        elif self._nm_vowels:
-            return self._nm_vowels[0]  # type: ignore[no-any-return]
+        if self.strings:
+            return " ".join(self.strings)
+        elif self.flats:
+            return self.flats[0]  # type: ignore[no-any-return]
+        elif self.shorts:
+            return " ".join(self.shorts)
+        elif self.vowels:
+            return self.vowels[0]  # type: ignore[no-any-return]
         return ""
 
     @property
@@ -1774,7 +1762,7 @@ class Naming(Formatter):
     def __prepare_value(value: str) -> List[str]:
         """Return list of word that split from input value string"""
         result: str = re.sub(r"[^\-.\w\s]+", "", value)
-        return re.sub(r"[\-._\s]]", " ", result).strip().split()
+        return re.sub(r"[\-._\s]", " ", result).strip().split()
 
     @staticmethod
     def __split_pascal_case(value: str) -> List[str]:
@@ -1790,11 +1778,9 @@ class __BaseConstant(Formatter):
     parser.
     """
 
-    base_attr_prefix: str = "ct"
+    base_fmt: str = ""
 
-    base_formatter: Optional[ReturnFormattersType] = None
-
-    __slots__ = ("_ct_constant",)
+    __slots__ = ("constant",)
 
     def __init__(
         self,
@@ -1818,7 +1804,7 @@ class __BaseConstant(Formatter):
                 [
                     getter
                     for v in self.__slots__
-                    if (getter := getattr(self, v)) and v != "_ct_constant"
+                    if (getter := getattr(self, v)) and v != "constant"
                 ]
             )
         )
@@ -1827,7 +1813,6 @@ class __BaseConstant(Formatter):
     def priorities(
         self,
     ) -> ReturnPrioritiesType:
-        """"""
         raise NotImplementedError(
             "Please implement priorities property for this sub-formatter class"
         )
@@ -1838,6 +1823,9 @@ class __BaseConstant(Formatter):
         value: Optional[str] = None,
     ) -> Optional[ReturnFormattersType]:
         return cls.base_formatter
+
+    def __lt__(self, other: __BaseConstant):
+        return not (self.value.__eq__(other.value))
 
 
 def create_const(
@@ -1864,8 +1852,8 @@ def create_const(
         base_fmt: str = "".join(_fmt.keys())
 
         __slots__ = (
-            "_ct_constant",
-            *[f"_ct_{convert_fmt_str(fmt)}" for fmt in _fmt],
+            "constant",
+            *[convert_fmt_str(fmt) for fmt in _fmt],
         )
 
         base_formatter = {
@@ -1935,18 +1923,26 @@ def extract_regex_with_value(
     }
 
 
+GroupValue = Dict[str, FormatterType]
+
+
 @total_ordering
 class FormatterGroup:
     """Group of any Formatters together with dynamic group naming like
     timestamp for Datetime formatter object.
     """
 
-    base_groups: Union[
-        Dict[str, FormatterType], NotImplementedError
-    ] = NotImplementedError(
-        "Please implement base_groups class property for this sub-formatter "
-        "group class"
-    )
+    # This value must reassign from child class
+    base_groups: Union[GroupValue, NotImplemented] = NotImplemented
+
+    def __init_subclass__(cls, **kwargs) -> None:
+        super().__init_subclass__(**kwargs)
+
+        if cls.base_groups is NotImplemented:
+            raise NotImplementedError(
+                "Please implement base_groups class property for this "
+                "sub-formatter group class."
+            )
 
     @classmethod
     def parse(
@@ -2167,12 +2163,9 @@ class FormatterGroup:
         )
 
 
-FormatterGroupType = Type[FormatterGroup]
-
-
-def make_group(group: Dict[str, FormatterType]) -> FormatterGroupType:
+def make_group(group: GroupValue) -> FormatterGroupType:
     class CustomGroup(FormatterGroup):
-        base_groups: Dict[str, FormatterType] = group
+        base_groups: GroupValue = group
 
     return CustomGroup
 

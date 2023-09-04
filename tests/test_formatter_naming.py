@@ -105,7 +105,7 @@ class NamingTestCase(unittest.TestCase):
         self.assertEqual("data engineer", self.nm.string)
 
         # Test `cls.value` property
-        self.assertEqual("data engineer", self.nm.value)
+        self.assertEqual(["data", "engineer"], self.nm.value)
 
     def test_naming_parser(self):
         self.assertEqual(

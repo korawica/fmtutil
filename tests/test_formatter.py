@@ -213,19 +213,15 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
             return int(_s.string)
 
         def string(_s) -> str:  # no cov
-            return _s._st_bit
+            return _s.bit
 
         def validate(_s) -> bool:
-            if (
-                _s._st_bit != 0
-                and _s._st_byte != 0
-                and _s._st_bit != _s._st_byte
-            ):
+            if _s.bit != 0 and _s.byte != 0 and _s.bit != _s.byte:
                 return False
-            if _s._st_bit == 0 and _s._st_byte != 0:
-                _s._st_bit = _s._st_byte
-            elif _s._st_bit != 0 and _s._st_byte == 0:
-                _s._st_byte = _s._st_bit
+            if _s.bit == 0 and _s.byte != 0:
+                _s.bit = _s.byte
+            elif _s.bit != 0 and _s.byte == 0:
+                _s.byte = _s.bit
             return True
 
         def priorities(_s):  # no cov
@@ -273,12 +269,11 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
             (fmt.Formatter,),
             {
                 "__slots__": (
-                    "_st_bit",
-                    "_st_byte",
-                    "_st_storage",
+                    "bit",
+                    "byte",
+                    "storage",
                 ),
                 "base_fmt": "%b",
-                "base_attr_prefix": "st",
                 "string": property(string),
                 "value": property(value),
                 "validate": property(validate),
@@ -290,12 +285,11 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
 
         class TypeConstructFormatterMeta(fmt.Formatter, ABC):  # no cov
             __slots__ = (
-                "_st_bit",
-                "_st_byte",
-                "_st_storage",
+                "bit",
+                "byte",
+                "storage",
             )
             base_fmt = "%b"
-            base_attr_prefix = "st"
 
         type_construct_fmtter2 = type(  # no cov
             "Storage",
