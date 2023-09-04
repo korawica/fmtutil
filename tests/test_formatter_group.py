@@ -176,3 +176,33 @@ class FormatterGroupTestCase(unittest.TestCase):
             )
             in str(context.exception)
         )
+
+    def test_fmt_group_max_min(self):
+        groups = (
+            self.DateVersion.parse(
+                "20220101_1_0_0",
+                fmt="{datetime:%Y%m%d}_{version}",
+            ),
+            self.DateVersion.parse(
+                "20220329_1_0_0",
+                fmt="{datetime:%Y%m%d}_{version}",
+            ),
+            self.DateVersion.parse(
+                "20220329_1_1_0",
+                fmt="{datetime:%Y%m%d}_{version}",
+            ),
+        )
+        self.assertEqual(
+            max(groups),
+            self.DateVersion.parse(
+                "20220329_1_1_0",
+                fmt="{datetime:%Y%m%d}_{version}",
+            ),
+        )
+        self.assertEqual(
+            min(groups),
+            self.DateVersion.parse(
+                "20220101_1_0_0",
+                fmt="{datetime:%Y%m%d}_{version}",
+            ),
+        )

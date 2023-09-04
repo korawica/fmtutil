@@ -15,7 +15,6 @@
   - [Serial](#serial)
   - [Naming](#naming)
   - [Constant](#constant)
-- [Ordered Formatter](#ordered-formatter)
 - [Formatter Group](#formatter-group)
 - [Custom Formatter Object](#custom-formatter-object)
 
@@ -183,60 +182,6 @@ except FormatterError as err:
 > **Note**: \
 > This package already implement environment constant object, `dup_fmt.EnvConstant`.
 
-## Ordered Formatter
-
-The **Ordered Formatter** object, `OrderFormatter`, that will combine some of all
-formatter objects together. The use-case of this object is make **order principle**
-to formatter objects.
-
-```python
-from dup_fmt import OrderFormatter, Datetime, Version
-
-ordered_1 = OrderFormatter({
-    'timestamp': Datetime.parse("20220101", "%Y%m%d"),
-    'version': Version.parse("202", "%m%n%c"),
-})
-ordered_2 = OrderFormatter({
-    'timestamp': {"value": "20220101", "fmt": "%Y%m%d"},
-    'version': Version.parse("201", "%m%n%c"),
-})
-assert ordered_1 > ordered_2
-```
-
-> **Warning**: \
-> This object support for any formatter object only in `FORMATTERS` mapping constant,
-> this mapping constant contain;
-> - `Datetime` - timestamp
-> - `Serial` - serial,
-> - `Version` - version
-> - `Naming` - naming
-> - `EnvConstant` - envconst
-
-If you want to override this mapping constant, you can create new OrderFormatter
-object:
-
-```python
-from typing import Type
-from dup_fmt import OrderFormatter, Naming, make_order_fmt
-
-MyOrderFormatter: Type[OrderFormatter] =  make_order_fmt({
-    'name': Naming,
-    'domain': Naming,
-})
-
-ordered_1 = MyOrderFormatter({
-    'name': Naming.parse("test", "%n"),
-    'domain': Naming.parse("A", "%N"),
-})
-ordered_2 = MyOrderFormatter({
-    'name': Naming.parse("test", "%n"),
-    'domain': Naming.parse("B", "%N"),
-})
-
-assert ordered_1 > ordered_2
-```
-
-
 ## Formatter Group
 
 The **Formatter Group** object, `FormatterGroup`, which is the grouping of needed
@@ -246,13 +191,12 @@ that you want, like `name` for `Naming` object, or `timestamp` for `Datetime` ob
 **Parse**:
 
 ```python
-from dup_fmt import FormatterGroup, Naming, Datetime
+from dup_fmt import Group, Naming, Datetime
 
-group = FormatterGroup({'name': Naming, 'datetime': Datetime})
-group.parser(
+group = Group({'name': Naming, 'datetime': Datetime})
+group.parse(
     'data_engineer_in_20220101_de',
-    fmt='{name:%s}_in_{timestamp:%Y%m%d}_{name:%a}',
-    _max=False
+    fmt='{name:%s}_in_{timestamp:%Y%m%d}_{name:%a}'
 )
 ```
 
@@ -263,31 +207,21 @@ group.parser(
 >>> }
 ```
 
-> **Note**: \
-> The `_max` option is the max strategy for pick the maximum level from duplication
-> formats in parser method. If set this value to `False` it will use the combine
-> strategy for combine all duplicated formats together before parsing.
-
 **Format**:
 
 ```python
-from dup_fmt import FormatterGroup, Naming, Datetime
 from datetime import datetime
 
-group = FormatterGroup({
-    'name': {'fmt': Naming, 'value': 'data engineer'},
-    'datetime': {'fmt': Datetime, 'value': datetime(2022, 1, 1)}
+group_01 = group({
+    'name': 'data engineer',
+    'datetime': datetime(2022, 1, 1)
 })
-group.format('{name:%c}_{timestamp:%Y_%m_%d}_{name}')
+group_01.format('{name:%c}_{timestamp:%Y_%m_%d}')
 ```
 
 ```text
 >>> dataEngineer_2022_01_01
 ```
-
-> **Warning**: \
-> This formatter group object does not good enough for implement order principle.
-> If you want it, you can use `OrderFormatter` together with `FormatterGroup`.
 
 ## Custom Formatter Object
 
