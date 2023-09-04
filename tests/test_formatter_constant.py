@@ -16,33 +16,38 @@ class ConstantTestCase(unittest.TestCase):
     def setUp(self) -> None:
         self.maxDiff = None
         self.const: fmt.ConstantType = fmt.Constant(
-            {
+            name="NameConst",
+            formatter={
                 "%n": "normal",
                 "%s": "special",
-            }
+            },
         )
         self.const02: fmt.ConstantType = fmt.Constant(
-            {
+            name="ExtensionConst",
+            formatter={
                 "%g": "gzip",
                 "%-g": "gz",
                 "%b": "bz2",
                 "%r": "rar",
                 "%x": "xz",
                 "%z": "zip",
-            }
+            },
         )
         self.const03: fmt.ConstantType = fmt.Constant(
-            fmt.Naming(
+            name="DataEngConst",
+            formatter=fmt.Naming(
                 {
                     "shorts": "de",
                     "strings": "data engineer",
                 }
-            )
+            ),
         )
         self.const04: fmt.ConstantType = fmt.Constant(
-            fmt.Serial.parse("199", "%n")
+            name="NumConst",
+            formatter=fmt.Serial.parse("199", "%n"),
         )
         self.const05: fmt.ConstantType = fmt.Constant(
+            name="PipelineConst",
             fmt=fmt.Naming,
             value=["data", "pipeline"],
         )
@@ -56,7 +61,7 @@ class ConstantTestCase(unittest.TestCase):
 
     def test_const_init_raise(self):
         with self.assertRaises(fmt.FormatterValueError) as context:
-            fmt.Constant()
+            fmt.Constant(name="DemoConst")
         self.assertTrue(
             "The Constant want formatter nor fmt and value arguments"
             in str(context.exception)

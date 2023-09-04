@@ -1777,6 +1777,22 @@ class __BaseConstant(Formatter):
 
     __slots__ = ("constant",)
 
+    @classmethod
+    def passer(cls, value: Any):
+        raise NotImplementedError(
+            "The Constant class does not support for passing value to this "
+            "class initialization."
+        )
+
+    @classmethod
+    def parse(cls, value: str, fmt: Optional[str] = None):
+        if fmt is None:
+            raise NotImplementedError(
+                "The Constant class does not support for default format string "
+                "when parsing with this unknown format value."
+            )
+        return super().parse(value, fmt)
+
     def __init__(
         self,
         formats: Optional[Dict[str, Any]] = None,
@@ -1788,6 +1804,9 @@ class __BaseConstant(Formatter):
             )
         super().__init__(formats=formats)
 
+    def __repr__(self):
+        return super().__repr__()
+
     @property
     def value(self) -> str:
         return self.string
@@ -1798,8 +1817,11 @@ class __BaseConstant(Formatter):
             "|".join(
                 [
                     getter
-                    for v in self.__slots__
-                    if (getter := getattr(self, v)) and v != "constant"
+                    for v in filter(
+                        lambda x: (x != self.__class__.__name__.lower()),
+                        self.__slots__,
+                    )
+                    if (getter := getattr(self, v, None))
                 ]
             )
         )
@@ -1841,7 +1863,7 @@ def dict2const(fmt: Dict[str, str], name: str) -> ConstantType:
         base_fmt: str = "".join(fmt.keys())
 
         __slots__ = (
-            "constant",
+            name.lower(),
             *[convert_fmt_str(f) for f in fmt],
         )
 
@@ -1860,10 +1882,8 @@ def dict2const(fmt: Dict[str, str], name: str) -> ConstantType:
         @property
         def priorities(self) -> ReturnPrioritiesType:
             return {
-                **{
-                    convert_fmt_str(f): {"value": lambda x: x, "level": 1}
-                    for f in ["constant", *fmt]
-                },
+                convert_fmt_str(f): {"value": lambda x: x, "level": 1}
+                for f in fmt
             }
 
     CustomConstant.__name__ = name
@@ -1872,6 +1892,7 @@ def dict2const(fmt: Dict[str, str], name: str) -> ConstantType:
 
 
 def create_const(
+    name: str,
     formatter: Optional[Union[Dict[str, str], Formatter]] = None,
     *,
     fmt: Optional[FormatterType] = None,
@@ -1890,13 +1911,14 @@ def create_const(
             raise FormatterValueError(
                 "The Constant want formatter nor fmt and value arguments"
             )
-    return dict2const(_fmt, name="CustomConstant")
+    return dict2const(_fmt, name=name)
 
 
-Constant: Callable[[Dict[str, str]], ConstantType] = create_const
+Constant: Callable[[str, Dict[str, str]], ConstantType] = create_const
 
 EnvConstant: ConstantType = Constant(
-    {
+    name="EnvConstant",
+    formatter={
         "%d": "development",
         "%-d": "dev",
         "%s": "sit",
@@ -1910,7 +1932,7 @@ EnvConstant: ConstantType = Constant(
         "%b": "sandbox",
         "%-b": "box",
         "%c": "poc",
-    }
+    },
 )
 
 
