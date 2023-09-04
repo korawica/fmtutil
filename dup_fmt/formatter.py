@@ -1781,7 +1781,7 @@ class __BaseConstant(Formatter):
         self,
         formats: Optional[Dict[str, Any]] = None,
     ) -> None:
-        if not self.base_formatter:
+        if not self.formatter():
             raise NotImplementedError(
                 "The Constant object should define the `cls.base_formatter` "
                 "before make a instance."
@@ -1809,15 +1809,18 @@ class __BaseConstant(Formatter):
         self,
     ) -> ReturnPrioritiesType:
         raise NotImplementedError(
-            "Please implement priorities property for this sub-formatter class"
+            "Please implement priorities property for this sub-constant "
+            "formatter class"
         )
 
-    @classmethod
+    @staticmethod
     def formatter(  # type: ignore[override]
-        cls,
         value: Optional[str] = None,
-    ) -> Optional[ReturnFormattersType]:
-        return cls.base_formatter
+    ) -> ReturnFormattersType:
+        raise NotImplementedError(
+            "Please implement formatter staticmethod for this sub-constant "
+            "formatter class"
+        )
 
     def __lt__(self, other: __BaseConstant):
         return not (self.value.__eq__(other.value))
@@ -1851,13 +1854,17 @@ def create_const(
             *[convert_fmt_str(fmt) for fmt in _fmt],
         )
 
-        base_formatter = {
-            fmt: {
-                "regex": f"(?P<{convert_fmt_str(fmt)}>{_fmt[fmt]})",
-                "value": _fmt[fmt],
+        @staticmethod
+        def formatter(  # type: ignore[override]
+            v: Optional[str] = None,
+        ) -> ReturnFormattersType:
+            return {
+                f: {
+                    "regex": f"(?P<{convert_fmt_str(f)}>{_fmt[f]})",
+                    "value": _fmt[f],
+                }
+                for f in _fmt.copy()
             }
-            for fmt in _fmt.copy()
-        }
 
         @property
         def priorities(self) -> ReturnPrioritiesType:
@@ -1893,29 +1900,6 @@ EnvConstant: ConstantType = Constant(
         "%c": "poc",
     }
 )
-
-
-def extract_regex_with_value(
-    fmt: FormatterType,
-    value: Optional[Any] = None,
-) -> Dict[str, RegexValue]:
-    """Return extract data from `cls.regex` method and `cls.formatter`
-    :param fmt: a formatter object
-    :type fmt: FormatterType
-    :param value:
-    :type value: Optional[Any]
-    :rtype: Dict[str, dict]
-    :return: an extract data from `cls.regex` method and `cls.formatter`
-    """
-    regex: Dict[str, str] = fmt.regex()
-    formatter: ReturnFormattersType = fmt.formatter(value)
-    return {
-        i: {
-            "regex": regex[i],
-            "value": caller(formatter[i]["value"]),
-        }
-        for i in formatter
-    }
 
 
 GroupValue = Dict[str, FormatterType]
@@ -2186,5 +2170,4 @@ __all__ = (
     "FormatterGroupType",
     "Group",
     "make_group",
-    "extract_regex_with_value",
 )

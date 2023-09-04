@@ -30,6 +30,8 @@ class SerialTestCase(unittest.TestCase):
         )
 
     def test_serial_formatter(self):
+        formatter = fmt.Serial.formatter(serial=512)
+        regex = fmt.Serial.regex()
         self.assertDictEqual(
             {
                 "%b": {
@@ -39,10 +41,13 @@ class SerialTestCase(unittest.TestCase):
                 "%n": {"regex": "(?P<number>[0-9]*)", "value": "512"},
                 "%p": {"regex": "(?P<number_pad>[0-9]{3})", "value": "512"},
             },
-            fmt.extract_regex_with_value(
-                fmt=fmt.Serial,
-                value=512,
-            ),
+            {
+                i: {
+                    "regex": regex[i],
+                    "value": fmt.caller(formatter[i]["value"]),
+                }
+                for i in formatter
+            },
         )
 
     def test_serial_properties(self):
