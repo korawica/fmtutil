@@ -271,7 +271,7 @@ class Formatter(MetaFormatter):
 
         base_config_value: Optional[Any] = None
 
-    def __init_subclass__(cls, **kwargs) -> None:
+    def __init_subclass__(cls, /, level: int = 1, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
 
         if cls.base_fmt is NotImplemented:
@@ -284,6 +284,7 @@ class Formatter(MetaFormatter):
                 "Please implement `__slots__` class property for this "
                 "sub-formatter class."
             )
+        cls.base_level: int = level
 
     @classmethod
     def passer(
@@ -767,14 +768,12 @@ WEEKS: Dict[str, str] = {
 }
 
 
-class Datetime(Formatter):
+class Datetime(Formatter, level=8):
     """Datetime object for register process that implement formatter and
     parser.
     """
 
     base_fmt: str = "%Y-%m-%d %H:%M:%S.%f"
-
-    base_level: int = 8
 
     __slots__ = (
         "year",
@@ -1207,7 +1206,7 @@ class Datetime(Formatter):
         return str(remove_pad(_dt.strftime(fmt)))
 
 
-class Version(Formatter):
+class Version(Formatter, level=3):
     """Version object for register process that implement formatter and
     parser.
 
@@ -1231,8 +1230,6 @@ class Version(Formatter):
     """
 
     base_fmt: str = "%m_%n_%c"
-
-    base_level: int = 3
 
     __slots__ = (
         "version",
@@ -1460,7 +1457,7 @@ class Version(Formatter):
         )
 
 
-class Naming(Formatter):
+class Naming(Formatter, level=5):
     """Naming object for register process that implement formatter and parser.
 
     note: A name value that parsing to this class should not contain any
@@ -1468,8 +1465,6 @@ class Naming(Formatter):
     """
 
     base_fmt: str = "%n"
-
-    base_level: int = 5
 
     __slots__ = (
         "naming",
