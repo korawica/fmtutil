@@ -294,7 +294,7 @@ class Formatter(MetaFormatter):
         """Passer the value of this formatter subclass data"""
         fmt_filter = [
             (k, caller(v["value"]))
-            for k, v in cls.formatter(value=value).items()
+            for k, v in cls.formatter(value).items()
             if k in re.findall("(%[-+!*]?[A-Za-z])", cls.base_fmt)
         ]
         fmts, values = zip(*fmt_filter)
@@ -1805,9 +1805,7 @@ class __BaseConstant(Formatter):
         )
 
     @property
-    def priorities(
-        self,
-    ) -> ReturnPrioritiesType:
+    def priorities(self) -> ReturnPrioritiesType:
         raise NotImplementedError(
             "Please implement priorities property for this sub-constant "
             "formatter class"
@@ -1824,6 +1822,53 @@ class __BaseConstant(Formatter):
 
     def __lt__(self, other: __BaseConstant):
         return not (self.value.__eq__(other.value))
+
+
+def fmt2const(fmt: Formatter) -> ConstantType:
+    """Constant function constructor that receive the Formatter instance and
+    freeze this value to Constant class.
+    """
+    _fmt: Dict[str, str] = fmt.values()
+    return dict2const(_fmt, name=f"{fmt.__class__.__name__}Const")
+
+
+def dict2const(fmt: Dict[str, str], name: str) -> ConstantType:
+    """Constant function constructor that receive the dict of format string
+    value and constant value.
+    """
+
+    class CustomConstant(__BaseConstant):
+        base_fmt: str = "".join(fmt.keys())
+
+        __slots__ = (
+            "constant",
+            *[convert_fmt_str(f) for f in fmt],
+        )
+
+        @staticmethod
+        def formatter(  # type: ignore[override]
+            v: Optional[str] = None,
+        ) -> ReturnFormattersType:
+            return {
+                f: {
+                    "regex": f"(?P<{convert_fmt_str(f)}>{fmt[f]})",
+                    "value": fmt[f],
+                }
+                for f in fmt.copy()
+            }
+
+        @property
+        def priorities(self) -> ReturnPrioritiesType:
+            return {
+                **{
+                    convert_fmt_str(f): {"value": lambda x: x, "level": 1}
+                    for f in ["constant", *fmt]
+                },
+            }
+
+    CustomConstant.__name__ = name
+    CustomConstant.__qualname__ = name
+    return CustomConstant
 
 
 def create_const(
@@ -1845,40 +1890,7 @@ def create_const(
             raise FormatterValueError(
                 "The Constant want formatter nor fmt and value arguments"
             )
-
-    class CustomConstant(__BaseConstant):
-        base_fmt: str = "".join(_fmt.keys())
-
-        __slots__ = (
-            "constant",
-            *[convert_fmt_str(fmt) for fmt in _fmt],
-        )
-
-        @staticmethod
-        def formatter(  # type: ignore[override]
-            v: Optional[str] = None,
-        ) -> ReturnFormattersType:
-            return {
-                f: {
-                    "regex": f"(?P<{convert_fmt_str(f)}>{_fmt[f]})",
-                    "value": _fmt[f],
-                }
-                for f in _fmt.copy()
-            }
-
-        @property
-        def priorities(self) -> ReturnPrioritiesType:
-            return {
-                **{
-                    convert_fmt_str(f): {
-                        "value": lambda x: x,
-                        "level": 1,
-                    }
-                    for f in ["constant", *_fmt]
-                },
-            }
-
-    return CustomConstant
+    return dict2const(_fmt, name="CustomConstant")
 
 
 Constant: Callable[[Dict[str, str]], ConstantType] = create_const
@@ -2165,6 +2177,7 @@ __all__ = (
     "ConstantType",
     "Constant",
     "EnvConstant",
+    "fmt2const",
     # Formatter Group
     "FormatterGroup",
     "FormatterGroupType",
