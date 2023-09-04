@@ -4,7 +4,7 @@
 # license information.
 # --------------------------------------------------------------------------
 """
-Define Errors Object for core engine
+Define Errors Object for formatter
 """
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ class BaseError(Exception):
 
 
 class FormatterError(BaseError):
-    """Core Base Error object"""
+    """Core Base Error object for formatter"""
 
 
 class FormatterNotFoundError(FormatterError):
@@ -55,6 +55,46 @@ class FormatterArgumentError(FormatterError):
 
             `__class__` with `argument`, `message`
         """
+        _argument: str
+        if isinstance(argument, tuple):
+            _last_arg: str = str(argument[-1])
+            _argument = (
+                (
+                    ", ".join(f"{x!r}" for x in argument[:-1])
+                    + f", and {_last_arg!r}"
+                )
+                if len(argument) > 1
+                else f"{_last_arg!r}"
+            )
+        else:
+            _argument = f"{argument!r}"
+        super().__init__(f"with {_argument}, {message}")
+
+
+class FormatterGroupError(BaseError):
+    """Core Base Error object for formatter group"""
+
+
+class FormatterGroupNotFoundError(FormatterGroupError):
+    """Error raise for a method not found the config file or data."""
+
+
+class FormatterGroupTypeError(FormatterGroupError):
+    """Error raise for typing does not match or support."""
+
+
+class FormatterGroupValueError(FormatterGroupError):
+    """Error raise for value does not valid"""
+
+
+class FormatterGroupKeyError(FormatterGroupError):
+    """Error raise for key does not exist"""
+
+
+class FormatterGroupArgumentError(FormatterGroupError):
+    """Error raise for a wrong configuration argument."""
+
+    def __init__(self, argument: Union[str, Tuple[str, ...]], message: str):
         _argument: str
         if isinstance(argument, tuple):
             _last_arg: str = str(argument[-1])
