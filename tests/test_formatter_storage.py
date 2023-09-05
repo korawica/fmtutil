@@ -64,8 +64,8 @@ class StorageTestCase(unittest.TestCase):
         self.assertEqual("<Storage.parse('10481', '%b')>", self.st.__repr__())
         self.assertEqual(hash(self.st.string), self.st.__hash__())
 
-        self.assertEqual(82824, self.st_p.value)
-        self.assertEqual("82824", self.st_p.string)
+        self.assertEqual(662592, self.st_p.value)
+        self.assertEqual("662592", self.st_p.string)
 
         self.assertEqual(135005, self.st_p2.value)
         self.assertEqual("135005", self.st_p2.string)
@@ -74,8 +74,8 @@ class StorageTestCase(unittest.TestCase):
         self.assertEqual("0", self.st_default.string)
 
     def test_storage_format(self):
-        self.assertEqual("82824", self.st_p.format("%b"))
-        self.assertEqual("10353B", self.st_p.format("%B"))
+        self.assertEqual("662592", self.st_p.format("%b"))
+        self.assertEqual("82824B", self.st_p.format("%B"))
 
         self.assertEqual("135005", self.st_p2.format("%b"))
         self.assertEqual("16876B", self.st_p2.format("%B"))
@@ -92,11 +92,11 @@ class StorageTestCase(unittest.TestCase):
         )
 
     def test_storage_order(self):
-        self.assertTrue(self.st_p <= self.st_p2)
-        self.assertTrue(self.st_p < self.st_p2)
+        self.assertTrue(self.st_p >= self.st_p2)
+        self.assertTrue(self.st_p > self.st_p2)
         self.assertFalse(self.st_p == self.st_p2)
-        self.assertFalse(self.st_p >= self.st_p2)
-        self.assertFalse(self.st_p > self.st_p2)
+        self.assertFalse(self.st_p <= self.st_p2)
+        self.assertFalse(self.st_p < self.st_p2)
 
     def test_level_compare(self):
         self.assertEqual(1, self.st_p.level.value)
