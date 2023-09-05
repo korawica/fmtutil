@@ -25,6 +25,7 @@ FMT_STR_OTAN_MAP: Dict[str, str] = {
     "E": "echo",
     "F": "foxtrot",
     "G": "golf",
+    "H": "hotel",
     "I": "india",
     "J": "juliet",
     "K": "kilo",
@@ -78,17 +79,19 @@ def convert_fmt_str(fmt: str) -> str:
         'november_upper_minus'
         >>> convert_fmt_str('G')
         'G'
+        >>> convert_fmt_str('%H')
+        'hotel_upper'
     """
     _fmt_re: str = fmt
     if search := re.search(r"^%(?P<prefix>[-+!*]?)(?P<format>[a-zA-Z])$", fmt):
         search_dict = search.groupdict()
         _fmt: str
         if (_fmt := search_dict["format"]).isupper():
-            _fmt_re = f"{FMT_STR_OTAN_MAP[_fmt]}_upper"
+            _fmt_re = f"{FMT_STR_OTAN_MAP[_fmt]}upper"
         else:
             _fmt = _fmt.upper()
             _fmt_re = FMT_STR_OTAN_MAP[_fmt]
 
         if prefix := search_dict["prefix"]:
-            _fmt_re = f"{_fmt_re}_{FMT_STR_MAP[prefix]}"
+            _fmt_re = f"{_fmt_re}{FMT_STR_MAP[prefix]}"
     return _fmt_re
