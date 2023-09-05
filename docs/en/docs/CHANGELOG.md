@@ -2,6 +2,32 @@
 
 ## Latest Changes
 
+## 0.1.0
+
+### Features
+
+- :dart: feat: add Storage formatter and order property on formatter group instance. (_2023-09-05_)
+- :dart: feat: create make_const instead Constant function. (_2023-09-05_)
+- :dart: feat: add dynamic class name on constant func constructor. (_2023-09-05_)
+- :dart: feat: add fmt2const constructor func for create Constant object. (_2023-09-05_)
+- :dart: feat: implement order property on the formatter group class. (_2023-09-04_)
+- :dart: feat: revision formatter group object logic. (_2023-09-04_)
+
+### Code Changes
+
+- :test_tube: test: add more test cases for Storage formatter object. (_2023-09-05_)
+- :test_tube: test: add test case for coverage running. (_2023-09-05_)
+- :construction: refactored: remove extract_regex_with_value function from formatter package. (_2023-09-04_)
+- :construction: refactored: move base_level to class attribute. (_2023-09-04_)
+- :construction: refactored: remove base_attr_prefix from formatter class. (_2023-09-04_)
+- :construction: refactored: remove ordered formatter clas. (_2023-09-04_)
+- :test_tube: test: change and fix test case for formatter group. (_2023-09-04_)
+- :construction: refactored: improve pref on regex classmethod. (_2023-09-03_)
+
+### Fix Bugs
+
+- :gear: fixed: fix mypy for typing hint. (_2023-09-05_)
+
 ## 0.0.6
 
 ### Features
