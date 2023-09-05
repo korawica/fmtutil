@@ -1830,6 +1830,38 @@ class Storage(Formatter):
                 "value": lambda x: str(int(x.replace("B", "")) * 8),
                 "level": 1,
             },
+            "byte_kilo": {
+                "value": lambda x: self.to_byte(x, "KB"),
+                "level": 1,
+            },
+            "byte_mega": {
+                "value": lambda x: self.to_byte(x, "MB"),
+                "level": 1,
+            },
+            "byte_giga": {
+                "value": lambda x: self.to_byte(x, "GB"),
+                "level": 1,
+            },
+            "byte_tera": {
+                "value": lambda x: self.to_byte(x, "TB"),
+                "level": 1,
+            },
+            "byte_peta": {
+                "value": lambda x: self.to_byte(x, "PB"),
+                "level": 1,
+            },
+            "byte_exa": {
+                "value": lambda x: self.to_byte(x, "EB"),
+                "level": 1,
+            },
+            "byte_zetta": {
+                "value": lambda x: self.to_byte(x, "ZB"),
+                "level": 1,
+            },
+            "byte_yotta": {
+                "value": lambda x: self.to_byte(x, "YB"),
+                "level": 1,
+            },
             "bit_default": {
                 "value": self._from_byte,
                 "level": 0,
@@ -1842,6 +1874,20 @@ class Storage(Formatter):
 
     @staticmethod
     def formatter(storage: Optional[int] = None) -> ReturnFormattersType:
+        """Generate formatter that support mapping formatter,
+
+        %b  : Bit format
+        %B  : Byte format
+        %K  : Kilo-Byte format
+        %M  : Mega-Byte format
+        %G  : Giga-Byte format
+        %T  : Tera-Byte format
+        %P  : Peta-Byte format
+        %E  : Exa-Byte format
+        %Z  : Zetta-Byte format
+        %Y  : Yotta-Byte format
+
+        """
         size: str = str(storage or 0)
         return {
             "%b": {
@@ -1887,15 +1933,20 @@ class Storage(Formatter):
         }
 
     def _from_byte(self) -> str:
-        return self.byte or "0"
+        return str(int(self.byte or "0") * 8)
 
     def _from_bit(self) -> str:
-        return self.bit or "0"
+        return str(round(int(self.bit or "0") / 8))
 
     @staticmethod
     def bit2byte(value: str, order: str) -> str:
         p = math.pow(1024, SIZE.index(order))
         return f"{(round((int(value) / 8) / p))}{order}"
+
+    @staticmethod
+    def to_byte(value: str, order: str) -> str:
+        p = math.pow(1024, SIZE.index(order))
+        return f"{round(int(value.replace(order, '')) * p)}"
 
 
 Constant = TypeVar("Constant", bound="__BaseConstant")

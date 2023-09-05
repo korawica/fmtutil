@@ -14,6 +14,7 @@
   - [Version](#version)
   - [Serial](#serial)
   - [Naming](#naming)
+  - [Storage](#storage)
   - [Constant](#constant)
 - [Formatter Group](#formatter-group)
 - [Custom Formatter Object](#custom-formatter-object)
@@ -154,6 +155,24 @@ naming.format('Camel case is %c')
 ```
 
 [Supported Naming formats](/docs/en/docs/API.md#naming)
+
+### Storage
+
+```python
+from dup_fmt import Storage
+
+storage = Storage.parse(
+    value='This file have 250MB size',
+    fmt='This file have %M size'
+)
+storage.format('The byte size is: %b')
+```
+
+```text
+>>> 'The byte size is: 2097152000'
+```
+
+[Supported Storage formats](/docs/en/docs/API.md#storage)
 
 ### Constant
 
