@@ -1954,7 +1954,7 @@ class __BaseConstant(Formatter):
     parser.
     """
 
-    base_fmt: str = NotImplemented
+    base_fmt: str = "%%"
 
     __slots__: Tuple[str, ...] = ("_constant",)
 
