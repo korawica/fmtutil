@@ -23,6 +23,14 @@ class StorageTestCase(unittest.TestCase):
             {
                 "%b": "(?P<bit>[0-9]*)",
                 "%B": "(?P<byte>[0-9]*B)",
+                "%K": "(?P<byte_kilo>[0-9]*KB)",
+                "%M": "(?P<byte_mega>[0-9]*MB)",
+                "%G": "(?P<byte_giga>[0-9]*GB)",
+                "%T": "(?P<byte_tera>[0-9]*TB)",
+                "%P": "(?P<byte_peta>[0-9]*PB)",
+                "%E": "(?P<byte_exa>[0-9]*EB)",
+                "%Z": "(?P<byte_zetta>[0-9]*ZB)",
+                "%Y": "(?P<byte_yotta>[0-9]*YB)",
             },
             fmt.Storage.regex(),
         )
@@ -32,8 +40,16 @@ class StorageTestCase(unittest.TestCase):
         regex = fmt.Storage.regex()
         self.assertDictEqual(
             {
-                "%B": {"regex": "(?P<byte>[0-9]*B)", "value": "64B"},
                 "%b": {"regex": "(?P<bit>[0-9]*)", "value": "512"},
+                "%B": {"regex": "(?P<byte>[0-9]*B)", "value": "64B"},
+                "%K": {"regex": "(?P<byte_kilo>[0-9]*KB)", "value": "0KB"},
+                "%M": {"regex": "(?P<byte_mega>[0-9]*MB)", "value": "0MB"},
+                "%G": {"regex": "(?P<byte_giga>[0-9]*GB)", "value": "0GB"},
+                "%T": {"regex": "(?P<byte_tera>[0-9]*TB)", "value": "0TB"},
+                "%P": {"regex": "(?P<byte_peta>[0-9]*PB)", "value": "0PB"},
+                "%E": {"regex": "(?P<byte_exa>[0-9]*EB)", "value": "0EB"},
+                "%Z": {"regex": "(?P<byte_zetta>[0-9]*ZB)", "value": "0ZB"},
+                "%Y": {"regex": "(?P<byte_yotta>[0-9]*YB)", "value": "0YB"},
             },
             {
                 i: {
@@ -63,14 +79,15 @@ class StorageTestCase(unittest.TestCase):
 
         self.assertEqual("135005", self.st_p2.format("%b"))
         self.assertEqual("16876B", self.st_p2.format("%B"))
+        self.assertEqual("16KB", self.st_p2.format("%K"))
 
         self.assertEqual("0", self.st_default.format("%b"))
         self.assertEqual("0B", self.st_default.format("%B"))
 
         with self.assertRaises(fmt.FormatterKeyError) as context:
-            self.st_default.format("%Z")
+            self.st_default.format("%A")
         self.assertTrue(
-            "the format: '%Z' does not support for 'Storage'"
+            "the format: '%A' does not support for 'Storage'"
             in str(context.exception)
         )
 

@@ -10,6 +10,7 @@ config when inherit base class.
 """
 from __future__ import annotations
 
+import math
 import re
 from abc import ABCMeta, abstractmethod
 from collections import defaultdict
@@ -1784,6 +1785,19 @@ class Naming(Formatter, level=5):
         )
 
 
+SIZE: Tuple[str, ...] = (
+    "B",
+    "KB",
+    "MB",
+    "GB",
+    "TB",
+    "PB",
+    "EB",
+    "ZB",
+    "YB",
+)
+
+
 class Storage(Formatter):
     """Storage object for register process that implement formatter and
     parser.
@@ -1838,6 +1852,38 @@ class Storage(Formatter):
                 "value": lambda: f"{round(int(size) / 8)}B",
                 "regex": r"(?P<byte>[0-9]*B)",
             },
+            "%K": {
+                "value": partial(Storage.bit2byte, size, "KB"),
+                "regex": r"(?P<byte_kilo>[0-9]*KB)",
+            },
+            "%M": {
+                "value": partial(Storage.bit2byte, size, "MB"),
+                "regex": r"(?P<byte_mega>[0-9]*MB)",
+            },
+            "%G": {
+                "value": partial(Storage.bit2byte, size, "GB"),
+                "regex": r"(?P<byte_giga>[0-9]*GB)",
+            },
+            "%T": {
+                "value": partial(Storage.bit2byte, size, "TB"),
+                "regex": r"(?P<byte_tera>[0-9]*TB)",
+            },
+            "%P": {
+                "value": partial(Storage.bit2byte, size, "PB"),
+                "regex": r"(?P<byte_peta>[0-9]*PB)",
+            },
+            "%E": {
+                "value": partial(Storage.bit2byte, size, "EB"),
+                "regex": r"(?P<byte_exa>[0-9]*EB)",
+            },
+            "%Z": {
+                "value": partial(Storage.bit2byte, size, "ZB"),
+                "regex": r"(?P<byte_zetta>[0-9]*ZB)",
+            },
+            "%Y": {
+                "value": partial(Storage.bit2byte, size, "YB"),
+                "regex": r"(?P<byte_yotta>[0-9]*YB)",
+            },
         }
 
     def _from_byte(self) -> str:
@@ -1845,6 +1891,11 @@ class Storage(Formatter):
 
     def _from_bit(self) -> str:
         return self.bit or "0"
+
+    @staticmethod
+    def bit2byte(value: str, order: str) -> str:
+        p = math.pow(1024, SIZE.index(order))
+        return f"{(round((int(value) / 8) / p))}{order}"
 
 
 Constant = TypeVar("Constant", bound="__BaseConstant")
