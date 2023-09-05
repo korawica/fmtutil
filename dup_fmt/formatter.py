@@ -25,6 +25,7 @@ from typing import (
     Tuple,
     Type,
     TypedDict,
+    TypeVar,
     Union,
     final,  # docs: https://github.com/python/mypy/issues/9953
 )
@@ -235,7 +236,6 @@ class Formatter(MetaFormatter):
     .. class attributes::
 
         - base_fmt: str
-        - base_attr_prefix: str
         - base_level: int : the maximum level of slot level of this instance
         - Config: object : Configuration object
 
@@ -255,7 +255,7 @@ class Formatter(MetaFormatter):
 
     .. seealso::
 
-        This class is abstract class for any formatter object. It will raise
+        This class is abstract class for any formatter class. It will raise
     `NotImplementedError` when the necessary attributes and methods does not
     implement from subclass.
     """
@@ -291,7 +291,11 @@ class Formatter(MetaFormatter):
         cls,
         value: Any,
     ) -> Formatter:
-        """Passer the value of this formatter subclass data"""
+        """Passer the value of this formatter subclass data.
+
+        :param value: an any value that able to pass to `cls.formatter` method.
+        :type value: Any
+        """
         fmt_filter = [
             (k, caller(v["value"]))
             for k, v in cls.formatter(value).items()
@@ -478,6 +482,8 @@ class Formatter(MetaFormatter):
     def __init__(
         self,
         formats: Optional[Dict[str, Any]] = None,
+        *,
+        set_std_value: bool = True,
     ) -> None:
         """Main initialization get the format mapping from input argument
         and generate the necessary attributes for define the value of this
@@ -527,11 +533,12 @@ class Formatter(MetaFormatter):
             )
 
         # Set standard property by default is string value or `self.string`
-        setattr(
-            self,
-            self.__class__.__name__.lower(),
-            str(self.string),
-        )
+        if set_std_value:
+            setattr(
+                self,
+                self.__class__.__name__.lower(),
+                str(self.string),
+            )
 
     def __setattr__(self, name: str, value: Any) -> None:
         super().__setattr__(name, value)
@@ -1775,7 +1782,7 @@ class __BaseConstant(Formatter):
 
     base_fmt: str = ""
 
-    __slots__ = ("constant",)
+    __slots__: Tuple[str, ...] = ("_constant",)
 
     @classmethod
     def passer(cls, value: Any):
@@ -1802,29 +1809,27 @@ class __BaseConstant(Formatter):
                 "The Constant object should define the `cls.base_formatter` "
                 "before make a instance."
             )
-        super().__init__(formats=formats)
+        super().__init__(formats=formats, set_std_value=False)
 
-    def __repr__(self):
-        return super().__repr__()
+        # Set constant property
+        self._constant: List[str] = [
+            getter for v in self.__slots__ if (getter := getattr(self, v, None))
+        ]
+
+        # Set standard property by default is string value or `self.string`
+        setattr(
+            self,
+            self.__class__.__name__.lower(),
+            str(self.string),
+        )
 
     @property
-    def value(self) -> str:
-        return self.string
+    def value(self) -> List[str]:
+        return self._constant
 
     @property
     def string(self) -> str:
-        return str(
-            "|".join(
-                [
-                    getter
-                    for v in filter(
-                        lambda x: (x != self.__class__.__name__.lower()),
-                        self.__slots__,
-                    )
-                    if (getter := getattr(self, v, None))
-                ]
-            )
-        )
+        return "|".join(self._constant)
 
     @property
     def priorities(self) -> ReturnPrioritiesType:
@@ -1835,7 +1840,7 @@ class __BaseConstant(Formatter):
 
     @staticmethod
     def formatter(  # type: ignore[override]
-        value: Optional[str] = None,
+        value: Optional[List[str]] = None,
     ) -> ReturnFormattersType:
         raise NotImplementedError(
             "Please implement formatter staticmethod for this sub-constant "
@@ -1846,14 +1851,6 @@ class __BaseConstant(Formatter):
         return not (self.value.__eq__(other.value))
 
 
-def fmt2const(fmt: Formatter) -> ConstantType:
-    """Constant function constructor that receive the Formatter instance and
-    freeze this value to Constant class.
-    """
-    _fmt: Dict[str, str] = fmt.values()
-    return dict2const(_fmt, name=f"{fmt.__class__.__name__}Const")
-
-
 def dict2const(fmt: Dict[str, str], name: str) -> ConstantType:
     """Constant function constructor that receive the dict of format string
     value and constant value.
@@ -1862,10 +1859,23 @@ def dict2const(fmt: Dict[str, str], name: str) -> ConstantType:
     class CustomConstant(__BaseConstant):
         base_fmt: str = "".join(fmt.keys())
 
-        __slots__ = (
+        __qualname__ = name
+
+        __slots__: Tuple[str, ...] = (
             name.lower(),
+            "_constant",
             *[convert_fmt_str(f) for f in fmt],
         )
+
+        def __repr__(self) -> str:
+            _base_fmt: str = "|".join(
+                self.__search_fmt(c) for c in self._constant
+            )
+            return (
+                f"<{self.__class__.__name__}"
+                f".parse('{self.string}', "
+                f"'{_base_fmt}')>"
+            )
 
         @staticmethod
         def formatter(  # type: ignore[override]
@@ -1886,37 +1896,60 @@ def dict2const(fmt: Dict[str, str], name: str) -> ConstantType:
                 for f in fmt
             }
 
+        def values(self, value: Optional[Any] = None) -> Dict[str, str]:
+            _ = value
+            return fmt
+
+        def __search_fmt(self, value: str) -> str:
+            for k, v in iter(self.values().items()):
+                if v == value:
+                    return k
+            raise FormatterValueError(
+                f"{self.__class__.__name__} does not support value {value!r} "
+                f"for searching the format string value from `self.values`."
+            )
+
     CustomConstant.__name__ = name
-    CustomConstant.__qualname__ = name
     return CustomConstant
 
 
-def create_const(
-    name: str,
+def fmt2const(fmt: Formatter) -> ConstantType:
+    """Constant function constructor that receive the Formatter instance and
+    freeze this value to Constant class.
+    """
+    _fmt: Dict[str, str] = fmt.values()
+    return dict2const(_fmt, name=f"{fmt.__class__.__name__}Const")
+
+
+Constant = TypeVar("Constant", bound=__BaseConstant)
+
+
+def make_const(
+    name: Optional[str] = None,
     formatter: Optional[Union[Dict[str, str], Formatter]] = None,
     *,
     fmt: Optional[FormatterType] = None,
     value: Optional[Any] = None,
 ) -> ConstantType:
+    """Constant function constructor"""
     _fmt: Dict[str, str]
-    if formatter:
-        if isinstance(formatter, Formatter):
-            _fmt = formatter.values()
-        else:
-            _fmt = formatter
-    else:
+    if not formatter:
         if fmt and value:
-            _fmt = fmt().values(value=value)
+            name: str = f"{fmt.__name__}Const"
+            formatter = fmt().values(value=value)
         else:
-            raise FormatterValueError(
-                "The Constant want formatter nor fmt and value arguments"
+            raise FormatterArgumentError(
+                "formatter",
+                "The Constant want formatter nor fmt and value arguments",
             )
-    return dict2const(_fmt, name=name)
+    elif isinstance(formatter, Formatter):
+        return fmt2const(formatter)
+    if not name:
+        raise FormatterArgumentError("name", "The Constant want name arguments")
+    return dict2const(formatter, name=name)
 
 
-Constant: Callable[[str, Dict[str, str]], ConstantType] = create_const
-
-EnvConstant: ConstantType = Constant(
+EnvConstant: ConstantType = make_const(
     name="EnvConstant",
     formatter={
         "%d": "development",
@@ -1943,6 +1976,23 @@ GroupValue = Dict[str, FormatterType]
 class FormatterGroup:
     """Group of any Formatters together with dynamic group naming like
     timestamp for Datetime formatter object.
+
+    :param formats: A mapping value of priority attribute data.
+    :type formats: Optional[dict](=None)
+
+    .. class attributes::
+
+        - base_groups: GroupValue
+
+    .. attributes::
+
+        - groups
+
+    .. methods::
+
+        -
+
+        This class is abstract class for any formatter group class.
     """
 
     # This value must reassign from child class
@@ -2084,7 +2134,7 @@ class FormatterGroup:
 
     def __init__(
         self,
-        formatters: Dict[
+        formats: Dict[
             str,
             Union[
                 Dict[str, str],
@@ -2100,7 +2150,7 @@ class FormatterGroup:
         self.groups: Dict[str, Formatter] = {
             group: fmt() for group, fmt in self.base_groups.items()
         }
-        for k, v in formatters.items():
+        for k, v in formats.items():
             if k not in self.base_groups:
                 raise FormatterGroupValueError(
                     f"{self.__class__.__name__} does not support for this "
@@ -2134,18 +2184,6 @@ class FormatterGroup:
             f".parse(value={'_'.join(values)!r}, "
             f"fmt={'_'.join(fmts)!r})>"
         )
-
-    def __new__(
-        cls: Type[FormatterGroup],
-        *args,
-        **kwargs,
-    ) -> Type[FormatterGroup]:
-        if isinstance(cls.base_groups, NotImplementedError):
-            raise NotImplementedError(
-                "This FormatterGroup sub-class does not base group of name and"
-                "FormatterType in `cls.base_groups`"
-            )
-        return super().__new__(cls)
 
     def __str__(self) -> str:
         return ", ".join(v.string for v in self.groups.values())
@@ -2200,6 +2238,8 @@ __all__ = (
     "Constant",
     "EnvConstant",
     "fmt2const",
+    "dict2const",
+    "make_const",
     # Formatter Group
     "FormatterGroup",
     "FormatterGroupType",

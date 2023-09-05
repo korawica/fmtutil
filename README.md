@@ -158,15 +158,15 @@ naming.format('Camel case is %c')
 ### Constant
 
 ```python
-from dup_fmt import Constant
+from dup_fmt import Constant, make_const
 from dup_fmt.exceptions import FormatterError
 
-const = Constant({
+const = make_const({
     '%n': 'normal',
     '%s': 'special',
 })
 try:
-    parse_const = const.parse(
+    parse_const: Constant = const.parse(
         value='This_is_constant_normal',
         fmt='This_is_constant_%n'
     )
