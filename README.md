@@ -60,7 +60,7 @@ better package than this project.
 
 > **Note**: \
 > Any formatter object was implemented the `self.valid` method for help us validate
-> target string value like the above example scenario,
+> format string value like the above example scenario,
 > ```python
 > this_date = Datetime.parse('20220101', '%Y%m%d')
 > this_date.valid('any_files_20220101.csv', 'any_files_%Y%m%d.csv')  # True
@@ -72,6 +72,7 @@ better package than this project.
 - [Version](#version)
 - [Serial](#serial)
 - [Naming](#naming)
+- [Storage](#storage)
 - [Constant](#constant)
 
 The main purpose is **Formatter Objects** for `parse` and `format` with string
