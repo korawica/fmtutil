@@ -22,7 +22,6 @@ from typing import (
     Callable,
     Dict,
     List,
-    Literal,
     NoReturn,
     Optional,
     Tuple,
@@ -51,8 +50,6 @@ from .utils import (
     convert_fmt_str,
     itself,
 )
-
-NotImplementedType = Literal["NotImplemented"]
 
 FormatterType = Type["Formatter"]
 FormatterGroupType = Type["__FormatterGroup"]
@@ -266,7 +263,7 @@ class Formatter(MetaFormatter):
     """
 
     # This value must reassign from child class
-    base_fmt: Union[str, NotImplementedType] = NotImplemented
+    base_fmt: str = ""
 
     # This value must reassign from child class
     base_level: int = 1
@@ -285,7 +282,7 @@ class Formatter(MetaFormatter):
         cls.base_level = level
         super().__init_subclass__(**kwargs)
 
-        if cls.base_fmt is NotImplemented:
+        if not cls.base_fmt:
             raise NotImplementedError(
                 "Please implement base_fmt class property for this "
                 "sub-formatter class."
@@ -339,9 +336,9 @@ class Formatter(MetaFormatter):
         :return: an instance of Formatter that parse from string value by
             format string.
         """
-        _fmt: Union[str, NotImplementedType] = fmt or cls.base_fmt
+        _fmt: str = fmt or cls.base_fmt
 
-        if not _fmt or (_fmt is NotImplemented):
+        if not _fmt:
             raise NotImplementedError(
                 "This Formatter class does not set default format string "
                 "value."
@@ -1827,7 +1824,7 @@ class Storage(Formatter):
                 "level": 1,
             },
             "byte": {
-                "value": lambda x: str(int(x.replace("B", "")) * 8),
+                "value": lambda x: self.to_byte(x, "B"),
                 "level": 1,
             },
             "byte_kilo": {
@@ -1957,7 +1954,7 @@ class __BaseConstant(Formatter):
     parser.
     """
 
-    base_fmt: str = ""
+    base_fmt: str = NotImplemented
 
     __slots__: Tuple[str, ...] = ("_constant",)
 
@@ -2186,12 +2183,12 @@ class __FormatterGroup:
     """
 
     # This value must reassign from child class
-    base_groups: Dict[str, FormatterType] = NotImplemented
+    base_groups: Dict[str, FormatterType] = {}
 
     def __init_subclass__(cls: FormatterGroupType, **kwargs: Any) -> None:
         super().__init_subclass__(**kwargs)
 
-        if cls.base_groups is NotImplemented:
+        if not cls.base_groups:
             raise NotImplementedError(
                 "Please implement base_groups class property for this "
                 "sub-formatter group class."
