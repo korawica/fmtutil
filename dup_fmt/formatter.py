@@ -2037,13 +2037,19 @@ class __BaseConstant(Formatter):
         return not (self.value.__eq__(other.value))
 
 
-def dict2const(fmt: Dict[str, str], name: str) -> ConstantType:
+def dict2const(
+    fmt: Dict[str, str],
+    name: str,
+    *,
+    base_fmt: Optional[str] = None,
+) -> ConstantType:
     """Constant function constructor that receive the dict of format string
     value and constant value.
     """
+    _base_fmt: str = base_fmt or "".join(fmt.keys())
 
     class CustomConstant(__BaseConstant):
-        base_fmt: str = "".join(fmt.keys())
+        base_fmt: str = _base_fmt
 
         __qualname__ = name
 
@@ -2102,7 +2108,11 @@ def fmt2const(fmt: Formatter) -> ConstantType:
     freeze this value to Constant class.
     """
     _fmt: Dict[str, str] = fmt.values()
-    return dict2const(_fmt, name=f"{fmt.__class__.__name__}Const")
+    return dict2const(
+        _fmt,
+        name=f"{fmt.__class__.__name__}Const",
+        base_fmt=fmt.base_fmt,
+    )
 
 
 def make_const(
@@ -2113,7 +2123,7 @@ def make_const(
     value: Optional[Any] = None,
 ) -> ConstantType:
     """Constant function constructor"""
-    _fmt: Dict[str, str]
+    base_fmt: Optional[str] = None
     if not formatter:
         if fmt is None:
             raise FormatterArgumentError(
@@ -2122,11 +2132,12 @@ def make_const(
             )
         name = f"{fmt.__name__}Const"
         formatter = fmt().values(value=value)
+        base_fmt = fmt.base_fmt
     elif isinstance(formatter, Formatter):
         return fmt2const(formatter)
     if not name:
         raise FormatterArgumentError("name", "The Constant want name arguments")
-    return dict2const(formatter, name=name)
+    return dict2const(formatter, name=name, base_fmt=base_fmt)
 
 
 EnvConstant: ConstantType = make_const(

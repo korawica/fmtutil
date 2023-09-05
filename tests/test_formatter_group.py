@@ -111,7 +111,8 @@ class FormatterGroupTestCase(unittest.TestCase):
                     formatter=fmt.Naming.parse("data_engineer", "%s")
                 ),
                 "domain": fmt.make_const(
-                    formatter=fmt.Naming.parse("demo", "%s")
+                    fmt=fmt.Naming,
+                    value="demo",
                 ),
                 "timestamp": fmt.Datetime,
             }
@@ -123,9 +124,9 @@ class FormatterGroupTestCase(unittest.TestCase):
             ),
         )
         self.assertEqual(
-            "20210101_data_engineer",
+            "20210101_data_engineer_demo",
             ConstGroup({"timestamp": datetime.datetime(2021, 1, 1, 12)}).format(
-                "{timestamp:%Y%m%d}_{naming:%s}"
+                "{timestamp:%Y%m%d}_{naming:%s}_{domain}"
             ),
         )
 
