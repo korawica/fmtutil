@@ -2166,6 +2166,7 @@ ReturnPVParseType = Dict[str, PVParseValue]
 
 
 FormatterGroup = TypeVar("FormatterGroup", bound="__FormatterGroup")
+GroupValue = Dict[str, FormatterType]
 
 
 class __FormatterGroup:
@@ -2177,7 +2178,7 @@ class __FormatterGroup:
 
     .. class attributes::
 
-        - base_groups: Dict[str, FormatterType]
+        - base_groups: GroupValue
 
     .. attributes::
 
@@ -2191,7 +2192,7 @@ class __FormatterGroup:
     """
 
     # This value must reassign from child class
-    base_groups: Dict[str, FormatterType] = {}
+    base_groups: GroupValue = {}
 
     def __init_subclass__(cls: FormatterGroupType, **kwargs: Any) -> None:
         super().__init_subclass__(**kwargs)
@@ -2377,12 +2378,27 @@ class __FormatterGroup:
         return ", ".join(v.string for v in self.groups.values())
 
 
-def make_group(group: Dict[str, FormatterType]) -> FormatterGroupType:
-    name: str = "".join(_.__name__ for _ in group.values())
+def make_group(group: GroupValue) -> FormatterGroupType:
+    # Validate
+    for _ in group.values():
+        try:
+            if not issubclass(_, Formatter):
+                raise ValueError(
+                    "Make group constructor function want group with type, "
+                    "Dict[str, FormatterType]."
+                )
+        except TypeError as err:
+            raise FormatterGroupArgumentError(
+                "group",
+                "Make group constructor function want group with type, "
+                "Dict[str, FormatterType], not instance.",
+            ) from err
+
+    name: str = f'{"".join(_.__name__ for _ in group.values())}Group'
 
     @total_ordering
     class CustomGroup(__FormatterGroup):
-        base_groups: Dict[str, FormatterType] = group
+        base_groups: GroupValue = group
 
         __qualname__ = name
 

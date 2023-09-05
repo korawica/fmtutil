@@ -13,6 +13,7 @@ import dup_fmt.formatter as fmt
 
 class FormatterGroupTestCase(unittest.TestCase):
     def setUp(self) -> None:
+        # Create FormatterGroup class
         self.DateName: fmt.FormatterGroupType = fmt.make_group(
             {
                 "name": fmt.Naming,
@@ -31,6 +32,7 @@ class FormatterGroupTestCase(unittest.TestCase):
                 "role": fmt.Naming,
             }
         )
+        # Create FormatterGroup instance
         self.gp = self.DateName(
             {
                 "name": fmt.Naming.parse("data engineer"),
@@ -58,15 +60,48 @@ class FormatterGroupTestCase(unittest.TestCase):
 
     def test_fmt_group_init_raise(self):
         with self.assertRaises(fmt.FormatterGroupValueError) as context:
-            self.gp2_default = self.DateVersion(
+            self.DateVersion(
                 {
                     "version": fmt.Version(),
                     "timestamp": fmt.Datetime(),
                 }
             )
         self.assertTrue(
-            "VersionDatetime does not support for this group name, 'timestamp'."
+            "VersionDatetimeGroup does not support for this group name, "
+            "'timestamp'." in str(context.exception)
+        )
+
+        with self.assertRaises(fmt.FormatterGroupArgumentError) as context:
+            fmt.make_group(
+                {
+                    "naming": fmt.make_const(
+                        formatter=fmt.Naming.parse("data_engineer", "%s")
+                    ),
+                    "timestamp": fmt.Naming.parse("demo", "%s"),
+                }
+            )
+        self.assertTrue(
+            "with 'group', Make group constructor function want group with "
+            "type, Dict[str, FormatterType], not instance."
             in str(context.exception)
+        )
+
+    def test_fmt_group_const(self):
+        ConstGroup = fmt.make_group(
+            {
+                "naming": fmt.make_const(
+                    formatter=fmt.Naming.parse("data_engineer", "%s")
+                ),
+                "domain": fmt.make_const(
+                    formatter=fmt.Naming.parse("demo", "%s")
+                ),
+            }
+        )
+        self.assertEqual(
+            "Demo",
+            ConstGroup.parse("data_engineer", "{naming:%s}").format(
+                "{domain:%p}"
+            ),
         )
 
     def test_fmt_group_properties(self):
@@ -79,7 +114,7 @@ class FormatterGroupTestCase(unittest.TestCase):
         )
         self.assertEqual(
             (
-                "<NamingDatetime.parse(value='data engineer_2022-01-01 "
+                "<NamingDatetimeGroup.parse(value='data engineer_2022-01-01 "
                 "00:00:00.000', fmt='%n_%Y-%m-%d %H:%M:%S.%f')>"
             ),
             self.gp.__repr__(),
@@ -286,8 +321,8 @@ class FormatterGroupTestCase(unittest.TestCase):
                 fmt="{datetime:%Y%m%d}_{name}",
             )
         self.assertTrue(
-            "'<' not supported between instances of 'VersionDatetime' and "
-            "'NamingDatetime'" in str(context.exception)
+            "'<' not supported between instances of 'VersionDatetimeGroup' and "
+            "'NamingDatetimeGroup'" in str(context.exception)
         )
         with self.assertRaises(TypeError) as context:
             _ = self.DateVersion.parse(
@@ -298,8 +333,8 @@ class FormatterGroupTestCase(unittest.TestCase):
                 fmt="{datetime:%Y%m%d}_{name}",
             )
         self.assertTrue(
-            "'>' not supported between instances of 'VersionDatetime' and "
-            "'NamingDatetime'" in str(context.exception)
+            "'>' not supported between instances of 'VersionDatetimeGroup' and "
+            "'NamingDatetimeGroup'" in str(context.exception)
         )
 
     def test_fmt_group_max_min(self):
