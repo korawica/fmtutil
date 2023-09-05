@@ -2335,6 +2335,7 @@ class __FormatterGroup:
         formats: Union[
             Dict[str, Dict[str, str]],
             Dict[str, Formatter],
+            Any,
         ],
     ) -> None:
         """Main initialization get the formatter value, a mapping of name
@@ -2355,11 +2356,13 @@ class __FormatterGroup:
     def __construct_groups(
         self,
         group: str,
-        v: Union[Dict[str, str], Formatter],
+        v: Union[Dict[str, str], Formatter, Any],
     ) -> Formatter:
         if isinstance(v, Formatter):
             return v
-        return self.base_groups[group](v)
+        elif isinstance(v, dict):
+            return self.base_groups[group](v)
+        return self.base_groups[group].passer(v)
 
     def __repr__(self) -> str:
         values: List[str] = []
@@ -2384,14 +2387,17 @@ def make_group(group: GroupValue) -> FormatterGroupType:
         try:
             if not issubclass(_, Formatter):
                 raise ValueError(
-                    "Make group constructor function want group with type, "
-                    "Dict[str, FormatterType]."
+                    f"Make group constructor function want group with type, "
+                    f"Dict[str, FormatterType], not {_.__name__!r}."
                 )
         except TypeError as err:
             raise FormatterGroupArgumentError(
                 "group",
-                "Make group constructor function want group with type, "
-                "Dict[str, FormatterType], not instance.",
+                (
+                    f"Make group constructor function want group with type, "
+                    f"Dict[str, FormatterType], not instance of "
+                    f"{_.__class__.__name__!r}."
+                ),
             ) from err
 
     name: str = f'{"".join(_.__name__ for _ in group.values())}Group'

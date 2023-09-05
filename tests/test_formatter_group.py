@@ -6,6 +6,7 @@
 """
 Test the formatter object.
 """
+import datetime
 import unittest
 
 import dup_fmt.formatter as fmt
@@ -82,7 +83,24 @@ class FormatterGroupTestCase(unittest.TestCase):
             )
         self.assertTrue(
             "with 'group', Make group constructor function want group with "
-            "type, Dict[str, FormatterType], not instance."
+            "type, Dict[str, FormatterType], not instance of 'Naming'."
+            in str(context.exception)
+        )
+
+        with self.assertRaises(ValueError) as context:
+            fmt.make_group(
+                {
+                    "naming": fmt.make_const(
+                        formatter=fmt.Naming.parse("data_engineer", "%s")
+                    ),
+                    "timestamp": datetime.datetime,
+                }
+            )
+        self.assertTrue(
+            (
+                "Make group constructor function want group with type, "
+                "Dict[str, FormatterType], not 'datetime'"
+            )
             in str(context.exception)
         )
 
@@ -95,12 +113,19 @@ class FormatterGroupTestCase(unittest.TestCase):
                 "domain": fmt.make_const(
                     formatter=fmt.Naming.parse("demo", "%s")
                 ),
+                "timestamp": fmt.Datetime,
             }
         )
         self.assertEqual(
             "Demo",
             ConstGroup.parse("data_engineer", "{naming:%s}").format(
                 "{domain:%p}"
+            ),
+        )
+        self.assertEqual(
+            "20210101_data_engineer",
+            ConstGroup({"timestamp": datetime.datetime(2021, 1, 1, 12)}).format(
+                "{timestamp:%Y%m%d}_{naming:%s}"
             ),
         )
 
