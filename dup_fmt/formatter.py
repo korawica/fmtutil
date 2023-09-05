@@ -1490,7 +1490,7 @@ class Naming(Formatter, level=5):
 
     @property
     def value(self) -> List[str]:
-        return self.string.split(" ")
+        return self.string.split()
 
     @property
     def string(self) -> str:
@@ -1612,7 +1612,7 @@ class Naming(Formatter, level=5):
         _value: List[str] = (
             Naming.__prepare_value(value)
             if isinstance(value, str)
-            else (value or [])
+            else (value or [""])
         )
         return {
             "%n": {
@@ -1651,13 +1651,19 @@ class Naming(Formatter, level=5):
             },
             "%a": {
                 "value": partial(
-                    Naming.__join_with, "", _value, lambda x: x[0]
+                    Naming.__join_with,
+                    "",
+                    _value,
+                    lambda x: (x[0] if x else ""),
                 ),
                 "regex": r"(?P<shorts>[a-z0-9]+)",
             },
             "%A": {
                 "value": partial(
-                    Naming.__join_with, "", _value, lambda x: x[0].upper()
+                    Naming.__join_with,
+                    "",
+                    _value,
+                    lambda x: (x[0].upper() if x else ""),
                 ),
                 "regex": r"(?P<shorts_upper>[A-Z0-9]+)",
             },
@@ -1763,8 +1769,11 @@ class Naming(Formatter, level=5):
 
     @staticmethod
     def __join_with(
-        by: str, values: List[str], func: Optional[Callable[[str], str]] = None
+        by: str,
+        values: List[str],
+        func: Optional[Callable[[str], str]] = None,
     ) -> str:
+        """Return string value that join with any separate string"""
         return by.join(map(func, values)) if func else by.join(values)
 
     @staticmethod
@@ -2106,14 +2115,13 @@ def make_const(
     """Constant function constructor"""
     _fmt: Dict[str, str]
     if not formatter:
-        if fmt and value:
-            name = f"{fmt.__name__}Const"
-            formatter = fmt().values(value=value)
-        else:
+        if fmt is None:
             raise FormatterArgumentError(
                 "formatter",
                 "The Constant want formatter nor fmt and value arguments",
             )
+        name = f"{fmt.__name__}Const"
+        formatter = fmt().values(value=value)
     elif isinstance(formatter, Formatter):
         return fmt2const(formatter)
     if not name:
