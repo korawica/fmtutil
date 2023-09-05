@@ -84,6 +84,8 @@ class VersionTestCase(unittest.TestCase):
         )
 
     def test_version_formatter(self):
+        formatter = fmt.Version.formatter(version=Version(version="0.5.6"))
+        regex = fmt.Version.regex()
         self.assertDictEqual(
             {
                 "%f": {
@@ -118,10 +120,13 @@ class VersionTestCase(unittest.TestCase):
                     "value": "+None",
                 },
             },
-            fmt.extract_regex_with_value(
-                fmt=fmt.Version,
-                value=Version(version="0.5.6"),
-            ),
+            {
+                i: {
+                    "regex": regex[i],
+                    "value": fmt.caller(formatter[i]["value"]),
+                }
+                for i in formatter
+            },
         )
 
     def test_version_properties(self):

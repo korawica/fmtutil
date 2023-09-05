@@ -7,6 +7,7 @@
   - [Version](#version)
   - [Serial](#serial)
   - [Naming](#naming)
+  - [Storage](#storage)
 
 ## Formatter Objects
 
@@ -14,6 +15,7 @@
 - [Version](#version)
 - [Serial](#serial)
 - [Naming](#naming)
+- [Storage](#storage)
 
 ### Datetime
 
@@ -110,4 +112,21 @@
 %-K : Kebab title case format
 %v  : normal name removed vowel
 %V  : normal name removed vowel with upper case
+```
+
+### Storage
+
+**Formatter Mapping**:
+
+```text
+%b  : Bit format
+%B  : Byte format
+%K  : Kilo-Byte format
+%M  : Mega-Byte format
+%G  : Giga-Byte format
+%T  : Tera-Byte format
+%P  : Peta-Byte format
+%E  : Exa-Byte format
+%Z  : Zetta-Byte format
+%Y  : Yotta-Byte format
 ```

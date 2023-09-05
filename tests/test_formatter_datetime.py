@@ -111,6 +111,10 @@ class DatetimeTestCase(unittest.TestCase):
         )
 
     def test_datetime_format(self):
+        self.assertEqual(
+            r"(\d{4})(01|02|03|04|05|06|07|08|09|10|11|12)([0-3][0-9])",
+            fmt.Datetime.gen_format("%Y%m%d", alias=False),
+        )
         self.assertEqual("22", self.dt.format("%-y"))
         self.assertEqual("19900101", self.dt_default.format("%Y%m%d"))
 

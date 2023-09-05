@@ -15,52 +15,58 @@ from dup_fmt.exceptions import FormatterValueError
 class ConstantTestCase(unittest.TestCase):
     def setUp(self) -> None:
         self.maxDiff = None
-        self.const: fmt.ConstantType = fmt.Constant(
-            {
+        self.const: fmt.ConstantType = fmt.make_const(
+            name="NameConst",
+            formatter={
                 "%n": "normal",
                 "%s": "special",
-            }
+            },
         )
-        self.const02: fmt.ConstantType = fmt.Constant(
-            {
+        self.const02: fmt.ConstantType = fmt.make_const(
+            name="ExtensionConst",
+            formatter={
                 "%g": "gzip",
                 "%-g": "gz",
                 "%b": "bz2",
                 "%r": "rar",
                 "%x": "xz",
                 "%z": "zip",
-            }
+            },
         )
-        self.const03: fmt.ConstantType = fmt.Constant(
-            fmt.Naming(
+        self.const03: fmt.ConstantType = fmt.make_const(
+            formatter=fmt.Naming(
                 {
                     "shorts": "de",
                     "strings": "data engineer",
                 }
-            )
+            ),
         )
-        self.const04: fmt.ConstantType = fmt.Constant(
-            fmt.Serial.parse("199", "%n")
+        self.const04: fmt.ConstantType = fmt.make_const(
+            formatter=fmt.Serial.parse("199", "%n"),
         )
-        self.const05: fmt.ConstantType = fmt.Constant(
+        self.const05: fmt.ConstantType = fmt.make_const(
             fmt=fmt.Naming,
             value=["data", "pipeline"],
         )
-        self.const06: fmt.ConstantType = fmt.Constant(
-            fmt.Serial().values("2023")
-        )
-        self.ct = self.const.parse("normal_life", "%n_life")
-        self.ct02 = self.const02.parse("gzip_life", "%g_life")
-        self.ct03 = self.const03.parse("data engineer", "%n")
-        self.ct04 = self.const04.parse("199", "%n")
-        self.ct05 = self.const05.parse("data_pipeline", "%s")
-        self.ct06 = self.const06.parse("11111100111", "%b")
+        self.const06: fmt.ConstantType = fmt.fmt2const(fmt.Serial.passer(2023))
+        self.ct: fmt.Constant = self.const.parse("normal_life", "%n_life")
+        self.ct02: fmt.Constant = self.const02.parse("gzip_life", "%g_life")
+        self.ct03: fmt.Constant = self.const03.parse("data engineer", "%n")
+        self.ct04: fmt.Constant = self.const04.parse("199", "%n")
+        self.ct05: fmt.Constant = self.const05.parse("data_pipeline", "%s")
+        self.ct06: fmt.Constant = self.const06.parse("11111100111", "%b")
 
     def test_const_init_raise(self):
-        with self.assertRaises(fmt.FormatterValueError) as context:
-            fmt.Constant()
+        with self.assertRaises(fmt.FormatterArgumentError) as context:
+            fmt.make_const(name="DemoConst")
         self.assertTrue(
-            "The Constant want formatter nor fmt and value arguments"
+            "with 'formatter', The Constant want formatter nor fmt and value "
+            "arguments" in str(context.exception)
+        )
+        with self.assertRaises(fmt.FormatterArgumentError) as context:
+            fmt.make_const(formatter={"%n": "normal"})
+        self.assertTrue(
+            "with 'name', The Constant want name arguments"
             in str(context.exception)
         )
 
@@ -110,7 +116,7 @@ class ConstantTestCase(unittest.TestCase):
     def test_const_parser(self):
         self.assertEqual(
             self.ct.parse("normal_and_special", "%n_and_%s").value,
-            "normal|special",
+            ["normal", "special"],
         )
 
     def test_const_parser_raise(self):
@@ -125,14 +131,36 @@ class ConstantTestCase(unittest.TestCase):
         )
 
     def test_const_properties(self):
+        self.assertEqual(
+            "<NameConst.parse('normal', '%n')>", self.ct.__repr__()
+        )
+        self.assertEqual(
+            "<ExtensionConst.parse('gzip', '%g')>", self.ct02.__repr__()
+        )
+        self.assertEqual(
+            "<NamingConst.parse('data engineer', '%n')>", self.ct03.__repr__()
+        )
+        self.assertEqual(
+            "<SerialConst.parse('199', '%n')>", self.ct04.__repr__()
+        )
+        self.assertEqual(
+            "<NamingConst.parse('data_pipeline', '%s')>", self.ct05.__repr__()
+        )
+        self.assertEqual(
+            "<SerialConst.parse('11111100111', '%b')>", self.ct06.__repr__()
+        )
         self.assertEqual(1, self.ct.level.value)
-        self.assertEqual("normal", self.ct.value)
+        self.assertEqual(["normal"], self.ct.value)
         self.assertEqual("normal", self.ct.string)
-        self.assertEqual("gzip", self.ct02.value)
+        self.assertEqual(["gzip"], self.ct02.value)
         self.assertEqual("gzip", self.ct02.string)
-        self.assertEqual("data engineer", self.ct03.value)
+        self.assertEqual(["data engineer"], self.ct03.value)
         self.assertEqual("data engineer", self.ct03.string)
 
     def test_const_format(self):
         self.assertEqual("special", self.ct.format("%s"))
         self.assertEqual("normal normal special", self.ct.format("%n %n %s"))
+
+    def test_const_order(self):
+        self.assertTrue(self.ct < self.ct02)
+        self.assertTrue(self.ct > self.ct02)

@@ -10,6 +10,7 @@ config when inherit base class.
 """
 from __future__ import annotations
 
+import math
 import re
 from abc import ABCMeta, abstractmethod
 from collections import defaultdict
@@ -21,27 +22,28 @@ from typing import (
     Callable,
     Dict,
     List,
-    Literal,
+    NoReturn,
     Optional,
     Tuple,
     Type,
     TypedDict,
+    TypeVar,
     Union,
+    final,  # docs: https://github.com/python/mypy/issues/9953
 )
 
 # TODO: Review ``semver`` package instead ``packaging``.
 #  docs: https://pypi.org/project/semver/
 import packaging.version as pck_version
-from dateutil.relativedelta import relativedelta
 from dup_utils.core import remove_pad  # type: ignore
 
 from .exceptions import (
     FormatterArgumentError,
+    FormatterGroupArgumentError,
+    FormatterGroupValueError,
     FormatterKeyError,
-    FormatterTypeError,
     FormatterValueError,
 )
-from .objects import relativeserial
 from .utils import (
     caller,
     concat,
@@ -50,10 +52,11 @@ from .utils import (
 )
 
 FormatterType = Type["Formatter"]
+FormatterGroupType = Type["__FormatterGroup"]
+ConstantType = Type["__BaseConstant"]
+
 PriorityCallable = Union[Callable[[Any], Any], Callable[[], Any], partial]
 FormatterCallable = Union[Callable[[], Any], partial]
-
-ConstantType = Type["__BaseConstant"]
 
 
 class PriorityValue(TypedDict):
@@ -63,6 +66,7 @@ class PriorityValue(TypedDict):
     level: Optional[Union[int, Tuple[int, ...]]]
 
 
+@final
 class CRegexValue(TypedDict):
     """Type Dictionary for value of mapping of ``cls.formatter``"""
 
@@ -70,6 +74,7 @@ class CRegexValue(TypedDict):
     cregex: str
 
 
+@final
 class RegexValue(TypedDict):
     """Type Dictionary for value of mapping of ``cls.formatter``"""
 
@@ -196,7 +201,13 @@ class SlotLevel:
 
 @dataclass(frozen=True)
 class PriorityData:
-    """Priority Data class"""
+    """Priority Data class
+
+    .. dataclass attributes::
+
+        - value: PriorityCallable
+        - level: Optional[Union[int, Tuple[int, ...]]]
+    """
 
     value: PriorityCallable = field(default=itself, repr=False)
     level: Optional[Union[int, Tuple[int, ...]]] = field(default=(0,))
@@ -227,7 +238,6 @@ class Formatter(MetaFormatter):
     .. class attributes::
 
         - base_fmt: str
-        - base_attr_prefix: str
         - base_level: int : the maximum level of slot level of this instance
         - Config: object : Configuration object
 
@@ -247,19 +257,13 @@ class Formatter(MetaFormatter):
 
     .. seealso::
 
-        This class is abstract class for any formatter object. It will raise
+        This class is abstract class for any formatter class. It will raise
     `NotImplementedError` when the necessary attributes and methods does not
     implement from subclass.
     """
 
     # This value must reassign from child class
-    base_fmt: Union[str, NotImplementedError] = NotImplementedError(
-        "Please implement base_fmt class property "
-        "for this sub-formatter class"
-    )
-
-    # This value must reassign from child class
-    base_attr_prefix: str = ""
+    base_fmt: str = ""
 
     # This value must reassign from child class
     base_level: int = 1
@@ -268,6 +272,44 @@ class Formatter(MetaFormatter):
         """Base Configuration for any subclass of formatter"""
 
         base_config_value: Optional[Any] = None
+
+    def __init_subclass__(
+        cls: FormatterType,
+        /,
+        level: int = 1,
+        **kwargs: Any,
+    ) -> None:
+        cls.base_level = level
+        super().__init_subclass__(**kwargs)
+
+        if not cls.base_fmt:
+            raise NotImplementedError(
+                "Please implement base_fmt class property for this "
+                "sub-formatter class."
+            )
+        if not cls.__slots__:
+            raise NotImplementedError(
+                "Please implement `__slots__` class property for this "
+                "sub-formatter class."
+            )
+
+    @classmethod
+    def passer(
+        cls,
+        value: Any,
+    ) -> Formatter:
+        """Passer the value of this formatter subclass data.
+
+        :param value: an any value that able to pass to `cls.formatter` method.
+        :type value: Any
+        """
+        fmt_filter = [
+            (k, caller(v["value"]))
+            for k, v in cls.formatter(value).items()
+            if k in re.findall("(%[-+!*]?[A-Za-z])", cls.base_fmt)
+        ]
+        fmts, values = zip(*fmt_filter)
+        return cls.parse(value="_".join(values), fmt="_".join(fmts))
 
     @classmethod
     def parse(
@@ -294,15 +336,15 @@ class Formatter(MetaFormatter):
         :return: an instance of Formatter that parse from string value by
             format string.
         """
-        _fmt: Union[str, NotImplementedError] = fmt or cls.base_fmt
+        _fmt: str = fmt or cls.base_fmt
 
-        if not _fmt or isinstance(_fmt, NotImplementedError):
+        if not _fmt:
             raise NotImplementedError(
                 "This Formatter class does not set default format string "
                 "value."
             )
 
-        _fmt = cls.__parse_format(_fmt)
+        _fmt = cls.gen_format(_fmt)
         if _search := re.search(rf"^{_fmt}$", value):
             return cls(_search.groupdict())
 
@@ -311,14 +353,29 @@ class Formatter(MetaFormatter):
         )
 
     @classmethod
-    def __parse_format(cls, fmt: str) -> str:
-        """Parse format string value to regular expression value that able to
-        search with any input value.
+    def gen_format(
+        cls,
+        fmt: str,
+        *,
+        prefix: Optional[str] = None,
+        suffix: Optional[str] = None,
+        alias: bool = True,
+    ) -> str:
+        """Generate format string value that combine from any matching of
+        format name with format regular expression value that able to search.
 
         :param fmt: a format string value pass from input argument.
         :type fmt: str
+        :param prefix
+        :type prefix: Optional[str]
+        :param suffix
+        :type suffix: Optional[str]
+        :param alias
+        :type alias: bool
         """
         _cache: Dict[str, int] = defaultdict(lambda: 0)
+        _prefix: str = prefix or ""
+        _suffix: str = suffix or ""
         for fmt_match in re.finditer(r"(%[-+!*]?[A-Za-z])", fmt):
             fmt_str: str = fmt_match.group()
             regex: str = cls.regex()[fmt_str]
@@ -327,11 +384,14 @@ class Formatter(MetaFormatter):
                 regex,
             ):
                 _sr_re: str = _alias_match.group("alias_name")
-                regex = re.sub(
-                    rf"\(\?P<{_sr_re}>",
-                    f"(?P<{_sr_re}__{_cache[fmt_str]}>",
-                    regex,
-                )
+                if alias:
+                    regex = re.sub(
+                        rf"\(\?P<{_sr_re}>",
+                        f"(?P<{_prefix}{_sr_re}__{_cache[fmt_str]}{_suffix}>",
+                        regex,
+                    )
+                else:
+                    regex = re.sub(rf"\(\?P<{_sr_re}>", "(", regex)
             else:
                 raise FormatterValueError(
                     "Regex format string does not set group name for parsing "
@@ -358,11 +418,8 @@ class Formatter(MetaFormatter):
         results: Dict[str, str] = {}
         pre_results: Dict[str, str] = {}
         for f, props in cls.formatter().items():
-            # issue: https://github.com/python/mypy/issues/8887
-            # docs: https://mypy.readthedocs.io/en/stable/ -
-            #   literal_types.html#tagged-unions
             if "regex" in props:
-                results[f] = props["regex"]  # type: ignore[typeddict-item]
+                results[f] = props["regex"]
             elif "cregex" in props:
                 pre_results[f] = props["cregex"]
             else:
@@ -371,12 +428,19 @@ class Formatter(MetaFormatter):
                     "in dict value"
                 )
         for f, cr in pre_results.items():
-            # TODO: improve pref of this line when `results` was large
-            #  of mapping regex values
             cr = cr.replace("%%", "[ESCAPE]")
-            for rf in iter(results):
-                if rf in cr:
-                    cr = cr.replace(rf, results[rf])
+            for cm in re.finditer(r"(%[-+!*]?[A-Za-z])", cr):
+                cs: str = cm.group()
+                if cs in results:
+                    cr = cr.replace(cs, results[cs], 1)
+                else:
+                    raise FormatterArgumentError(
+                        "format",
+                        (
+                            f"format cregex string that contain {cs} regex "
+                            f"does not found."
+                        ),
+                    )
             results[f] = cr.replace("[ESCAPE]", "%%")
         return results
 
@@ -425,6 +489,8 @@ class Formatter(MetaFormatter):
     def __init__(
         self,
         formats: Optional[Dict[str, Any]] = None,
+        *,
+        set_std_value: bool = True,
     ) -> None:
         """Main initialization get the format mapping from input argument
         and generate the necessary attributes for define the value of this
@@ -436,18 +502,12 @@ class Formatter(MetaFormatter):
 
         # Set level of SlotLevel object that set from `base_level` and pass this
         # value to _level variable for update process in priorities loop.
-        setattr(
-            self,
-            f"_{self.base_attr_prefix}_level",
-            SlotLevel(level=self.base_level),
-        )
-        _level: SlotLevel = getattr(self, f"_{self.base_attr_prefix}_level")
+        self._level = SlotLevel(level=self.base_level)
+        _level: SlotLevel = self._level
 
         # Set None default of any set up value in `cls.__slots__`
         for attr in getattr(self, "__slots__", ()):
-            if attr != (
-                f"_{self.base_attr_prefix}_{self.__class__.__name__.lower()}"
-            ):
+            if attr != (self.__class__.__name__.lower()):
                 setattr(self, attr, None)
 
         for name, props in self.__priorities.items():
@@ -456,25 +516,17 @@ class Formatter(MetaFormatter):
             attr = name.split("_", maxsplit=1)[0]
 
             # Set attr condition
-            if getattr(self, f"_{self.base_attr_prefix}_{attr}"):
+            if getattr(self, attr):
                 continue
             elif any(name.endswith(i) for i in {"_default", "_fix"}):
-                setattr(
-                    self,
-                    f"_{self.base_attr_prefix}_{attr}",
-                    (
-                        props.value()  # type: ignore[call-arg]
-                        if callable(props.value)
-                        else props.value
-                    ),
-                )
+                setattr(self, attr, caller(props.value))
 
                 # Update level by default it will update at first level
                 _level.update(props.level)
             elif name in _formats:
                 setattr(
                     self,
-                    f"_{self.base_attr_prefix}_{attr}",
+                    attr,
                     props.value(_formats[name]),  # type: ignore[call-arg]
                 )
 
@@ -488,11 +540,12 @@ class Formatter(MetaFormatter):
             )
 
         # Set standard property by default is string value or `self.string`
-        setattr(
-            self,
-            f"_{self.base_attr_prefix}_{self.__class__.__name__.lower()}",
-            str(self.string),
-        )
+        if set_std_value:
+            setattr(
+                self,
+                self.__class__.__name__.lower(),
+                str(self.string),
+            )
 
     def __setattr__(self, name: str, value: Any) -> None:
         super().__setattr__(name, value)
@@ -554,10 +607,7 @@ class Formatter(MetaFormatter):
     @property
     def level(self) -> SlotLevel:
         """Return the slot level object of any subclass."""
-        return getattr(  # type: ignore[no-any-return]
-            self,
-            f"_{self.base_attr_prefix}_level",
-        )
+        return self._level
 
     @property
     def __priorities(self) -> Dict[str, PriorityData]:
@@ -616,8 +666,6 @@ class Serial(Formatter):
 
     base_fmt: str = "%n"
 
-    base_attr_prefix: str = "sr"
-
     class Config(Formatter.Config):
         """Configuration of Serial object"""
 
@@ -625,8 +673,8 @@ class Serial(Formatter):
         serial_max_binary: int = 8
 
     __slots__ = (
-        "_sr_number",
-        "_sr_serial",
+        "number",
+        "serial",
     )
 
     @property
@@ -635,7 +683,7 @@ class Serial(Formatter):
 
     @property
     def string(self) -> str:
-        return self._sr_number  # type: ignore[no-any-return]
+        return self.number  # type: ignore[no-any-return]
 
     @property
     def priorities(
@@ -674,7 +722,10 @@ class Serial(Formatter):
         """
         _value: str = str(serial or 0)
         return {
-            "%n": {"value": lambda: _value, "regex": r"(?P<number>[0-9]*)"},
+            "%n": {
+                "value": lambda: _value,
+                "regex": r"(?P<number>[0-9]*)",
+            },
             "%p": {
                 "value": partial(Serial.to_padding, _value),
                 "regex": (
@@ -731,29 +782,25 @@ WEEKS: Dict[str, str] = {
 }
 
 
-class Datetime(Formatter):
+class Datetime(Formatter, level=8):
     """Datetime object for register process that implement formatter and
     parser.
     """
 
     base_fmt: str = "%Y-%m-%d %H:%M:%S.%f"
 
-    base_attr_prefix: str = "dt"
-
-    base_level: int = 8
-
     __slots__ = (
-        "_dt_year",
-        "_dt_month",
-        "_dt_week",
-        "_dt_weeks",
-        "_dt_day",
-        "_dt_hour",
-        "_dt_minute",
-        "_dt_second",
-        "_dt_microsecond",
-        "_dt_local",
-        "_dt_datetime",
+        "year",
+        "month",
+        "week",
+        "weeks",
+        "day",
+        "hour",
+        "minute",
+        "second",
+        "microsecond",
+        "local",
+        "datetime",
     )
 
     def __repr__(self) -> str:
@@ -770,14 +817,14 @@ class Datetime(Formatter):
     @property
     def string(self) -> str:
         return (
-            f"{self._dt_year}-{self._dt_month}-{self._dt_day} "
-            f"{self._dt_hour}:{self._dt_minute}:{self._dt_second}."
-            f"{self._dt_microsecond[:3]}"
+            f"{self.year}-{self.month}-{self.day} "
+            f"{self.hour}:{self.minute}:{self.second}."
+            f"{self.microsecond[:3]}"
         )
 
     @property
     def iso_date(self) -> str:
-        return f"{self._dt_year}-{self._dt_month}-{self._dt_day}"
+        return f"{self.year}-{self.month}-{self.day}"
 
     @property
     def validate(self) -> bool:  # no cov
@@ -857,6 +904,7 @@ class Datetime(Formatter):
                 "value": lambda x: x,
                 "level": 6,
             },
+            # TODO: switch make default day before validate week
             "day_default": {
                 "value": self.default("01"),
                 "level": 0,
@@ -914,7 +962,7 @@ class Datetime(Formatter):
             "hour_12": {
                 "value": (
                     lambda x: str(int(x) + 12).rjust(2, "0")
-                    if self._dt_local == "PM"
+                    if self.local == "PM"
                     else x.rjust(2, "0")
                 ),
                 "level": 5,
@@ -922,7 +970,7 @@ class Datetime(Formatter):
             "hour_12_pad": {
                 "value": (
                     lambda x: str(int(x) + 12).rjust(2, "0")
-                    if self._dt_local == "PM"
+                    if self.local == "PM"
                     else x
                 ),
                 "level": 5,
@@ -1011,12 +1059,7 @@ class Datetime(Formatter):
         return {
             "%n": {
                 "value": partial(_dt.strftime, "%Y%m%d_%H%M%S"),
-                "regex": (
-                    r"(?P<year>\d{4})"
-                    r"(?P<month_pad>01|02|03|04|05|06|07|08|09|10|11|12)"
-                    r"(?P<day_pad>[0-3][0-9])_(?P<hour_pad>[0-2][0-9])"
-                    r"(?P<minute_pad>[0-6][0-9])(?P<second_pad>[0-6][0-9])"
-                ),
+                "cregex": "%Y%m%d_%H%M%S",
             },
             "%Y": {
                 "value": partial(_dt.strftime, "%Y"),
@@ -1144,29 +1187,31 @@ class Datetime(Formatter):
 
     def _from_day_year(self, value: str) -> str:
         """Return date of year"""
-        _this_year: datetime = datetime.strptime(
-            self._dt_year, "%Y"
-        ) + timedelta(days=int(value))
-        self._dt_month = _this_year.strftime("%m")
+        _this_year: datetime = datetime.strptime(self.year, "%Y") + timedelta(
+            days=int(value)
+        )
+        self.month = _this_year.strftime("%m")
         return _this_year.strftime("%d")
 
     def _from_week_year_mon(self, value: str) -> str:
+        """Return validate week year with Monday value"""
         _this_week: str = (
-            str(((int(self._dt_week) - 1) % 7) + 1) if self._dt_week else "1"
+            str(((int(self.week) - 1) % 7) + 1) if self.week else "1"
         )
         _this_year: datetime = datetime.strptime(
-            f"{self._dt_year}-W{value}-{_this_week}", "%G-W%V-%u"
+            f"{self.year}-W{value}-{_this_week}", "%G-W%V-%u"
         )
-        self._dt_month = _this_year.strftime("%m")
-        self._dt_day = _this_year.strftime("%d")
+        self.month = _this_year.strftime("%m")
+        self.day = _this_year.strftime("%d")
         return _this_year.strftime("%w")
 
     def _from_week_year_sun(self, value: str) -> str:
+        """Return validate week year with Sunday value"""
         _this_year: datetime = datetime.strptime(
-            f"{self._dt_year}-W{value}-{self._dt_week or '0'}", "%Y-W%U-%w"
+            f"{self.year}-W{value}-{self.week or '0'}", "%Y-W%U-%w"
         )
-        self._dt_month = _this_year.strftime("%m")
-        self._dt_day = _this_year.strftime("%d")
+        self.month = _this_year.strftime("%m")
+        self.day = _this_year.strftime("%d")
         return _this_year.strftime("%w")
 
     @staticmethod
@@ -1175,7 +1220,7 @@ class Datetime(Formatter):
         return str(remove_pad(_dt.strftime(fmt)))
 
 
-class Version(Formatter):
+class Version(Formatter, level=3):
     """Version object for register process that implement formatter and
     parser.
 
@@ -1200,33 +1245,29 @@ class Version(Formatter):
 
     base_fmt: str = "%m_%n_%c"
 
-    base_attr_prefix: str = "vs"
-
-    base_level: int = 3
-
     __slots__ = (
-        "_vs_version",
-        "_vs_epoch",
-        "_vs_major",
-        "_vs_minor",
-        "_vs_micro",
-        "_vs_pre",
-        "_vs_post",
-        "_vs_dev",
-        "_vs_local",
+        "version",
+        "epoch",
+        "major",
+        "minor",
+        "micro",
+        "pre",
+        "post",
+        "dev",
+        "local",
     )
 
     def __repr__(self) -> str:
         _fmt: str = "v%m.%n.%c"
-        if self._vs_epoch != "0":
+        if self.epoch != "0":
             _fmt = f"%e{_fmt[1:]}"
-        if self._vs_pre:
+        if self.pre:
             _fmt = f"{_fmt}%q"
-        if self._vs_post:
+        if self.post:
             _fmt = f"{_fmt}%p"
-        if self._vs_dev:
+        if self.dev:
             _fmt = f"{_fmt}%d"
-        if self._vs_local:
+        if self.local:
             _fmt = f"{_fmt}%l"
         return f"<{self.__class__.__name__}.parse('{self.string}', '{_fmt}')>"
 
@@ -1237,17 +1278,17 @@ class Version(Formatter):
 
     @property
     def string(self) -> str:
-        _release: str = f"v{self._vs_major}.{self._vs_minor}.{self._vs_micro}"
-        if self._vs_epoch != "0":
-            _release = f"{self._vs_epoch}!{_release[1:]}"
-        if self._vs_pre:
-            _release = f"{_release}{self._vs_pre}"
-        if self._vs_post:
-            _release = f"{_release}{self._vs_post}"
-        if self._vs_dev:
-            _release = f"{_release}.{self._vs_dev}"
-        if self._vs_local:
-            _release = f"{_release}+{self._vs_local}"
+        _release: str = f"v{self.major}.{self.minor}.{self.micro}"
+        if self.epoch != "0":
+            _release = f"{self.epoch}!{_release[1:]}"
+        if self.pre:
+            _release = f"{_release}{self.pre}"
+        if self.post:
+            _release = f"{_release}{self.post}"
+        if self.dev:
+            _release = f"{_release}.{self.dev}"
+        if self.local:
+            _release = f"{_release}+{self.local}"
         return _release
 
     @property
@@ -1430,7 +1471,7 @@ class Version(Formatter):
         )
 
 
-class Naming(Formatter):
+class Naming(Formatter, level=5):
     """Naming object for register process that implement formatter and parser.
 
     note: A name value that parsing to this class should not contain any
@@ -1439,32 +1480,28 @@ class Naming(Formatter):
 
     base_fmt: str = "%n"
 
-    base_attr_prefix: str = "nm"
-
-    base_level: int = 5
-
     __slots__ = (
-        "_nm_naming",
-        "_nm_strings",
-        "_nm_flats",
-        "_nm_shorts",
-        "_nm_vowels",
+        "naming",
+        "strings",
+        "flats",
+        "shorts",
+        "vowels",
     )
 
     @property
-    def value(self) -> str:
-        return self.string
+    def value(self) -> List[str]:
+        return self.string.split(" ")
 
     @property
     def string(self) -> str:
-        if self._nm_strings:
-            return " ".join(self._nm_strings)
-        elif self._nm_flats:
-            return self._nm_flats[0]  # type: ignore[no-any-return]
-        elif self._nm_shorts:
-            return " ".join(self._nm_shorts)
-        elif self._nm_vowels:
-            return self._nm_vowels[0]  # type: ignore[no-any-return]
+        if self.strings:
+            return " ".join(self.strings)
+        elif self.flats:
+            return self.flats[0]  # type: ignore[no-any-return]
+        elif self.shorts:
+            return " ".join(self.shorts)
+        elif self.vowels:
+            return self.vowels[0]  # type: ignore[no-any-return]
         return ""
 
     @property
@@ -1552,26 +1589,19 @@ class Naming(Formatter):
             %u  : Upper case format
             %l  : Lower case format
             %t  : Title case format
-
             %a  : Shortname format
             %A  : Shortname upper case format
-
             %f  : Flat case format
             %F  : Flat upper case format
-
             %c  : Camel case format
             %-c : Upper first Camel case format
-
             %p  : Pascal case format
-
             %s  : Snake case format
             %S  : Snake upper case format
             %-S  : Snake title case format
-
             %k  : Kebab case format
             %K  : Kebab upper case format
             %-K  : Kebab title case format
-
             %v  : normal name removed vowel
             %V  : normal name removed vowel with upper case
 
@@ -1740,8 +1770,8 @@ class Naming(Formatter):
     @staticmethod
     def __prepare_value(value: str) -> List[str]:
         """Return list of word that split from input value string"""
-        result = re.sub(r"[^\-.\w\s]+", "", value)
-        return re.sub(r"[\-._\s]]", " ", result).strip().split()
+        result: str = re.sub(r"[^\-.\w\s]+", "", value)
+        return re.sub(r"[\-._\s]", " ", result).strip().split()
 
     @staticmethod
     def __split_pascal_case(value: str) -> List[str]:
@@ -1752,116 +1782,348 @@ class Naming(Formatter):
         )
 
 
+SIZE: Tuple[str, ...] = (
+    "B",
+    "KB",
+    "MB",
+    "GB",
+    "TB",
+    "PB",
+    "EB",
+    "ZB",
+    "YB",
+)
+
+
+class Storage(Formatter):
+    """Storage object for register process that implement formatter and
+    parser.
+    """
+
+    base_fmt: str = "%b"
+
+    __slots__ = (
+        "bit",
+        "byte",
+        "storage",
+    )
+
+    @property
+    def value(self) -> int:
+        return int(self.string)
+
+    @property
+    def string(self) -> str:
+        return self.bit  # type: ignore[no-any-return]
+
+    @property
+    def priorities(self) -> ReturnPrioritiesType:
+        return {
+            "bit": {
+                "value": lambda x: x,
+                "level": 1,
+            },
+            "byte": {
+                "value": lambda x: self.to_byte(x, "B"),
+                "level": 1,
+            },
+            "byte_kilo": {
+                "value": lambda x: self.to_byte(x, "KB"),
+                "level": 1,
+            },
+            "byte_mega": {
+                "value": lambda x: self.to_byte(x, "MB"),
+                "level": 1,
+            },
+            "byte_giga": {
+                "value": lambda x: self.to_byte(x, "GB"),
+                "level": 1,
+            },
+            "byte_tera": {
+                "value": lambda x: self.to_byte(x, "TB"),
+                "level": 1,
+            },
+            "byte_peta": {
+                "value": lambda x: self.to_byte(x, "PB"),
+                "level": 1,
+            },
+            "byte_exa": {
+                "value": lambda x: self.to_byte(x, "EB"),
+                "level": 1,
+            },
+            "byte_zetta": {
+                "value": lambda x: self.to_byte(x, "ZB"),
+                "level": 1,
+            },
+            "byte_yotta": {
+                "value": lambda x: self.to_byte(x, "YB"),
+                "level": 1,
+            },
+            "bit_default": {
+                "value": self._from_byte,
+                "level": 0,
+            },
+            "byte_default": {
+                "value": self._from_bit,
+                "level": 0,
+            },
+        }
+
+    @staticmethod
+    def formatter(storage: Optional[int] = None) -> ReturnFormattersType:
+        """Generate formatter that support mapping formatter,
+
+        %b  : Bit format
+        %B  : Byte format
+        %K  : Kilo-Byte format
+        %M  : Mega-Byte format
+        %G  : Giga-Byte format
+        %T  : Tera-Byte format
+        %P  : Peta-Byte format
+        %E  : Exa-Byte format
+        %Z  : Zetta-Byte format
+        %Y  : Yotta-Byte format
+
+        """
+        size: str = str(storage or 0)
+        return {
+            "%b": {
+                "value": lambda: size,
+                "regex": r"(?P<bit>[0-9]*)",
+            },
+            "%B": {
+                "value": lambda: f"{round(int(size) / 8)}B",
+                "regex": r"(?P<byte>[0-9]*B)",
+            },
+            "%K": {
+                "value": partial(Storage.bit2byte, size, "KB"),
+                "regex": r"(?P<byte_kilo>[0-9]*KB)",
+            },
+            "%M": {
+                "value": partial(Storage.bit2byte, size, "MB"),
+                "regex": r"(?P<byte_mega>[0-9]*MB)",
+            },
+            "%G": {
+                "value": partial(Storage.bit2byte, size, "GB"),
+                "regex": r"(?P<byte_giga>[0-9]*GB)",
+            },
+            "%T": {
+                "value": partial(Storage.bit2byte, size, "TB"),
+                "regex": r"(?P<byte_tera>[0-9]*TB)",
+            },
+            "%P": {
+                "value": partial(Storage.bit2byte, size, "PB"),
+                "regex": r"(?P<byte_peta>[0-9]*PB)",
+            },
+            "%E": {
+                "value": partial(Storage.bit2byte, size, "EB"),
+                "regex": r"(?P<byte_exa>[0-9]*EB)",
+            },
+            "%Z": {
+                "value": partial(Storage.bit2byte, size, "ZB"),
+                "regex": r"(?P<byte_zetta>[0-9]*ZB)",
+            },
+            "%Y": {
+                "value": partial(Storage.bit2byte, size, "YB"),
+                "regex": r"(?P<byte_yotta>[0-9]*YB)",
+            },
+        }
+
+    def _from_byte(self) -> str:
+        return str(int(self.byte or "0") * 8)
+
+    def _from_bit(self) -> str:
+        return str(round(int(self.bit or "0") / 8))
+
+    @staticmethod
+    def bit2byte(value: str, order: str) -> str:
+        p = math.pow(1024, SIZE.index(order))
+        return f"{(round((int(value) / 8) / p))}{order}"
+
+    @staticmethod
+    def to_byte(value: str, order: str) -> str:
+        p = math.pow(1024, SIZE.index(order))
+        return f"{round(int(value.replace(order, '')) * p)}"
+
+
+Constant = TypeVar("Constant", bound="__BaseConstant")
+
+
 class __BaseConstant(Formatter):
     """Constant object for register process that implement formatter and
     parser.
     """
 
-    base_attr_prefix: str = "ct"
+    base_fmt: str = "%%"
 
-    base_formatter: Optional[ReturnFormattersType] = None
+    __slots__: Tuple[str, ...] = ("_constant",)
 
-    __slots__ = ("_ct_constant",)
+    @classmethod
+    def passer(cls, value: Any) -> NoReturn:
+        raise NotImplementedError(
+            "The Constant class does not support for passing value to this "
+            "class initialization."
+        )
+
+    @classmethod
+    def parse(cls, value: str, fmt: Optional[str] = None) -> Formatter:
+        if fmt is None:
+            raise NotImplementedError(
+                "The Constant class does not support for default format string "
+                "when parsing with this unknown format value."
+            )
+        return super().parse(value, fmt)
 
     def __init__(
         self,
         formats: Optional[Dict[str, Any]] = None,
     ) -> None:
-        if not self.base_formatter:
+        if not self.formatter():
             raise NotImplementedError(
                 "The Constant object should define the `cls.base_formatter` "
                 "before make a instance."
             )
-        super().__init__(formats=formats)
+        super().__init__(formats=formats, set_std_value=False)
+
+        # Set constant property
+        self._constant: List[str] = [
+            getter for v in self.__slots__ if (getter := getattr(self, v, None))
+        ]
+
+        # Set standard property by default is string value or `self.string`
+        setattr(
+            self,
+            self.__class__.__name__.lower(),
+            str(self.string),
+        )
 
     @property
-    def value(self) -> str:
-        return self.string
+    def value(self) -> List[str]:
+        return self._constant
 
     @property
     def string(self) -> str:
-        return str(
-            "|".join(
-                [
-                    getter
-                    for v in self.__slots__
-                    if (getter := getattr(self, v)) and v != "_ct_constant"
-                ]
-            )
-        )
+        return "|".join(self._constant)
 
     @property
-    def priorities(
-        self,
-    ) -> ReturnPrioritiesType:
-        """"""
+    def priorities(self) -> ReturnPrioritiesType:
         raise NotImplementedError(
-            "Please implement priorities property for this sub-formatter class"
+            "Please implement priorities property for this sub-constant "
+            "formatter class"
         )
 
-    @classmethod
-    def formatter(  # type: ignore[override]
-        cls,
-        value: Optional[str] = None,
-    ) -> Optional[ReturnFormattersType]:
-        return cls.base_formatter
+    @staticmethod
+    def formatter(
+        value: Optional[List[str]] = None,
+    ) -> ReturnFormattersType:
+        raise NotImplementedError(
+            "Please implement formatter staticmethod for this sub-constant "
+            "formatter class"
+        )
+
+    def __lt__(self, other: Formatter) -> bool:
+        return not (self.value.__eq__(other.value))
+
+    def __gt__(self, other: Formatter) -> bool:
+        return not (self.value.__eq__(other.value))
 
 
-def create_const(
+def dict2const(fmt: Dict[str, str], name: str) -> ConstantType:
+    """Constant function constructor that receive the dict of format string
+    value and constant value.
+    """
+
+    class CustomConstant(__BaseConstant):
+        base_fmt: str = "".join(fmt.keys())
+
+        __qualname__ = name
+
+        __slots__: Tuple[str, ...] = (
+            name.lower(),
+            "_constant",
+            *[convert_fmt_str(f) for f in fmt],
+        )
+
+        def __repr__(self) -> str:
+            _base_fmt: str = "|".join(
+                self.__search_fmt(c) for c in self._constant
+            )
+            return (
+                f"<{self.__class__.__name__}"
+                f".parse('{self.string}', "
+                f"'{_base_fmt}')>"
+            )
+
+        @staticmethod
+        def formatter(  # type: ignore[override]
+            v: Optional[str] = None,
+        ) -> ReturnFormattersType:
+            return {
+                f: {
+                    "regex": f"(?P<{convert_fmt_str(f)}>{fmt[f]})",
+                    "value": fmt[f],
+                }
+                for f in fmt.copy()
+            }
+
+        @property
+        def priorities(self) -> ReturnPrioritiesType:
+            return {
+                convert_fmt_str(f): {"value": lambda x: x, "level": 1}
+                for f in fmt
+            }
+
+        def values(self, value: Optional[Any] = None) -> Dict[str, str]:
+            _ = value
+            return fmt
+
+        def __search_fmt(self, value: str) -> str:
+            rs: List[str] = []
+            for k, v in iter(self.values().items()):
+                if v == value:
+                    rs.append(k)
+            return rs[0]
+
+    CustomConstant.__name__ = name
+    return CustomConstant
+
+
+def fmt2const(fmt: Formatter) -> ConstantType:
+    """Constant function constructor that receive the Formatter instance and
+    freeze this value to Constant class.
+    """
+    _fmt: Dict[str, str] = fmt.values()
+    return dict2const(_fmt, name=f"{fmt.__class__.__name__}Const")
+
+
+def make_const(
+    name: Optional[str] = None,
     formatter: Optional[Union[Dict[str, str], Formatter]] = None,
     *,
     fmt: Optional[FormatterType] = None,
     value: Optional[Any] = None,
 ) -> ConstantType:
+    """Constant function constructor"""
     _fmt: Dict[str, str]
-    if formatter:
-        if isinstance(formatter, Formatter):
-            _fmt = formatter.values()
-        else:
-            _fmt = formatter
-    else:
+    if not formatter:
         if fmt and value:
-            _fmt = fmt().values(value=value)
+            name = f"{fmt.__name__}Const"
+            formatter = fmt().values(value=value)
         else:
-            raise FormatterValueError(
-                "The Constant want formatter nor fmt and value arguments"
+            raise FormatterArgumentError(
+                "formatter",
+                "The Constant want formatter nor fmt and value arguments",
             )
-
-    class CustomConstant(__BaseConstant):
-        base_fmt: str = "".join(_fmt.keys())
-
-        __slots__ = (
-            "_ct_constant",
-            *[f"_ct_{convert_fmt_str(fmt)}" for fmt in _fmt],
-        )
-
-        base_formatter = {
-            fmt: {
-                "regex": f"(?P<{convert_fmt_str(fmt)}>{_fmt[fmt]})",
-                "value": _fmt[fmt],
-            }
-            for fmt in _fmt.copy()
-        }
-
-        @property
-        def priorities(self) -> ReturnPrioritiesType:
-            return {
-                **{
-                    convert_fmt_str(fmt): {
-                        "value": lambda x: x,
-                        "level": 1,
-                    }
-                    for fmt in ["constant", *_fmt]
-                },
-            }
-
-    return CustomConstant
+    elif isinstance(formatter, Formatter):
+        return fmt2const(formatter)
+    if not name:
+        raise FormatterArgumentError("name", "The Constant want name arguments")
+    return dict2const(formatter, name=name)
 
 
-Constant: Callable[[Dict[str, str]], ConstantType] = create_const
-
-EnvConstant: ConstantType = Constant(
-    {
+EnvConstant: ConstantType = make_const(
+    name="EnvConstant",
+    formatter={
         "%d": "development",
         "%-d": "dev",
         "%s": "sit",
@@ -1875,433 +2137,69 @@ EnvConstant: ConstantType = Constant(
         "%b": "sandbox",
         "%-b": "box",
         "%c": "poc",
-    }
+    },
 )
 
 
-FORMATTERS: Dict[str, Type[Formatter]] = {
-    "timestamp": Datetime,
-    "version": Version,
-    "serial": Serial,
-    "naming": Naming,
-    "envconst": EnvConstant,
-}
-
-FORMATTERS_ADJUST: Dict[str, Any] = {
-    "timestamp": relativedelta,
-    "serial": relativedelta,
-}
+@final
+class GenFormatValue(TypedDict):
+    fmt: str
 
 
-class ExpectRegexValue(TypedDict):
-    regex: str
-    value: Callable[[], Any]
+@final
+class PVParseValue(TypedDict):
+    fmt: str
+    value: str
+    props: Dict[str, str]
 
 
-def extract_regex_with_value(
-    fmt: FormatterType,
-    value: Optional[Any] = None,
-) -> Dict[str, RegexValue]:
-    """Return extract data from `cls.regex` method and `cls.formatter`
-
-    :param fmt: a formatter object
-    :type fmt: FormatterType
-    :param value:
-    :type value: Optional[Any]
-
-    :rtype: Dict[str, dict]
-    :return: an extract data from `cls.regex` method and `cls.formatter`
-    """
-    regex: Dict[str, str] = fmt.regex()
-    formatter: ReturnFormattersType = fmt.formatter(value)
-    return {
-        i: {
-            "regex": regex[i],
-            "value": caller(formatter[i]["value"]),
-        }
-        for i in formatter
-    }
+ReturnGroupGenFormatType = Dict[str, GenFormatValue]
+ReturnPVParseType = Dict[str, PVParseValue]
 
 
-def adjust_datetime(
-    self: OrderFormatter,
-    metrics: Optional[Dict[str, int]] = None,
-) -> OrderFormatter:
-    """
-    :param self: a OrderFormatter instance that want to adjust
-    :type self: OrderFormatter
-    :param metrics: a mapping of metric value
-    :type metrics: Optional[dict](=None)
-
-    :return: a adjusted OrderFormatter instance.
-    """
-    _metrics: Dict[str, int] = metrics or {}
-    if "timestamp" not in self.data:
-        raise FormatterArgumentError(
-            "timestamp",
-            (
-                "order formatter object does not have `timestamp` in name "
-                "formatter"
-            ),
-        )
-    _replace: List[Formatter] = [
-        self.FMTS["timestamp"].parse(
-            **{
-                "value": (
-                    time_data.value
-                    - relativedelta(**_metrics)  # type: ignore[arg-type]
-                ).strftime("%Y%m%d %H%M%S"),
-                "fmt": "%Y%m%d %H%M%S",
-            }
-        )
-        for time_data in self.data["timestamp"]
-    ]
-    self.data["timestamp"] = _replace
-    return self
+FormatterGroup = TypeVar("FormatterGroup", bound="__FormatterGroup")
 
 
-def adjust_serial(
-    self: OrderFormatter,
-    metrics: Optional[Dict[str, int]] = None,
-) -> OrderFormatter:
-    """
-    :param self: a OrderFormatter instance that want to adjust
-    :type self: OrderFormatter
-    :param metrics: a mapping of metric value
-    :type metrics: Optional[dict](=None)
+class __FormatterGroup:
+    """Group of any Formatters together with dynamic group naming like
+    timestamp for Datetime formatter object.
 
-    :return: a adjusted OrderFormatter instance.
-    """
-    _metrics: Dict[str, int] = metrics or {}
-    if "serial" not in self.data:
-        raise FormatterArgumentError(
-            "serial",
-            "order formatter object does not have `serial` in name formatter",
-        )
-    _replace: List[Formatter] = [
-        self.FMTS["serial"].parse(
-            **{
-                "value": (str(serial.value - relativeserial(**_metrics))),
-                "fmt": "%n",
-            }
-        )
-        for serial in self.data["serial"]
-    ]
-    self.data["serial"] = _replace
-    return self
+    :param formats: A mapping value of priority attribute data.
+    :type formats: Optional[dict](=None)
 
+    .. class attributes::
 
-# TODO: implement adjust version logic when create relativeversion
-def adjust_version(  # type: ignore
-    self: OrderFormatter,
-    metrics: Optional[Dict[str, int]] = None,
-):  # no cov
-    _metrics: Dict[str, int] = metrics or {}
-    if "version" not in self.data:
-        raise FormatterArgumentError(
-            "version",
-            "order formatter object does not have `version` in name formatter",
-        )
-    _replace: List[Formatter] = [
-        self.FMTS["version"].parse(
-            **{
-                "value": "",
-                "fmt": "",
-            }
-        )
-    ]
-    self.data["version"] = _replace
-    return self
+        - base_groups: Dict[str, FormatterType]
 
+    .. attributes::
 
-def adjust_name(  # type: ignore
-    self: OrderFormatter,
-    metrics: Optional[Dict[str, str]] = None,
-):  # no cov
-    _metrics: Dict[str, str] = metrics or {}
-    if "name" not in self.data:
-        raise FormatterArgumentError(
-            "name",
-            "order formatter object does not have `name` in name formatter",
-        )
-    _replace: List[Formatter] = [
-        self.FMTS["name"].parse(
-            **{  # type: ignore
-                "value": metrics,
-                "fmt": "",
-            }
-        )
-        for _ in self.data["name"]
-    ]
-    self.data["name"] = _replace
-    return self
+        - groups
 
+    .. methods::
 
-@total_ordering
-class OrderFormatter:
-    """Order formatter object from mapping dictionary.
+        -
 
-    :param formatters: a mapping value
-    :type formatters: dict
-
-    :raises TypeError: if value of mapping does not match with dict or
-        Formatter type.
+        This class is abstract class for any formatter group class.
     """
 
-    __slots__ = ("data",)
+    # This value must reassign from child class
+    base_groups: Dict[str, FormatterType] = {}
 
-    FMTS: Dict[str, FormatterType] = FORMATTERS
+    def __init_subclass__(cls: FormatterGroupType, **kwargs: Any) -> None:
+        super().__init_subclass__(**kwargs)
 
-    def __init__(
-        self,
-        formatters: Dict[str, Union[Formatter, Dict[str, Any]]],
-        *,
-        auto_serial: bool = False,
-    ):
-        """Main initialize process of the ordering formatter object."""
-        self.data: Dict[str, List[Formatter]] = {}
-        for name, value in formatters.items():
-            _name: str = re.sub(r"(_\d+)$", "", name)
-
-            if _name not in self.FMTS:
-                raise FormatterValueError(
-                    f"value of key {_name} does not support"
-                )
-
-            name_value: List[Formatter] = self.data.setdefault(_name, [])
-            if isinstance(value, Formatter):
-                name_value.append(value)
-            elif isinstance(value, dict):
-                name_value.append(self.FMTS[_name].parse(**value))
-            else:
-                raise FormatterTypeError(
-                    f"value of key {_name} does not support for type "
-                    f"{type(value)}"
-                )
-
-        if auto_serial and "serial" not in self.data:
-            self.data["serial"] = [Serial.parse("0", "%n")]
-
-    def adjust(self, fmt: str, value: int):  # type: ignore  # no cov
-        # TODO: merge adjust methods to dynamic method
-        _ = value
-        if fmt not in self.data:
-            raise FormatterArgumentError(
-                fmt,
-                f"order object does not have `{fmt}` in name formatter",
+        if not cls.base_groups:
+            raise NotImplementedError(
+                "Please implement base_groups class property for this "
+                "sub-formatter group class."
             )
-        return self
-
-    def adjust_timestamp(self, metrics: Dict[str, int]) -> OrderFormatter:
-        """Adjust timestamp value in the order formatter object
-
-        :param metrics: a datetime value for this adjustment.
-        :type metrics: Dict[str, int]
-        """
-        return adjust_datetime(self, metrics=metrics)
-
-    def adjust_version(self, value: str) -> OrderFormatter:
-        """Adjust version value in the order formatter object
-
-        :param value: str : A version value for this adjustment with format
-                '%m.%n.%c'.
-        """
-        if "version" not in self.data:
-            raise FormatterArgumentError(
-                "version",
-                "order formatter object does not have `version` "
-                "in name formatter",
-            )
-        _replace: List[Formatter] = []
-        for version_data in self.data["version"]:
-            # `versioning` must have 3 length of tuple
-            versioning: Tuple[int, ...] = version_data.value.release
-            _values: List[int] = [
-                -99 if v == "*" else int(v) for v in value.split(".")
-            ]
-            _results: List[str] = []
-
-            # TODO: create function: `relativedelta` for version object
-            for _ in range(3):
-                if _values[_] == 0:
-                    _results.append("0")
-                elif _values[_] == -99:
-                    _results.append(str(versioning[_]))
-                elif (major := (versioning[_] - _values[_])) < 0:
-                    _results.append("0")
-                else:
-                    _results.append(str(major))
-            _replace.append(
-                self.FMTS["version"].parse(
-                    **{"value": ".".join(_results), "fmt": "%m.%n.%c"}
-                )
-            )
-        self.data["version"] = _replace
-        return self
-
-    def adjust_serial(self, value: int) -> OrderFormatter:
-        """Adjust serial value in the order formatter object
-
-        .. note:: This adjust method will replace old value to new.
-        """
-        return adjust_serial(self, metrics={"number": value})
-
-    def __repr__(self) -> str:
-        return f"<{self.__class__.__name__}(formatters={self.data})>"
-
-    def __str__(self) -> str:
-        make_str: List[str] = [
-            f"{k}={list(map(str, v))}" for k, v in self.data.items()
-        ]
-        return f"({', '.join(make_str)})"
-
-    def __eq__(self, other: Any) -> bool:
-        return isinstance(other, self.__class__) and self.data == other.data
-
-    def __lt__(self, other: OrderFormatter) -> bool:
-        return next(
-            (
-                self.data[name] < other.data[name]
-                for name in self.FMTS
-                if (name in self.data and name in other.data)
-            ),
-            False,
-        )
-
-    def __le__(self, other: OrderFormatter) -> bool:
-        return next(
-            (
-                self.data[name] <= other.data[name]
-                for name in self.FMTS
-                if (name in self.data and name in other.data)
-            ),
-            self.__eq__(other),
-        )
-
-
-def make_order_fmt(formats: Dict[str, FormatterType]) -> Type[OrderFormatter]:
-    """Create new OrderFormatter class with a custom formatter mapping."""
-
-    class CustomOrderFormatter(OrderFormatter):
-        FMTS = formats
-
-    return CustomOrderFormatter
-
-
-class FormatterGroupParseArgs(TypedDict):
-    fmt: FormatterType
-    value: Optional[Union[str, Any]]
-
-
-class FormatterGroupParseArgsDefault(TypedDict):
-    fmt: FormatterType
-
-
-@dataclass
-class FormatterGroupData:
-    """Formatter Data"""
-
-    fmt: FormatterType
-    value: Any
 
     @classmethod
     def parse(
         cls,
-        value: Union[
-            FormatterGroupParseArgs,
-            FormatterGroupParseArgsDefault,
-            FormatterType,
-        ],
-    ) -> FormatterGroupData:
-        """Parse any value to this FormatterGroupData class
-
-        :param value: a value that want to parse
-        :type value: Union[dict, Type[Formatter]]
-        """
-        if isinstance(value, dict):
-            return cls.parse_dict(value)
-        return cls(
-            fmt=value,
-            value=None,
-        )
-
-    @classmethod
-    def parse_dict(
-        cls,
-        values: Union[
-            FormatterGroupParseArgs,
-            FormatterGroupParseArgsDefault,
-        ],
-    ) -> FormatterGroupData:
-        """Parse dict value to this FormatterGroupData class
-
-        :param values: a dict value
-        :type values: dict
-        """
-        return cls(
-            fmt=values["fmt"],
-            value=values.get("value"),
-        )
-
-
-# TODO: Can FormatterGroup handle order formatter property?
-class FormatterGroup:
-    """Group of any Formatters together with dynamic naming like timestamp
-    for Datetime formatter object.
-
-    :param formatters: a mapping of formatters.
-    :type formatters: Dict[str, dict]
-    """
-
-    __slots__ = "formatters"
-
-    def __init__(
-        self,
-        formatters: Dict[
-            str,
-            Union[
-                FormatterGroupData,
-                FormatterGroupParseArgs,
-                FormatterGroupParseArgsDefault,
-                FormatterType,
-            ],
-        ],
-    ) -> None:
-        """Main initialization get the formatter value, a mapping of name
-        and formatter from input argument and generate the necessary
-        attributes for define the value of this formatter group object.
-        """
-        self.formatters: Dict[str, FormatterGroupData] = {
-            k: v
-            if isinstance(v, FormatterGroupData)
-            else FormatterGroupData.parse(v)
-            for k, v in formatters.items()
-        }
-
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({', '.join(self.formatters)})"
-
-    @property
-    def formats(self) -> Dict[str, FormatterType]:
-        """Return the mapping of formatter and alias name of that format"""
-        return {k: v.fmt for k, v in self.formatters.items()}
-
-    @property
-    def groups(self) -> Dict[str, Dict[str, RegexValue]]:
-        """Return the groups of format value and extract Formatter
-        values.
-        """
-        return {
-            k: extract_regex_with_value(v.fmt, v.value)
-            for k, v in self.formatters.items()
-        }
-
-    def parser(
-        self,
         value: str,
         fmt: str,
-        _max: bool = False,
-    ) -> Dict[str, Formatter]:
+    ) -> __FormatterGroup:
         """Parse formatter by generator values like timestamp, version,
         or serial.
 
@@ -2309,286 +2207,230 @@ class FormatterGroup:
         :type value: str
         :param fmt:
         :type fmt: str
-        :param _max: the max strategy for pick the maximum level from
-            duplication formats in parser method.
-        :type _max: bool(=False)
 
         :rtype: Dict[str, Formatter]
         """
-        # TODO: Change special character value in format string like: |,
-        #  () before passing to parser method.
-        results, _ = self.__parser(value, fmt)
-        if _max:
-            return self.__parser_max(results=results)
-        return self.__parser_normal(results=results)
+        parser_rs: ReturnPVParseType = cls.__parse(value, fmt)
+        rs: Dict[str, Dict[str, str]] = defaultdict(dict)
+        for group in parser_rs:
+            group_origin: str = group.split("__")[0]
+            rs[group_origin] = {**parser_rs[group]["props"], **rs[group_origin]}
+        return cls(formats=rs)
 
-    def __parser_normal(
-        self,
-        results: Dict[str, Dict[str, str]],
-    ) -> Dict[str, Formatter]:
-        """Parser with the normal strategy that combine all string value and
-        format value together before parsing.
+    @classmethod
+    def __parse(
+        cls,
+        value: str,
+        fmt: str,
+    ) -> ReturnPVParseType:
+        _fmt, _fmt_getter = cls.gen_format(fmt=fmt)
+        if not (_search := re.search(rf"^{_fmt}$", value)):
+            raise FormatterGroupArgumentError(
+                "format",
+                f"{value!r} does not match with the format: '^{_fmt}$'",
+            )
 
-        :param results: result mapping of name and a pair of format values
-        :type results: Dict[str, Dict[str, str]]
+        _search_dict: Dict[str, str] = _search.groupdict()
+        rs: ReturnPVParseType = {}
+        for name in iter(_fmt_getter.copy()):
+            rs[name] = {
+                "fmt": _fmt_getter[name]["fmt"],
+                "value": _search_dict.pop(name),
+                "props": {
+                    k.replace(name, "", 1): _search_dict.pop(k)
+                    for k in filter(
+                        lambda x: x.startswith(name),
+                        _search_dict.copy(),
+                    )
+                },
+            }
+        return rs
+
+    @classmethod
+    def gen_format(cls, fmt: str) -> Tuple[str, ReturnGroupGenFormatType]:
+        """Generate format string value to regular expression value that able
+        to search with any input value.
+
+        :param fmt: a format string value pass from input argument.
+        :type fmt: str
         """
-        rs: Dict[str, Dict[str, str]] = {}
-        for result in results:
-            if (k := result.split("__", maxsplit=1)[0]) in rs:
-                rs[k]["fmt"] += f"__{results[result]['fmt']}"
-                rs[k]["value"] += f"__{results[result]['value']}"
-            else:
-                rs[k] = results[result]
-        return {k: self.formatters[k].fmt.parse(**v) for k, v in rs.items()}
-
-    def __parser_max(
-        self,
-        results: Dict[str, Dict[str, str]],
-    ) -> Dict[str, Formatter]:
-        """Parser with the max strategy that pick the maximum level from
-        duplication formats in parser method.
-
-        :param results: result mapping of name and a pair of format values
-        :type results: Dict[str, Dict[str, str]]
-        """
-        rs: Dict[str, List[Formatter]] = {}
-        for result in results:
-            if (k := result.split("__", maxsplit=1)[0]) in rs:
-                rs[k].append(self.formatters[k].fmt.parse(**results[result]))
-            else:
-                rs[k] = [self.formatters[k].fmt.parse(**results[result])]
-
-        def get_level_value(fmt: Formatter) -> int:
-            return fmt.level.value
-
-        return {k: max(v, key=get_level_value) for k, v in rs.items()}
+        fmt_getter: ReturnGroupGenFormatType = {}
+        for group, formatter in cls.base_groups.items():
+            for _index, fmt_match in enumerate(
+                re.finditer(
+                    rf"(?P<found>{{{group}:?(?P<format>[^{{}}]+)?}})",
+                    fmt,
+                ),
+                start=0,
+            ):
+                # Format Dict Example:
+                # {'name': '{timestamp:%Y_%m_%d}', 'format': '%Y_%m_%d'}
+                fmt_dict: Dict[str, str] = fmt_match.groupdict()
+                fmt_str: str
+                if not (fmt_str := fmt_dict["format"]):
+                    fmt_str = formatter.base_fmt
+                group_index: str = f"{group}__{_index}"
+                fmt_re = formatter.gen_format(
+                    fmt_str,
+                    prefix=group_index,
+                    suffix=f"{_index}",
+                )
+                fmt = fmt.replace(
+                    fmt_dict["found"],
+                    f"(?P<{group_index}>{fmt_re})",
+                    1,
+                )
+                fmt_getter[group_index] = {"fmt": fmt_str}
+        return fmt, fmt_getter
 
     def format(self, fmt: str) -> str:
-        """Fill the formatter to value input argument.
+        """Return string value that was filled by the input format pattern
+        argument.
 
         :param fmt: a string format value
         :type fmt: str
         """
-        for fmt_name, fmt_mapping in self.groups.items():
-            # Case I: contain formatter values.
-            for _search in re.finditer(
-                rf"(?P<name>{{{fmt_name}:(?P<format>[^{{}}]+)?}})", fmt
-            ):
-                fmt = fmt.replace(
-                    f'{{{fmt_name}:{_search.groupdict()["format"]}}}',
-                    self.__gen_sub_fmtter(
-                        search=_search.groupdict(),
-                        mapping=fmt_mapping,
-                        key="value",
-                    ),
+        for fmt_match in re.finditer(
+            r"(?P<found>{(?P<group>\w+):?(?P<format>[^{}]+)?})", fmt
+        ):
+            # Format Dict Example:
+            # {
+            #   'name': '{timestamp:%Y_%m_%d}',
+            #   'group': 'timestamp',
+            #   'format': '%Y_%m_%d'
+            # }
+            fmt_dict: Dict[str, str] = fmt_match.groupdict()
+            if (group := fmt_dict["group"]) not in self.base_groups:
+                raise FormatterGroupValueError(
+                    f"This group, {group!r}, does not set on `cls.base_groups`."
                 )
-            # Case II: does not set any formatter value or duplicate format
-            # name but does not set formatter.
-            if re.search(rf"(?P<name>{{{fmt_name}}})", fmt):
-                # Get the first format value from the formatter property.
+            formatter: Formatter = self.groups[group]
+            fmt_str: str
+            if not (fmt_str := fmt_dict["format"]):
+                fmt_str = formatter.base_fmt
+
+            try:
                 fmt = fmt.replace(
-                    f"{{{fmt_name}}}",
-                    caller(fmt_mapping[list(fmt_mapping.keys())[0]]["value"]),
-                )
-        return fmt
-
-    def __parser(
-        self,
-        value: str,
-        fmt: str,
-    ) -> Tuple[Dict[str, Dict[str, str]], Dict[str, str]]:
-        """Parse all formatter by generator that return getter and outer
-        mapping.
-
-        :param value:
-        :type value: str
-        :param fmt:
-        :type fmt:  str
-
-        :rtype: Tuple[Dict[str, Dict[str, str]], Dict[str, str]]
-        :returns: a pair of mappings, like;
-
-            {
-                'name': {'fmt': '%s', 'value': 'data_engineer'},
-                'name__1': {'fmt': '%a', 'value': 'de'},
-                'datetime': {'fmt': '%Y%m%d', 'value': '20220101'}
-            }
-
-        """
-        _fmt_filled, _fmt_getter = self.__gen_full_regex(fmt=fmt)
-
-        # Parse regular expression to input value
-        if not (_search := re.search(rf"^{_fmt_filled}$", value)):
-            raise FormatterArgumentError(
-                "format",
-                f"{value!r} does not match with the format: "
-                f"'^{_fmt_filled}$'",
-            )
-
-        _searches: Dict[str, str] = _search.groupdict()
-        _fmt_outer: Dict[str, str] = {}
-        for name in _searches.copy():
-            if name in _fmt_getter:
-                _fmt_getter[name]["value"] = _searches.pop(name)
-            else:
-                _fmt_outer[name] = _searches.pop(name)
-
-        return _fmt_getter, _fmt_outer
-
-    def __gen_full_regex(
-        self,
-        fmt: str,
-    ) -> Tuple[str, Dict[str, Dict[str, str]]]:
-        """Return the both of filled and getter format from the stage format
-        value.
-
-        :param fmt: a string format
-        :type fmt: str
-
-        :rtype: Tuple[str, Dict[str, Dict[str, str]]]
-        :returns: a pair of format value and result of regular expression.
-        """
-        _get_format: Dict[str, Dict[str, str]] = {}
-        for fmt_name, fmt_mapping in self.groups.items():
-            for _index, _search in enumerate(
-                re.finditer(
-                    rf"(?P<name>{{{fmt_name}:?(?P<format>[^{{}}]+)?}})",
-                    fmt,
-                ),
-                start=1,
-            ):
-                # Search with mapping group with example:
-                #   _search.groupdict() -->
-                #   {'name': '{datetime:%Y%m%d}', 'format': '%Y%m%d'}
-                _search_dict: Dict[str, str]
-                _search_fmt_old: str = ""
-                if _search_fmt := _search.group("format"):
-                    # Case I: contain formatter values.
-                    _search_fmt_old = f":{_search_fmt}"
-                    _search_dict = _search.groupdict()
-                else:
-                    # Case II: does not set any formatter value.
-                    _search_fmt = list(fmt_mapping.keys())[0]
-                    _search_dict = {
-                        **_search.groupdict(),
-                        **{"format": _search_fmt},
-                    }
-
-                _search_fmt_re: str = self.__gen_sub_fmtter(
-                    search=_search_dict,
-                    mapping=fmt_mapping,
-                    key="regex",
-                    index=_index,
-                    suffix=fmt_name,
-                )
-
-                # Replace old format value with new mapping formatter
-                # value.
-                _fmt_name_index: str = f"{fmt_name}{self.__gen_index(_index)}"
-                fmt = fmt.replace(
-                    f"{{{fmt_name}{_search_fmt_old}}}",
-                    f"(?P<{_fmt_name_index}>{_search_fmt_re})",
+                    fmt_dict["found"],
+                    formatter.format(fmt=fmt_str),
                     1,
                 )
-
-                # Keep the searched format value to getter format dict.
-                _get_format[_fmt_name_index] = {"fmt": _search_fmt}
-        return fmt, _get_format
-
-    @staticmethod
-    def __gen_index(index: int) -> str:
-        """Return generated suffix string for duplication values.
-
-        :param index: an index value.
-        :type index: int
-
-        :rtype: str
-        :return: a suffix string value for adding to index name when name
-            was duplicated from string formatter.
-        """
-        return f"__{str(index - 1)}" if index > 1 else ""
-
-    @staticmethod
-    def __gen_sub_fmtter(
-        search: Dict[str, str],
-        mapping: Dict[str, RegexValue],
-        key: Literal["regex", "value"],
-        index: int = 1,
-        suffix: Optional[str] = None,
-    ) -> str:
-        """Loop method for find any sub-format from search input argument.
-
-        :param search: a Match object from searching process.
-        :type search: re.Match
-        :param mapping: a formatter mapping value for getting matching key.
-        :type mapping: Dict[
-                str, Dict[str, Dict[str, Union[str, Callable[[], Any]]]]
-            ]
-        :param key: A key value for get value from the `mapping` parameter.
-        :type key: str
-        :param index:
-        :type index: int(=1)
-
-        :rtype: str
-        :returns: a searched value
-        """
-        assert key in {
-            "value",
-            "regex",
-        }, "the `key` argument should be 'value' or 'regex' only."
-        _suffix: str = f"__{suffix.lower()}" if suffix else ""
-        _search_re: str = search["format"]
-        for _fmt in re.findall(r"(%[-+!*]?\w)", _search_re):
-            try:
-                _fmt_replace: str = caller(mapping[_fmt][key])
-                if suffix or (index > 1):
-                    if _sr := re.search(
-                        r"\(\?P<(?P<alias_name>\w+)>",
-                        _fmt_replace,
-                    ):
-                        _sr_re: str = _sr.group("alias_name")
-                        _sr_idx: str = (
-                            f"__{str(index - 1)}" if index > 1 else ""
-                        )
-                        _fmt_replace = re.sub(
-                            rf"\(\?P<{_sr_re}>",
-                            rf"(?P<{_sr_re}{_sr_idx}{_suffix}>",
-                            _fmt_replace,
-                        )
-                    else:
-                        raise FormatterValueError(
-                            "Regex format string does not set group name for "
-                            "parsing value to its class."
-                        )
-                _search_re = _search_re.replace(_fmt, _fmt_replace)
-            except KeyError as err:
-                raise FormatterArgumentError(
-                    "format",
-                    f"string formatter of {search['name']!r} does not "
-                    f"support for key {str(err)} in configuration",
+            except FormatterKeyError as err:
+                raise FormatterGroupArgumentError(
+                    "format", f"{err} in {fmt_dict['found']}"
                 ) from err
-        return _search_re
+        return fmt
+
+    def __init__(
+        self,
+        formats: Union[
+            Dict[str, Dict[str, str]],
+            Dict[str, Formatter],
+        ],
+    ) -> None:
+        """Main initialization get the formatter value, a mapping of name
+        and formatter from input argument and generate the necessary
+        attributes for define the value of this formatter group object.
+        """
+        self.groups: Dict[str, Formatter] = {
+            group: fmt() for group, fmt in self.base_groups.items()
+        }
+        for k, v in formats.items():
+            if k not in self.base_groups:
+                raise FormatterGroupValueError(
+                    f"{self.__class__.__name__} does not support for this "
+                    f"group name, {k!r}."
+                )
+            self.groups[k] = self.__construct_groups(k, v)
+
+    def __construct_groups(
+        self,
+        group: str,
+        v: Union[Dict[str, str], Formatter],
+    ) -> Formatter:
+        if isinstance(v, Formatter):
+            return v
+        return self.base_groups[group](v)
+
+    def __repr__(self) -> str:
+        values: List[str] = []
+        fmts: List[str] = []
+        for group in self.base_groups:
+            formatter: Formatter = self.groups[group]
+            values.append(formatter.string)
+            fmts.append(formatter.base_fmt)
+        return (
+            f"<{self.__class__.__name__}"
+            f".parse(value={'_'.join(values)!r}, "
+            f"fmt={'_'.join(fmts)!r})>"
+        )
+
+    def __str__(self) -> str:
+        return ", ".join(v.string for v in self.groups.values())
 
 
-class Formatters:  # no cov
-    ...
+def make_group(group: Dict[str, FormatterType]) -> FormatterGroupType:
+    name: str = "".join(_.__name__ for _ in group.values())
+
+    @total_ordering
+    class CustomGroup(__FormatterGroup):
+        base_groups: Dict[str, FormatterType] = group
+
+        __qualname__ = name
+
+        def __hash__(self) -> int:
+            return hash(self.__str__())
+
+        def __eq__(self, other: Union[CustomGroup, Any]) -> bool:
+            return isinstance(other, self.__class__) and all(
+                self.groups[g] == other.groups[g] for g in self.base_groups
+            )
+
+        def __gt__(self, other: Union[CustomGroup, Any]) -> bool:
+            if isinstance(other, self.__class__):
+                return any(
+                    self.groups[g].__gt__(other.groups[g])
+                    for g in self.base_groups
+                ) and all(
+                    not self.groups[g].__lt__(other.groups[g])
+                    for g in self.base_groups
+                )
+            return NotImplemented
+
+        def __lt__(self, other: Union[CustomGroup, Any]) -> bool:
+            if isinstance(other, self.__class__):
+                return any(
+                    self.groups[g].__lt__(other.groups[g])
+                    for g in self.base_groups
+                ) and all(
+                    not self.groups[g].__gt__(other.groups[g])
+                    for g in self.base_groups
+                )
+            return NotImplemented
+
+    CustomGroup.__name__ = name
+    return CustomGroup
 
 
 __all__ = (
-    "FORMATTERS",
-    "FORMATTERS_ADJUST",
+    # Formatter
     "Formatter",
     "FormatterType",
+    "ReturnPrioritiesType",
+    "ReturnFormattersType",
     "Serial",
     "Datetime",
     "Version",
     "Naming",
+    "Storage",
     "ConstantType",
     "Constant",
     "EnvConstant",
+    "fmt2const",
+    "dict2const",
+    "make_const",
+    # Formatter Group
     "FormatterGroup",
-    "OrderFormatter",
-    "ReturnPrioritiesType",
-    "ReturnFormattersType",
-    "make_order_fmt",
+    "FormatterGroupType",
+    "make_group",
 )

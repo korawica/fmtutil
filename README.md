@@ -14,8 +14,8 @@
   - [Version](#version)
   - [Serial](#serial)
   - [Naming](#naming)
+  - [Storage](#storage)
   - [Constant](#constant)
-- [Ordered Formatter](#ordered-formatter)
 - [Formatter Group](#formatter-group)
 - [Custom Formatter Object](#custom-formatter-object)
 
@@ -156,18 +156,36 @@ naming.format('Camel case is %c')
 
 [Supported Naming formats](/docs/en/docs/API.md#naming)
 
+### Storage
+
+```python
+from dup_fmt import Storage
+
+storage = Storage.parse(
+    value='This file have 250MB size',
+    fmt='This file have %M size'
+)
+storage.format('The byte size is: %b')
+```
+
+```text
+>>> 'The byte size is: 2097152000'
+```
+
+[Supported Storage formats](/docs/en/docs/API.md#storage)
+
 ### Constant
 
 ```python
-from dup_fmt import Constant
+from dup_fmt import Constant, make_const
 from dup_fmt.exceptions import FormatterError
 
-const = Constant({
+const = make_const({
     '%n': 'normal',
     '%s': 'special',
 })
 try:
-    parse_const = const.parse(
+    parse_const: Constant = const.parse(
         value='This_is_constant_normal',
         fmt='This_is_constant_%n'
     )
@@ -183,60 +201,6 @@ except FormatterError as err:
 > **Note**: \
 > This package already implement environment constant object, `dup_fmt.EnvConstant`.
 
-## Ordered Formatter
-
-The **Ordered Formatter** object, `OrderFormatter`, that will combine some of all
-formatter objects together. The use-case of this object is make **order principle**
-to formatter objects.
-
-```python
-from dup_fmt import OrderFormatter, Datetime, Version
-
-ordered_1 = OrderFormatter({
-    'timestamp': Datetime.parse("20220101", "%Y%m%d"),
-    'version': Version.parse("202", "%m%n%c"),
-})
-ordered_2 = OrderFormatter({
-    'timestamp': {"value": "20220101", "fmt": "%Y%m%d"},
-    'version': Version.parse("201", "%m%n%c"),
-})
-assert ordered_1 > ordered_2
-```
-
-> **Warning**: \
-> This object support for any formatter object only in `FORMATTERS` mapping constant,
-> this mapping constant contain;
-> - `Datetime` - timestamp
-> - `Serial` - serial,
-> - `Version` - version
-> - `Naming` - naming
-> - `EnvConstant` - envconst
-
-If you want to override this mapping constant, you can create new OrderFormatter
-object:
-
-```python
-from typing import Type
-from dup_fmt import OrderFormatter, Naming, make_order_fmt
-
-MyOrderFormatter: Type[OrderFormatter] =  make_order_fmt({
-    'name': Naming,
-    'domain': Naming,
-})
-
-ordered_1 = MyOrderFormatter({
-    'name': Naming.parse("test", "%n"),
-    'domain': Naming.parse("A", "%N"),
-})
-ordered_2 = MyOrderFormatter({
-    'name': Naming.parse("test", "%n"),
-    'domain': Naming.parse("B", "%N"),
-})
-
-assert ordered_1 > ordered_2
-```
-
-
 ## Formatter Group
 
 The **Formatter Group** object, `FormatterGroup`, which is the grouping of needed
@@ -246,13 +210,12 @@ that you want, like `name` for `Naming` object, or `timestamp` for `Datetime` ob
 **Parse**:
 
 ```python
-from dup_fmt import FormatterGroup, Naming, Datetime
+from dup_fmt import make_group, Naming, Datetime
 
-group = FormatterGroup({'name': Naming, 'datetime': Datetime})
-group.parser(
+group = make_group({'name': Naming, 'datetime': Datetime})
+group.parse(
     'data_engineer_in_20220101_de',
-    fmt='{name:%s}_in_{timestamp:%Y%m%d}_{name:%a}',
-    _max=False
+    fmt='{name:%s}_in_{timestamp:%Y%m%d}_{name:%a}'
 )
 ```
 
@@ -263,31 +226,22 @@ group.parser(
 >>> }
 ```
 
-> **Note**: \
-> The `_max` option is the max strategy for pick the maximum level from duplication
-> formats in parser method. If set this value to `False` it will use the combine
-> strategy for combine all duplicated formats together before parsing.
-
 **Format**:
 
 ```python
-from dup_fmt import FormatterGroup, Naming, Datetime
+from dup_fmt import FormatterGroup
 from datetime import datetime
 
-group = FormatterGroup({
-    'name': {'fmt': Naming, 'value': 'data engineer'},
-    'datetime': {'fmt': Datetime, 'value': datetime(2022, 1, 1)}
+group_01: FormatterGroup = group({
+    'name': 'data engineer',
+    'datetime': datetime(2022, 1, 1)
 })
-group.format('{name:%c}_{timestamp:%Y_%m_%d}_{name}')
+group_01.format('{name:%c}_{timestamp:%Y_%m_%d}')
 ```
 
 ```text
 >>> dataEngineer_2022_01_01
 ```
-
-> **Warning**: \
-> This formatter group object does not good enough for implement order principle.
-> If you want it, you can use `OrderFormatter` together with `FormatterGroup`.
 
 ## Custom Formatter Object
 
@@ -298,7 +252,7 @@ This package provide the base abstract class, `Formatter`, for this use-case. Yo
 can create your formatter object like,
 
 ```python
-from typing import Optional, Dict, Union, Callable, Tuple
+from typing import Optional
 from dup_fmt import Formatter, ReturnPrioritiesType, ReturnFormattersType
 
 
@@ -306,12 +260,10 @@ class Storage(Formatter):
 
     base_fmt = '%b'
 
-    base_attr_prefix = "st"
-
     __slots__ = (
-        "_st_bit",
-        "_st_byte",
-        "_st_storge",
+        "bit",
+        "byte",
+        "storge",
     )
 
     @property
@@ -320,20 +272,20 @@ class Storage(Formatter):
 
     @property
     def string(self) -> str:
-        return self._st_bit
+        return self.bit
 
     @property
     def validate(self) -> bool:
         if (
-            self._st_bit != 0
-            and self._st_byte != 0
-            and self._st_bit != self._st_byte
+            self.bit != 0
+            and self.byte != 0
+            and self.bit != self.byte
         ):
             return False
-        if self._st_bit == 0 and self._st_byte != 0:
-            self._st_bit = self._st_byte
-        elif self._st_bit != 0 and self._st_byte == 0:
-            self._st_byte = self._st_bit
+        if self.bit == 0 and self.byte != 0:
+            self.bit = self.byte
+        elif self.bit != 0 and self.byte == 0:
+            self.byte = self.bit
         return True
 
     @property

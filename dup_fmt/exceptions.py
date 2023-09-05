@@ -4,7 +4,7 @@
 # license information.
 # --------------------------------------------------------------------------
 """
-Define Errors Object for core engine
+Define Errors Object for formatter
 """
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ class BaseError(Exception):
 
 
 class FormatterError(BaseError):
-    """Core Base Error object"""
+    """Core Base Error object for formatter"""
 
 
 class FormatterNotFoundError(FormatterError):
@@ -69,3 +69,27 @@ class FormatterArgumentError(FormatterError):
         else:
             _argument = f"{argument!r}"
         super().__init__(f"with {_argument}, {message}")
+
+
+class FormatterGroupError(FormatterError):
+    """Core Base Error object for formatter group"""
+
+
+class FormatterGroupNotFoundError(FormatterNotFoundError):
+    """Error raise for a method not found the config file or data."""
+
+
+class FormatterGroupTypeError(FormatterTypeError):
+    """Error raise for typing does not match or support."""
+
+
+class FormatterGroupValueError(FormatterValueError):
+    """Error raise for value does not valid"""
+
+
+class FormatterGroupKeyError(FormatterKeyError):
+    """Error raise for key does not exist"""
+
+
+class FormatterGroupArgumentError(FormatterArgumentError):
+    """Error raise for a wrong configuration argument."""
