@@ -2,6 +2,16 @@
 
 ## Latest Changes
 
+## 0.1.1
+
+### Documents
+
+- :page_facing_up: docs: update README for Storage formatter object. (_2023-09-05_)
+
+### Fix Bugs
+
+- :gear: fixed: constant factory function can receive None value. (#18) (_2023-09-05_)
+
 ## 0.1.0
 
 ### Features
