@@ -63,6 +63,12 @@ class ConstantTestCase(unittest.TestCase):
             "with 'formatter', The Constant want formatter nor fmt and value "
             "arguments" in str(context.exception)
         )
+        with self.assertRaises(fmt.FormatterArgumentError) as context:
+            fmt.make_const(formatter={"%n": "normal"})
+        self.assertTrue(
+            "with 'name', The Constant want name arguments"
+            in str(context.exception)
+        )
 
     def test_const_regex(self):
         self.assertDictEqual(
@@ -154,3 +160,7 @@ class ConstantTestCase(unittest.TestCase):
     def test_const_format(self):
         self.assertEqual("special", self.ct.format("%s"))
         self.assertEqual("normal normal special", self.ct.format("%n %n %s"))
+
+    def test_const_order(self):
+        self.assertTrue(self.ct < self.ct02)
+        self.assertTrue(self.ct > self.ct02)

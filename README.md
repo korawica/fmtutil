@@ -191,9 +191,9 @@ that you want, like `name` for `Naming` object, or `timestamp` for `Datetime` ob
 **Parse**:
 
 ```python
-from dup_fmt import Group, Naming, Datetime
+from dup_fmt import make_group, Naming, Datetime
 
-group = Group({'name': Naming, 'datetime': Datetime})
+group = make_group({'name': Naming, 'datetime': Datetime})
 group.parse(
     'data_engineer_in_20220101_de',
     fmt='{name:%s}_in_{timestamp:%Y%m%d}_{name:%a}'
@@ -210,9 +210,10 @@ group.parse(
 **Format**:
 
 ```python
+from dup_fmt import FormatterGroup
 from datetime import datetime
 
-group_01 = group({
+group_01: FormatterGroup = group({
     'name': 'data engineer',
     'datetime': datetime(2022, 1, 1)
 })
@@ -232,7 +233,7 @@ This package provide the base abstract class, `Formatter`, for this use-case. Yo
 can create your formatter object like,
 
 ```python
-from typing import Optional, Dict, Union, Callable, Tuple
+from typing import Optional
 from dup_fmt import Formatter, ReturnPrioritiesType, ReturnFormattersType
 
 
@@ -240,12 +241,10 @@ class Storage(Formatter):
 
     base_fmt = '%b'
 
-    base_attr_prefix = "st"
-
     __slots__ = (
-        "_st_bit",
-        "_st_byte",
-        "_st_storge",
+        "bit",
+        "byte",
+        "storge",
     )
 
     @property
@@ -254,20 +253,20 @@ class Storage(Formatter):
 
     @property
     def string(self) -> str:
-        return self._st_bit
+        return self.bit
 
     @property
     def validate(self) -> bool:
         if (
-            self._st_bit != 0
-            and self._st_byte != 0
-            and self._st_bit != self._st_byte
+            self.bit != 0
+            and self.byte != 0
+            and self.bit != self.byte
         ):
             return False
-        if self._st_bit == 0 and self._st_byte != 0:
-            self._st_bit = self._st_byte
-        elif self._st_bit != 0 and self._st_byte == 0:
-            self._st_byte = self._st_bit
+        if self.bit == 0 and self.byte != 0:
+            self.bit = self.byte
+        elif self.bit != 0 and self.byte == 0:
+            self.byte = self.bit
         return True
 
     @property

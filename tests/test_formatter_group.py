@@ -13,19 +13,19 @@ import dup_fmt.formatter as fmt
 
 class FormatterGroupTestCase(unittest.TestCase):
     def setUp(self) -> None:
-        self.DateName: fmt.FormatterGroupType = fmt.Group(
+        self.DateName: fmt.FormatterGroupType = fmt.make_group(
             {
                 "name": fmt.Naming,
                 "datetime": fmt.Datetime,
             }
         )
-        self.DateVersion = fmt.Group(
+        self.DateVersion = fmt.make_group(
             {
                 "version": fmt.Version,
                 "datetime": fmt.Datetime,
             }
         )
-        self.Namings = fmt.Group(
+        self.Namings = fmt.make_group(
             {
                 "name": fmt.Naming,
                 "role": fmt.Naming,

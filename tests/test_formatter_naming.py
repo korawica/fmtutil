@@ -53,6 +53,32 @@ class NamingTestCase(unittest.TestCase):
             },
             fmt.Naming().values(["foo", "bar"]),
         )
+        self.assertDictEqual(
+            {
+                "%n": "foo bar",
+                "%N": "FOO BAR",
+                "%-N": "Foo Bar",
+                "%u": "FOO BAR",
+                "%l": "foo bar",
+                "%t": "Foo Bar",
+                "%a": "fb",
+                "%A": "FB",
+                "%c": "fooBar",
+                "%-c": "FooBar",
+                "%p": "FooBar",
+                "%k": "foo-bar",
+                "%K": "FOO-BAR",
+                "%-K": "Foo-Bar",
+                "%f": "foobar",
+                "%F": "FOOBAR",
+                "%s": "foo_bar",
+                "%S": "FOO_BAR",
+                "%-S": "Foo_Bar",
+                "%v": "fbr",
+                "%V": "FBR",
+            },
+            fmt.Naming().values("foo bar"),
+        )
 
     def test_naming_regex(self):
         self.assertDictEqual(

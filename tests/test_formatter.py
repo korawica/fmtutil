@@ -11,7 +11,6 @@ from abc import ABC
 from typing import Any, Dict, Optional, Type
 
 import dup_fmt.formatter as fmt
-from dup_fmt.exceptions import FormatterValueError
 
 
 class SlotLevelTestCase(unittest.TestCase):
@@ -27,7 +26,7 @@ class SlotLevelTestCase(unittest.TestCase):
         self.assertEqual(9, self.sl.value)
 
     def test_slot_level_update_failed(self):
-        with self.assertRaises(FormatterValueError) as context:
+        with self.assertRaises(fmt.FormatterValueError) as context:
             fmt.SlotLevel(level=5).update(numbers=(6,), strict=True)
         self.assertTrue(
             (
@@ -180,7 +179,7 @@ class FormatterTestCase(unittest.TestCase):
         )
 
     def test_new_format_with_wrong_formatter(self):
-        with self.assertRaises(FormatterValueError) as context:
+        with self.assertRaises(fmt.FormatterValueError) as context:
             self.wrong_fmt_cls.regex()
         self.assertTrue(
             "formatter does not contain `regex` or `cregex` "
@@ -199,7 +198,7 @@ class FormatterTestCase(unittest.TestCase):
         self.assertTrue("priorities" in str(context.exception))
 
     def test_new_validate_error(self):
-        with self.assertRaises(FormatterValueError) as context:
+        with self.assertRaises(fmt.FormatterValueError) as context:
             self.validate_fmt_cls()
         self.assertTrue(
             "Parsing value does not valid from validator"
@@ -264,7 +263,24 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
                 },
             }
 
-        type_construct_fmtter = type(  # no cov
+        def formatter_raise02(v: Optional[Any] = None):  # no cov
+            size: int = v or 0
+            return {
+                "%b": {
+                    "value": lambda: str(size),
+                    "regex": r"(?P<bit>[0-9]*)",
+                },
+                "%B": {
+                    "value": lambda: f"{str(round(size / 8))}B",
+                    "regex": r"(?P<byte>[0-9]*B)",
+                },
+                "%M": {
+                    "value": lambda: f"{str(round(size / 8 / 8))}MB",
+                    "cregex": "%Z",
+                },
+            }
+
+        self.cst_with_type_cls: Type[fmt.Formatter] = type(  # no cov
             "Storage",
             (fmt.Formatter,),
             {
@@ -281,7 +297,6 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
                 "formatter": staticmethod(formatter),
             },
         )
-        self.cst_with_type_cls: Type[fmt.Formatter] = type_construct_fmtter
 
         class TypeConstructFormatterMeta(fmt.Formatter, ABC):  # no cov
             __slots__ = (
@@ -291,7 +306,7 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
             )
             base_fmt = "%b"
 
-        type_construct_fmtter2 = type(  # no cov
+        self.cst_with_type_cls2: Type[fmt.Formatter] = type(  # no cov
             "Storage",
             (TypeConstructFormatterMeta,),
             {
@@ -303,20 +318,29 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
             },
         )
 
-        self.cst_with_type_cls2: Type[fmt.Formatter] = type_construct_fmtter2
-
-        type_construct_fmtter_raise: Type[fmt.Formatter] = type(  # no cov
+        self.cst_with_type_cls_raise: Type[fmt.Formatter] = type(  # no cov
             "Storage",
             (TypeConstructFormatterMeta,),
             {
                 "string": property(string),
                 "value": property(value),
+                "validate": property(validate),
                 "priorities": property(priorities),
                 "formatter": staticmethod(formatter_raise),
             },
         )
 
-        self.cst_with_type_cls_raise = type_construct_fmtter_raise
+        self.cst_with_type_cls_raise02: Type[fmt.Formatter] = type(  # no cov
+            "Storage",
+            (TypeConstructFormatterMeta,),
+            {
+                "string": property(string),
+                "value": property(value),
+                "validate": property(validate),
+                "priorities": property(priorities),
+                "formatter": staticmethod(formatter_raise02),
+            },
+        )
 
     def test_type_formatter_init(self):
         self.assertEqual(
@@ -326,6 +350,17 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
         self.assertEqual(
             "250B",
             self.cst_with_type_cls2({"bit": "2000"}).format("%B"),
+        )
+
+    def test_type_formatter_regex(self):
+        with self.assertRaises(fmt.FormatterArgumentError) as context:
+            self.cst_with_type_cls_raise02.regex()
+        self.assertTrue(
+            (
+                "with 'format', format cregex string that contain %Z regex "
+                "does not found."
+            )
+            in str(context.exception)
         )
 
     def test_type_formatter_parse(self):
@@ -338,7 +373,7 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
             self.cst_with_type_cls2.parse("10000", "%b").value,
         )
 
-        with self.assertRaises(FormatterValueError) as context:
+        with self.assertRaises(fmt.FormatterValueError) as context:
             self.cst_with_type_cls_raise.parse("2000B", "%B")
         self.assertTrue(
             (

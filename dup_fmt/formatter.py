@@ -1775,6 +1775,21 @@ class Naming(Formatter, level=5):
         )
 
 
+# TODO: Create Storage formatter class
+class Storage(Formatter):  # no cov
+    """Storage object for register process that implement formatter and
+    parser.
+    """
+
+    base_fmt: str = "%b"
+
+    __slots__ = (
+        "bit",
+        "byte",
+        "storage",
+    )
+
+
 class __BaseConstant(Formatter):
     """Constant object for register process that implement formatter and
     parser.
@@ -1850,6 +1865,9 @@ class __BaseConstant(Formatter):
     def __lt__(self, other: __BaseConstant):
         return not (self.value.__eq__(other.value))
 
+    def __gt__(self, other: __BaseConstant):
+        return not (self.value.__eq__(other.value))
+
 
 def dict2const(fmt: Dict[str, str], name: str) -> ConstantType:
     """Constant function constructor that receive the dict of format string
@@ -1901,13 +1919,11 @@ def dict2const(fmt: Dict[str, str], name: str) -> ConstantType:
             return fmt
 
         def __search_fmt(self, value: str) -> str:
+            rs: List[str] = []
             for k, v in iter(self.values().items()):
                 if v == value:
-                    return k
-            raise FormatterValueError(
-                f"{self.__class__.__name__} does not support value {value!r} "
-                f"for searching the format string value from `self.values`."
-            )
+                    rs.append(k)
+            return rs[0]
 
     CustomConstant.__name__ = name
     return CustomConstant
@@ -2030,7 +2046,7 @@ class FormatterGroup:
         for group in parser_rs:
             group_origin: str = group.split("__")[0]
             rs[group_origin] = {**parser_rs[group]["props"], **rs[group_origin]}
-        return cls(formatters=rs)
+        return cls(formats=rs)
 
     @classmethod
     def __parse(
@@ -2221,9 +2237,6 @@ def make_group(group: GroupValue) -> FormatterGroupType:
     return CustomGroup
 
 
-Group: Callable[[Dict[str, FormatterType]], FormatterGroupType] = make_group
-
-
 __all__ = (
     # Formatter
     "Formatter",
@@ -2243,6 +2256,5 @@ __all__ = (
     # Formatter Group
     "FormatterGroup",
     "FormatterGroupType",
-    "Group",
     "make_group",
 )

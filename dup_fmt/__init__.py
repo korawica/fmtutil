@@ -27,7 +27,6 @@ from .formatter import (
     FormatterGroup,
     FormatterGroupType,
     FormatterType,
-    Group,
     Naming,
     ReturnFormattersType,
     ReturnPrioritiesType,
@@ -63,7 +62,6 @@ __all__ = (
     # Formatter Group
     "FormatterGroup",
     "FormatterGroupType",
-    "Group",
     "make_group",
     # ---
     "FormatterArgumentError",
