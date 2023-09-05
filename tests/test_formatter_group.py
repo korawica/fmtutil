@@ -59,7 +59,7 @@ class FormatterGroupTestCase(unittest.TestCase):
     def test_fmt_group_properties(self):
         self.assertEqual(
             (
-                "<CustomGroup.parse(value='data engineer_2022-01-01 "
+                "<NamingDatetime.parse(value='data engineer_2022-01-01 "
                 "00:00:00.000', fmt='%n_%Y-%m-%d %H:%M:%S.%f')>"
             ),
             self.gp.__repr__(),

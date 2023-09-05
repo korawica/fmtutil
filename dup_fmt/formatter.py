@@ -21,6 +21,8 @@ from typing import (
     Callable,
     Dict,
     List,
+    Literal,
+    NoReturn,
     Optional,
     Tuple,
     Type,
@@ -49,8 +51,10 @@ from .utils import (
     itself,
 )
 
+NotImplementedType = Literal["NotImplemented"]
+
 FormatterType = Type["Formatter"]
-FormatterGroupType = Type["FormatterGroup"]
+FormatterGroupType = Type["__FormatterGroup"]
 ConstantType = Type["__BaseConstant"]
 
 PriorityCallable = Union[Callable[[Any], Any], Callable[[], Any], partial]
@@ -261,7 +265,7 @@ class Formatter(MetaFormatter):
     """
 
     # This value must reassign from child class
-    base_fmt: Union[str, NotImplemented] = NotImplemented
+    base_fmt: Union[str, NotImplementedType] = NotImplemented
 
     # This value must reassign from child class
     base_level: int = 1
@@ -271,7 +275,13 @@ class Formatter(MetaFormatter):
 
         base_config_value: Optional[Any] = None
 
-    def __init_subclass__(cls, /, level: int = 1, **kwargs) -> None:
+    def __init_subclass__(
+        cls: FormatterType,
+        /,
+        level: int = 1,
+        **kwargs: Any,
+    ) -> None:
+        cls.base_level = level
         super().__init_subclass__(**kwargs)
 
         if cls.base_fmt is NotImplemented:
@@ -284,7 +294,6 @@ class Formatter(MetaFormatter):
                 "Please implement `__slots__` class property for this "
                 "sub-formatter class."
             )
-        cls.base_level: int = level
 
     @classmethod
     def passer(
@@ -329,7 +338,7 @@ class Formatter(MetaFormatter):
         :return: an instance of Formatter that parse from string value by
             format string.
         """
-        _fmt: Union[str, NotImplemented] = fmt or cls.base_fmt
+        _fmt: Union[str, NotImplementedType] = fmt or cls.base_fmt
 
         if not _fmt or (_fmt is NotImplemented):
             raise NotImplementedError(
@@ -1790,6 +1799,9 @@ class Storage(Formatter):  # no cov
     )
 
 
+Constant = TypeVar("Constant", bound="__BaseConstant")
+
+
 class __BaseConstant(Formatter):
     """Constant object for register process that implement formatter and
     parser.
@@ -1800,14 +1812,14 @@ class __BaseConstant(Formatter):
     __slots__: Tuple[str, ...] = ("_constant",)
 
     @classmethod
-    def passer(cls, value: Any):
+    def passer(cls, value: Any) -> NoReturn:
         raise NotImplementedError(
             "The Constant class does not support for passing value to this "
             "class initialization."
         )
 
     @classmethod
-    def parse(cls, value: str, fmt: Optional[str] = None):
+    def parse(cls, value: str, fmt: Optional[str] = None) -> Formatter:
         if fmt is None:
             raise NotImplementedError(
                 "The Constant class does not support for default format string "
@@ -1854,7 +1866,7 @@ class __BaseConstant(Formatter):
         )
 
     @staticmethod
-    def formatter(  # type: ignore[override]
+    def formatter(
         value: Optional[List[str]] = None,
     ) -> ReturnFormattersType:
         raise NotImplementedError(
@@ -1862,10 +1874,10 @@ class __BaseConstant(Formatter):
             "formatter class"
         )
 
-    def __lt__(self, other: __BaseConstant):
+    def __lt__(self, other: Formatter) -> bool:
         return not (self.value.__eq__(other.value))
 
-    def __gt__(self, other: __BaseConstant):
+    def __gt__(self, other: Formatter) -> bool:
         return not (self.value.__eq__(other.value))
 
 
@@ -1937,9 +1949,6 @@ def fmt2const(fmt: Formatter) -> ConstantType:
     return dict2const(_fmt, name=f"{fmt.__class__.__name__}Const")
 
 
-Constant = TypeVar("Constant", bound=__BaseConstant)
-
-
 def make_const(
     name: Optional[str] = None,
     formatter: Optional[Union[Dict[str, str], Formatter]] = None,
@@ -1951,7 +1960,7 @@ def make_const(
     _fmt: Dict[str, str]
     if not formatter:
         if fmt and value:
-            name: str = f"{fmt.__name__}Const"
+            name = f"{fmt.__name__}Const"
             formatter = fmt().values(value=value)
         else:
             raise FormatterArgumentError(
@@ -1985,11 +1994,27 @@ EnvConstant: ConstantType = make_const(
 )
 
 
-GroupValue = Dict[str, FormatterType]
+@final
+class GenFormatValue(TypedDict):
+    fmt: str
+
+
+@final
+class PVParseValue(TypedDict):
+    fmt: str
+    value: str
+    props: Dict[str, str]
+
+
+ReturnGroupGenFormatType = Dict[str, GenFormatValue]
+ReturnPVParseType = Dict[str, PVParseValue]
+
+
+FormatterGroup = TypeVar("FormatterGroup", bound="__FormatterGroup")
 
 
 @total_ordering
-class FormatterGroup:
+class __FormatterGroup:
     """Group of any Formatters together with dynamic group naming like
     timestamp for Datetime formatter object.
 
@@ -1998,7 +2023,7 @@ class FormatterGroup:
 
     .. class attributes::
 
-        - base_groups: GroupValue
+        - base_groups: Dict[str, FormatterType]
 
     .. attributes::
 
@@ -2012,9 +2037,9 @@ class FormatterGroup:
     """
 
     # This value must reassign from child class
-    base_groups: Union[GroupValue, NotImplemented] = NotImplemented
+    base_groups: Dict[str, FormatterType] = NotImplemented
 
-    def __init_subclass__(cls, **kwargs) -> None:
+    def __init_subclass__(cls: FormatterGroupType, **kwargs: Any) -> None:
         super().__init_subclass__(**kwargs)
 
         if cls.base_groups is NotImplemented:
@@ -2028,7 +2053,7 @@ class FormatterGroup:
         cls,
         value: str,
         fmt: str,
-    ) -> FormatterGroup:
+    ) -> __FormatterGroup:
         """Parse formatter by generator values like timestamp, version,
         or serial.
 
@@ -2053,7 +2078,7 @@ class FormatterGroup:
         cls,
         value: str,
         fmt: str,
-    ) -> Dict[str, Dict[str, Dict[str, str]]]:
+    ) -> ReturnPVParseType:
         _fmt, _fmt_getter = cls.gen_format(fmt=fmt)
         if not (_search := re.search(rf"^{_fmt}$", value)):
             raise FormatterGroupArgumentError(
@@ -2062,26 +2087,30 @@ class FormatterGroup:
             )
 
         _search_dict: Dict[str, str] = _search.groupdict()
+        rs: ReturnPVParseType = {}
         for name in iter(_fmt_getter.copy()):
-            _fmt_getter[name]["value"] = _search_dict.pop(name)
-            _fmt_getter[name]["props"] = {
-                k.replace(name, "", 1): _search_dict.pop(k)
-                for k in filter(
-                    lambda x: x.startswith(name),
-                    _search_dict.copy(),
-                )
+            rs[name] = {
+                "fmt": _fmt_getter[name]["fmt"],
+                "value": _search_dict.pop(name),
+                "props": {
+                    k.replace(name, "", 1): _search_dict.pop(k)
+                    for k in filter(
+                        lambda x: x.startswith(name),
+                        _search_dict.copy(),
+                    )
+                },
             }
-        return dict(_fmt_getter)
+        return rs
 
     @classmethod
-    def gen_format(cls, fmt: str) -> Tuple[str, Dict[str, Dict[str, str]]]:
+    def gen_format(cls, fmt: str) -> Tuple[str, ReturnGroupGenFormatType]:
         """Generate format string value to regular expression value that able
         to search with any input value.
 
         :param fmt: a format string value pass from input argument.
         :type fmt: str
         """
-        fmt_getter: Dict[str, str] = {}
+        fmt_getter: ReturnGroupGenFormatType = {}
         for group, formatter in cls.base_groups.items():
             for _index, fmt_match in enumerate(
                 re.finditer(
@@ -2150,13 +2179,9 @@ class FormatterGroup:
 
     def __init__(
         self,
-        formats: Dict[
-            str,
-            Union[
-                Dict[str, str],
-                Formatter,
-                Any,
-            ],
+        formats: Union[
+            Dict[str, Dict[str, str]],
+            Dict[str, Formatter],
         ],
     ) -> None:
         """Main initialization get the formatter value, a mapping of name
@@ -2177,15 +2202,10 @@ class FormatterGroup:
     def __construct_groups(
         self,
         group: str,
-        v: Union[
-            Dict[str, str],
-            Formatter,
-        ],
+        v: Union[Dict[str, str], Formatter],
     ) -> Formatter:
         if isinstance(v, Formatter):
             return v
-        if not isinstance(v, dict):
-            return self.base_groups[group].passer(v)
         return self.base_groups[group](v)
 
     def __repr__(self) -> str:
@@ -2207,13 +2227,13 @@ class FormatterGroup:
     def __hash__(self) -> int:
         return hash(self.__str__())
 
-    def __eq__(self, other: Union[FormatterGroup, Any]) -> bool:
+    def __eq__(self, other: Union[__FormatterGroup, Any]) -> bool:
         return isinstance(other, self.__class__) and any(
             self.groups[group] == other.groups[group]
             for group in self.base_groups
         )
 
-    def __lt__(self, other: Union[FormatterGroup, Any]) -> bool:
+    def __lt__(self, other: Union[__FormatterGroup, Any]) -> bool:
         return (
             isinstance(other, self.__class__)
             and self != other
@@ -2223,17 +2243,22 @@ class FormatterGroup:
             )
         )
 
-    def __le__(self, other: Union[FormatterGroup, Any]) -> bool:
+    def __le__(self, other: Union[__FormatterGroup, Any]) -> bool:
         return isinstance(other, self.__class__) and any(
             self.groups[group] <= other.groups[group]
             for group in self.base_groups
         )
 
 
-def make_group(group: GroupValue) -> FormatterGroupType:
-    class CustomGroup(FormatterGroup):
-        base_groups: GroupValue = group
+def make_group(group: Dict[str, FormatterType]) -> FormatterGroupType:
+    name: str = "".join(_.__name__ for _ in group.values())
 
+    class CustomGroup(__FormatterGroup):
+        base_groups: Dict[str, FormatterType] = group
+
+        __qualname__ = name
+
+    CustomGroup.__name__ = name
     return CustomGroup
 
 

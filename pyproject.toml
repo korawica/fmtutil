@@ -44,11 +44,11 @@ Homepage = "https://github.com/korawica/dup-fmt/"
 
 [project.optional-dependencies]
 test = [
-    "dup-utils[test]>=0.0.4",
+    "dup-utils[test]>=0.0.5.post0",
 ]
 dev = [
     "hatch>=1.6.0",
-    "dup-utils[dev]>=0.0.4",
+    "dup-fmt[test]",
 ]
 
 [project.scripts]
