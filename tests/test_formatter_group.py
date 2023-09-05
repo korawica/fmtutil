@@ -56,7 +56,27 @@ class FormatterGroupTestCase(unittest.TestCase):
             }
         )
 
+    def test_fmt_group_init_raise(self):
+        with self.assertRaises(fmt.FormatterGroupValueError) as context:
+            self.gp2_default = self.DateVersion(
+                {
+                    "version": fmt.Version(),
+                    "timestamp": fmt.Datetime(),
+                }
+            )
+        self.assertTrue(
+            "VersionDatetime does not support for this group name, 'timestamp'."
+            in str(context.exception)
+        )
+
     def test_fmt_group_properties(self):
+        self.assertEqual(
+            "data engineer, 2022-01-01 00:00:00.000", self.gp.__str__()
+        )
+        self.assertEqual(
+            hash(self.gp.__str__()),
+            self.gp.__hash__(),
+        )
         self.assertEqual(
             (
                 "<NamingDatetime.parse(value='data engineer_2022-01-01 "
@@ -175,6 +195,111 @@ class FormatterGroupTestCase(unittest.TestCase):
                 "'Datetime' in {datetime:%Y_%m_%d_%H%M%S_%K}"
             )
             in str(context.exception)
+        )
+        with self.assertRaises(fmt.FormatterGroupValueError) as context:
+            self.gp2.format("{timestamp:%Y_%m_%d_%H%M%S}")
+        self.assertTrue(
+            "This group, 'timestamp', does not set on `cls.base_groups`."
+            in str(context.exception)
+        )
+
+    def test_fmt_group_order(self):
+        self.assertFalse(
+            self.DateVersion.parse(
+                "20220101_1_0_0",
+                fmt="{datetime:%Y%m%d}_{version}",
+            )
+            < self.DateVersion.parse(
+                "20220101_0_9_1",
+                fmt="{datetime:%Y%m%d}_{version}",
+            )
+        )
+        self.assertTrue(
+            self.DateVersion.parse(
+                "20220105_0_9_1",
+                fmt="{datetime:%Y%m%d}_{version}",
+            )
+            < self.DateVersion.parse(
+                "20220111_0_9_1",
+                fmt="{datetime:%Y%m%d}_{version}",
+            )
+        )
+        # Datetime is greater but version is less that other
+        self.assertFalse(
+            self.DateVersion.parse(
+                "20220105_1_0_0",
+                fmt="{datetime:%Y%m%d}_{version}",
+            )
+            > self.DateVersion.parse(
+                "20220101_1_0_1",
+                fmt="{datetime:%Y%m%d}_{version}",
+            )
+        )
+        self.assertTrue(
+            self.DateVersion.parse(
+                "20220101_0_1_0",
+                fmt="{datetime:%Y%m%d}_{version}",
+            )
+            > self.DateVersion.parse(
+                "20220101_0_0_9",
+                fmt="{datetime:%Y%m%d}_{version}",
+            )
+        )
+        self.assertTrue(
+            self.DateVersion.parse(
+                "20220101_1_0_0",
+                fmt="{datetime:%Y%m%d}_{version}",
+            )
+            != self.DateVersion.parse(
+                "20220101_0_9_1",
+                fmt="{datetime:%Y%m%d}_{version}",
+            )
+        )
+        self.assertTrue(
+            self.DateVersion.parse(
+                "20220101_1_0_0",
+                fmt="{datetime:%Y%m%d}_{version}",
+            )
+            >= self.DateVersion.parse(
+                "20220101_0_9_1",
+                fmt="{datetime:%Y%m%d}_{version}",
+            )
+        )
+        self.assertTrue(
+            self.DateVersion.parse(
+                "20220101_1_0_0",
+                fmt="{datetime:%Y%m%d}_{version}",
+            )
+            <= self.DateVersion.parse(
+                "20220101_1_0_0",
+                fmt="{datetime:%Y%m%d}_{version}",
+            )
+        )
+
+    def test_fmt_group_order_raise(self):
+        with self.assertRaises(TypeError) as context:
+            _ = self.DateVersion.parse(
+                "20220101_1_0_0",
+                fmt="{datetime:%Y%m%d}_{version}",
+            ) < self.DateName.parse(
+                "20220101_test",
+                fmt="{datetime:%Y%m%d}_{name}",
+            )
+        self.assertTrue(
+            "'<' not supported between instances of 'VersionDatetime' and "
+            "'NamingDatetime'" in str(context.exception)
+        )
+        with self.assertRaises(TypeError) as context:
+            _ = self.DateVersion.parse(
+                "20220101_1_0_0",
+                fmt="{datetime:%Y%m%d}_{version}",
+            ) > self.DateName.parse(
+                "20220101_test",
+                fmt="{datetime:%Y%m%d}_{name}",
+            )
+        self.assertTrue(
+            "'>' not supported between instances of 'VersionDatetime' and "
+            "'NamingDatetime'" in str(context.exception)
         )
 
     def test_fmt_group_max_min(self):

@@ -1784,8 +1784,7 @@ class Naming(Formatter, level=5):
         )
 
 
-# TODO: Create Storage formatter class
-class Storage(Formatter):  # no cov
+class Storage(Formatter):
     """Storage object for register process that implement formatter and
     parser.
     """
@@ -1797,6 +1796,55 @@ class Storage(Formatter):  # no cov
         "byte",
         "storage",
     )
+
+    @property
+    def value(self) -> int:
+        return int(self.string)
+
+    @property
+    def string(self) -> str:
+        return self.bit  # type: ignore[no-any-return]
+
+    @property
+    def priorities(self) -> ReturnPrioritiesType:
+        return {
+            "bit": {
+                "value": lambda x: x,
+                "level": 1,
+            },
+            "byte": {
+                "value": lambda x: str(int(x.replace("B", "")) * 8),
+                "level": 1,
+            },
+            "bit_default": {
+                "value": self._from_byte,
+                "level": 0,
+            },
+            "byte_default": {
+                "value": self._from_bit,
+                "level": 0,
+            },
+        }
+
+    @staticmethod
+    def formatter(storage: Optional[int] = None) -> ReturnFormattersType:
+        size: str = str(storage or 0)
+        return {
+            "%b": {
+                "value": lambda: size,
+                "regex": r"(?P<bit>[0-9]*)",
+            },
+            "%B": {
+                "value": lambda: f"{round(int(size) / 8)}B",
+                "regex": r"(?P<byte>[0-9]*B)",
+            },
+        }
+
+    def _from_byte(self) -> str:
+        return self.byte or "0"
+
+    def _from_bit(self) -> str:
+        return self.bit or "0"
 
 
 Constant = TypeVar("Constant", bound="__BaseConstant")
@@ -2013,7 +2061,6 @@ ReturnPVParseType = Dict[str, PVParseValue]
 FormatterGroup = TypeVar("FormatterGroup", bound="__FormatterGroup")
 
 
-@total_ordering
 class __FormatterGroup:
     """Group of any Formatters together with dynamic group naming like
     timestamp for Datetime formatter object.
@@ -2064,9 +2111,7 @@ class __FormatterGroup:
 
         :rtype: Dict[str, Formatter]
         """
-        # TODO: Change special character value in format string like: |,
-        #  () before passing to parser method.
-        parser_rs = cls.__parse(value, fmt)
+        parser_rs: ReturnPVParseType = cls.__parse(value, fmt)
         rs: Dict[str, Dict[str, str]] = defaultdict(dict)
         for group in parser_rs:
             group_origin: str = group.split("__")[0]
@@ -2224,39 +2269,45 @@ class __FormatterGroup:
     def __str__(self) -> str:
         return ", ".join(v.string for v in self.groups.values())
 
-    def __hash__(self) -> int:
-        return hash(self.__str__())
-
-    def __eq__(self, other: Union[__FormatterGroup, Any]) -> bool:
-        return isinstance(other, self.__class__) and any(
-            self.groups[group] == other.groups[group]
-            for group in self.base_groups
-        )
-
-    def __lt__(self, other: Union[__FormatterGroup, Any]) -> bool:
-        return (
-            isinstance(other, self.__class__)
-            and self != other
-            and any(
-                self.groups[group] < other.groups[group]
-                for group in self.base_groups
-            )
-        )
-
-    def __le__(self, other: Union[__FormatterGroup, Any]) -> bool:
-        return isinstance(other, self.__class__) and any(
-            self.groups[group] <= other.groups[group]
-            for group in self.base_groups
-        )
-
 
 def make_group(group: Dict[str, FormatterType]) -> FormatterGroupType:
     name: str = "".join(_.__name__ for _ in group.values())
 
+    @total_ordering
     class CustomGroup(__FormatterGroup):
         base_groups: Dict[str, FormatterType] = group
 
         __qualname__ = name
+
+        def __hash__(self) -> int:
+            return hash(self.__str__())
+
+        def __eq__(self, other: Union[CustomGroup, Any]) -> bool:
+            return isinstance(other, self.__class__) and all(
+                self.groups[g] == other.groups[g] for g in self.base_groups
+            )
+
+        def __gt__(self, other: Union[CustomGroup, Any]) -> bool:
+            if isinstance(other, self.__class__):
+                return any(
+                    self.groups[g].__gt__(other.groups[g])
+                    for g in self.base_groups
+                ) and all(
+                    not self.groups[g].__lt__(other.groups[g])
+                    for g in self.base_groups
+                )
+            return NotImplemented
+
+        def __lt__(self, other: Union[CustomGroup, Any]) -> bool:
+            if isinstance(other, self.__class__):
+                return any(
+                    self.groups[g].__lt__(other.groups[g])
+                    for g in self.base_groups
+                ) and all(
+                    not self.groups[g].__gt__(other.groups[g])
+                    for g in self.base_groups
+                )
+            return NotImplemented
 
     CustomGroup.__name__ = name
     return CustomGroup
@@ -2272,6 +2323,7 @@ __all__ = (
     "Datetime",
     "Version",
     "Naming",
+    "Storage",
     "ConstantType",
     "Constant",
     "EnvConstant",
