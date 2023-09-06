@@ -125,9 +125,25 @@ class FormatterGroupTestCase(unittest.TestCase):
         )
         self.assertEqual(
             "20210101_data_engineer_demo",
-            ConstGroup({"timestamp": datetime.datetime(2021, 1, 1, 12)}).format(
-                "{timestamp:%Y%m%d}_{naming:%s}_{domain}"
-            ),
+            ConstGroup(
+                {
+                    "timestamp": datetime.datetime(2021, 1, 1, 12),
+                }
+            ).format("{timestamp:%Y%m%d}_{naming:%s}_{domain}"),
+        )
+        with self.assertRaises(NotImplementedError) as context:
+            ConstGroup(
+                {
+                    "timestamp": datetime.datetime(2021, 1, 1, 12),
+                    "naming": ["data", "pipeline"],
+                }
+            )
+        self.assertTrue(
+            (
+                "The Constant class does not support for passing value to "
+                "this class initialization."
+            )
+            in str(context.exception)
         )
 
     def test_fmt_group_properties(self):

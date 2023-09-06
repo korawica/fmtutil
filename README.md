@@ -16,8 +16,7 @@
   - [Naming](#naming)
   - [Storage](#storage)
   - [Constant](#constant)
-- [Formatter Group](#formatter-group)
-- [Custom Formatter Object](#custom-formatter-object)
+- [FormatterGroup Object](#formattergroup-object)
 
 This **Formatter** package was created for `parse` and `format` any string values
 that match format pattern with Python regular expression. This package be the
@@ -202,18 +201,19 @@ except FormatterError as err:
 > **Note**: \
 > This package already implement environment constant object, `dup_fmt.EnvConstant`.
 
-## Formatter Group
+## FormatterGroup Object
 
-The **Formatter Group** object, `FormatterGroup`, which is the grouping of needed
-mapping formatter objects and its name together. You can define a name of formatter
-that you want, like `name` for `Naming` object, or `timestamp` for `Datetime` object.
+The **FormatterGroup** object, `FormatterGroup`, which is the grouping of needed
+mapping formatter objects and its alias formatter object ref name together. You
+can define a name of formatter that you want, such as `name` for `Naming`, or
+`timestamp` for `Datetime`.
 
 **Parse**:
 
 ```python
-from dup_fmt import make_group, Naming, Datetime
+from dup_fmt import make_group, Naming, Datetime, FormatterGroupType
 
-group = make_group({'name': Naming, 'datetime': Datetime})
+group: FormatterGroupType = make_group({'name': Naming, 'datetime': Datetime})
 group.parse(
     'data_engineer_in_20220101_de',
     fmt='{name:%s}_in_{timestamp:%Y%m%d}_{name:%a}'
@@ -243,95 +243,6 @@ group_01.format('{name:%c}_{timestamp:%Y_%m_%d}')
 ```text
 >>> dataEngineer_2022_01_01
 ```
-
-## Custom Formatter Object
-
-If this implemented formatter objects in this package does not help you all scenario
-of a formatted value, you can create your formatter object by yourself.
-
-This package provide the base abstract class, `Formatter`, for this use-case. You
-can create your formatter object like,
-
-```python
-from typing import Optional
-from dup_fmt import Formatter, ReturnPrioritiesType, ReturnFormattersType
-
-
-class Storage(Formatter):
-
-    base_fmt = '%b'
-
-    __slots__ = (
-        "bit",
-        "byte",
-        "storge",
-    )
-
-    @property
-    def value(self) -> int:
-        return int(self.string)
-
-    @property
-    def string(self) -> str:
-        return self.bit
-
-    @property
-    def validate(self) -> bool:
-        if (
-            self.bit != 0
-            and self.byte != 0
-            and self.bit != self.byte
-        ):
-            return False
-        if self.bit == 0 and self.byte != 0:
-            self.bit = self.byte
-        elif self.bit != 0 and self.byte == 0:
-            self.byte = self.bit
-        return True
-
-    @property
-    def priorities(self) -> ReturnPrioritiesType:
-        return {
-            "bit": {
-                "value": lambda x: str(x),
-                "level": 1,
-            },
-            "byte": {
-                "value": lambda x: str(int(x.replace('B', '')) * 8),
-                "level": 1,
-            },
-            "bit_default": {"value": self.default("0")},
-            "byte_default": {"value": self.default("0")}
-        }
-
-    @staticmethod
-    def formatter(
-            value: Optional[int] = None,
-    ) -> ReturnFormattersType:
-        """Generate formatter that support mapping formatter,
-            %b  : Bit format
-            %B  : Byte format
-        """
-        size: int = value or 0
-        return {
-            '%b': {
-                'value': lambda: str(size),
-                "regex": r"(?P<bit>[0-9]*)",
-            },
-            '%B': {
-                'value': lambda: f"{str(round(size / 8))}B",
-                'regex': r"(?P<byte>[0-9]*B)",
-            }
-        }
-
-Storage({'bit': 2000}).format('%B')
-```
-
-```text
->>> 250B
-```
-
-Read more about [API Document](/docs/en//docs/API.md).
 
 ## License
 
