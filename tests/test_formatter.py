@@ -98,6 +98,10 @@ class FormatterTestCase(unittest.TestCase):
                     },
                 }
 
+            @staticmethod
+            def prepare_value(value: Any) -> Any:
+                return value
+
         class NotImpPriority(fmt.Formatter, ABC):
             base_fmt: str = "%n"
 
@@ -140,10 +144,11 @@ class FormatterTestCase(unittest.TestCase):
     def test_base_formatter_properties(self):
         with self.assertRaises(TypeError) as context:
             fmt.Formatter()
+        print(str(context.exception))
         self.assertTrue(
             (
                 "Can't instantiate abstract class Formatter with abstract "
-                "methods formatter, priorities, string, value"
+                "methods formatter, prepare_value, priorities, string, value"
             )
             in str(context.exception)
         )
@@ -154,7 +159,7 @@ class FormatterTestCase(unittest.TestCase):
         self.assertTrue(
             (
                 "Can't instantiate abstract class Formatter with abstract "
-                "methods formatter, priorities, string, value"
+                "methods formatter, prepare_value, priorities, string, value"
             )
             in str(context.exception)
         )
@@ -280,6 +285,9 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
                 },
             }
 
+        def prepare_value(v: Any) -> Any:
+            return v
+
         self.cst_with_type_cls: Type[fmt.Formatter] = type(  # no cov
             "Storage",
             (fmt.Formatter,),
@@ -295,6 +303,7 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
                 "validate": property(validate),
                 "priorities": property(priorities),
                 "formatter": staticmethod(formatter),
+                "prepare_value": staticmethod(prepare_value),
             },
         )
 
@@ -315,6 +324,7 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
                 "validate": property(validate),
                 "priorities": property(priorities),
                 "formatter": staticmethod(formatter),
+                "prepare_value": staticmethod(prepare_value),
             },
         )
 
@@ -327,6 +337,7 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
                 "validate": property(validate),
                 "priorities": property(priorities),
                 "formatter": staticmethod(formatter_raise),
+                "prepare_value": staticmethod(prepare_value),
             },
         )
 
@@ -339,6 +350,7 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
                 "validate": property(validate),
                 "priorities": property(priorities),
                 "formatter": staticmethod(formatter_raise02),
+                "prepare_value": staticmethod(prepare_value),
             },
         )
 

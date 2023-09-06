@@ -39,12 +39,8 @@ from .formatter import (
     make_const,
     make_group,
 )
-from .objects import (
-    relativeserial,
-)
 
 __all__ = (
-    "relativeserial",
     # ---
     # Formatter
     "Formatter",

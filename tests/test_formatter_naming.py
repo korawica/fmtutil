@@ -30,7 +30,7 @@ class NamingTestCase(unittest.TestCase):
         with self.assertRaises(fmt.FormatterValueError) as context:
             fmt.Naming.formatter(2023)
         self.assertTrue(
-            ("Naming formatter does not support for value, 2023.")
+            "Naming formatter does not support for value, 2023."
             in str(context.exception)
         )
 
