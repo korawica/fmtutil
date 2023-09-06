@@ -11,6 +11,8 @@ from .__about__ import (
 from .exceptions import (
     FormatterArgumentError,
     FormatterError,
+    FormatterGroupArgumentError,
+    FormatterGroupValueError,
     FormatterKeyError,
     FormatterNotFoundError,
     FormatterTypeError,
@@ -47,8 +49,6 @@ __all__ = (
     # Formatter
     "Formatter",
     "FormatterType",
-    "ReturnPrioritiesType",
-    "ReturnFormattersType",
     "Serial",
     "Datetime",
     "Version",
@@ -57,7 +57,6 @@ __all__ = (
     "ConstantType",
     "Constant",
     "EnvConstant",
-    "fmt2const",
     "dict2const",
     "make_const",
     # Formatter Group
@@ -71,6 +70,8 @@ __all__ = (
     "FormatterNotFoundError",
     "FormatterTypeError",
     "FormatterValueError",
+    "FormatterGroupArgumentError",
+    "FormatterGroupValueError",
     # ---
     "__version__",
     "__version_tuple__",
