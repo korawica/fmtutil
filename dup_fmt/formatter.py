@@ -733,7 +733,7 @@ class Serial(Formatter):
             raise FormatterValueError(
                 f"Serial formatter does not support for value, {serial!r}."
             )
-        _value: str = str(int(serial) or 0)
+        _value: str = str(int(serial or 0))
         return {
             "%n": {
                 "value": lambda: _value,
@@ -1068,7 +1068,7 @@ class Datetime(Formatter, level=8):
         :param dt: a datetime value
         :type dt: Optional[datetime](=None)
         """
-        if not isinstance(dt, datetime):
+        if dt and not isinstance(dt, datetime):
             raise FormatterValueError(
                 f"Datetime formatter does not support for value, {dt!r}."
             )
@@ -1399,7 +1399,7 @@ class Version(Formatter, level=3):
         :rtype: Dict[str, Dict[str, Union[Callable, str]]]
         :return: the generated mapping values of all format strings
         """
-        if not isinstance(version, pck_version.Version):
+        if version and not isinstance(version, pck_version.Version):
             raise FormatterValueError(
                 f"Version formatter does not support for value, {version!r}."
             )
@@ -1600,7 +1600,7 @@ class Naming(Formatter, level=5):
 
     @staticmethod
     def formatter(
-        name: Optional[Union[str, List[str]]] = None,
+        nm: Optional[Union[str, List[str]]] = None,
     ) -> ReturnFormattersType:
         """Generate formatter that support mapping formatter,
 
@@ -1630,20 +1630,18 @@ class Naming(Formatter, level=5):
 
         docs: https://gist.github.com/SuppieRK/a6fb471cf600271230c8c7e532bdae4b
         """
-        if not isinstance(
-            name,
+        if nm and not isinstance(
+            nm,
             (
                 str,
                 list,
             ),
         ):
             raise FormatterValueError(
-                f"Naming formatter does not support for value, {name!r}."
+                f"Naming formatter does not support for value, {nm!r}."
             )
         _value: List[str] = (
-            Naming.__prepare_value(name)
-            if isinstance(name, str)
-            else (name or [""])
+            Naming.__prepare_value(nm) if isinstance(nm, str) else (nm or [""])
         )
         return {
             "%n": {
@@ -1929,7 +1927,7 @@ class Storage(Formatter):
             raise FormatterValueError(
                 f"Storage formatter does not support for value, {storage!r}."
             )
-        size: str = str(int(storage) or 0)
+        size: str = str(int(storage or 0))
         return {
             "%b": {
                 "value": lambda: size,
