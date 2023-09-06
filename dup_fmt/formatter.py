@@ -10,6 +10,7 @@ config when inherit base class.
 """
 from __future__ import annotations
 
+import inspect
 import math
 import re
 from abc import ABCMeta, abstractmethod
@@ -657,6 +658,14 @@ class Formatter(MetaFormatter):
     def default(value: str) -> Callable[[], str]:
         """Return wrapper function of value"""
         return lambda: value
+
+    def to_const(self) -> ConstantType:
+        """Convert this Sub-formatter instance to Constant."""
+        return dict2const(
+            self.values(),
+            name=f"{self.__class__.__name__}Const",
+            base_fmt=self.base_fmt,
+        )
 
 
 class Serial(Formatter):
@@ -2045,6 +2054,12 @@ def dict2const(
 ) -> ConstantType:
     """Constant function constructor that receive the dict of format string
     value and constant value.
+
+    :param fmt:
+    :param name:
+    :param base_fmt:
+
+    :rtype: ConstantType
     """
     _base_fmt: str = base_fmt or "".join(fmt.keys())
 
@@ -2060,13 +2075,11 @@ def dict2const(
         )
 
         def __repr__(self) -> str:
-            _base_fmt: str = "|".join(
-                self.__search_fmt(c) for c in self._constant
-            )
+            _bf: str = "|".join(self.__search_fmt(c) for c in self._constant)
             return (
                 f"<{self.__class__.__name__}"
                 f".parse('{self.string}', "
-                f"'{_base_fmt}')>"
+                f"'{_bf}')>"
             )
 
         @staticmethod
@@ -2089,30 +2102,16 @@ def dict2const(
             }
 
         def values(self, value: Optional[Any] = None) -> Dict[str, str]:
+            """Return the constant values"""
             _ = value
             return fmt
 
         def __search_fmt(self, value: str) -> str:
-            rs: List[str] = []
-            for k, v in iter(self.values().items()):
-                if v == value:
-                    rs.append(k)
-            return rs[0]
+            """Return the first format that equal to an input string value."""
+            return [k for k, v in iter(self.values().items()) if v == value][0]
 
     CustomConstant.__name__ = name
     return CustomConstant
-
-
-def fmt2const(fmt: Formatter) -> ConstantType:
-    """Constant function constructor that receive the Formatter instance and
-    freeze this value to Constant class.
-    """
-    _fmt: Dict[str, str] = fmt.values()
-    return dict2const(
-        _fmt,
-        name=f"{fmt.__class__.__name__}Const",
-        base_fmt=fmt.base_fmt,
-    )
 
 
 def make_const(
@@ -2125,16 +2124,17 @@ def make_const(
     """Constant function constructor"""
     base_fmt: Optional[str] = None
     if not formatter:
-        if fmt is None:
+        if fmt is None or not inspect.isclass(fmt):
             raise FormatterArgumentError(
                 "formatter",
-                "The Constant want formatter nor fmt and value arguments",
+                "The Constant constructor function must pass formatter nor fmt "
+                "arguments.",
             )
         name = f"{fmt.__name__}Const"
         formatter = fmt().values(value=value)
         base_fmt = fmt.base_fmt
     elif isinstance(formatter, Formatter):
-        return fmt2const(formatter)
+        return formatter.to_const()
     if not name:
         raise FormatterArgumentError("name", "The Constant want name arguments")
     return dict2const(formatter, name=name, base_fmt=base_fmt)
@@ -2393,7 +2393,7 @@ class __FormatterGroup:
 
 
 def make_group(group: GroupValue) -> FormatterGroupType:
-    # Validate
+    # Validate argument group that should contain ``FormatterType``
     for _ in group.values():
         try:
             if not issubclass(_, Formatter):
@@ -2467,7 +2467,6 @@ __all__ = (
     "ConstantType",
     "Constant",
     "EnvConstant",
-    "fmt2const",
     "dict2const",
     "make_const",
     # Formatter Group

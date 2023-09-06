@@ -49,7 +49,7 @@ class ConstantTestCase(unittest.TestCase):
             value=["data", "pipeline"],
         )
 
-        self.const06: fmt.ConstantType = fmt.fmt2const(fmt.Serial.passer(2023))
+        self.const06: fmt.ConstantType = fmt.Serial.passer(2023).to_const()
         self.ct: fmt.Constant = self.const.parse("normal_life", "%n_life")
         self.ct02: fmt.Constant = self.const02.parse("gzip_life", "%g_life")
         self.ct03: fmt.Constant = self.const03.parse("data engineer", "%n")
@@ -83,8 +83,11 @@ class ConstantTestCase(unittest.TestCase):
         with self.assertRaises(fmt.FormatterArgumentError) as context:
             fmt.make_const(name="DemoConst")
         self.assertTrue(
-            "with 'formatter', The Constant want formatter nor fmt and value "
-            "arguments" in str(context.exception)
+            (
+                "with 'formatter', The Constant constructor function must pass "
+                "formatter nor fmt arguments."
+            )
+            in str(context.exception)
         )
         with self.assertRaises(fmt.FormatterArgumentError) as context:
             fmt.make_const(formatter={"%n": "normal"})
@@ -187,3 +190,13 @@ class ConstantTestCase(unittest.TestCase):
     def test_const_order(self):
         self.assertTrue(self.ct < self.ct02)
         self.assertTrue(self.ct > self.ct02)
+
+    def test_const_from_formatter_method(self):
+        name_const = fmt.Naming.parse("data engineer", fmt="%n").to_const()
+        self.assertEqual(
+            "NamingConst",
+            name_const.__name__,
+        )
+        self.assertEqual(
+            "dtngnr", name_const.parse("data_engineer", fmt="%s").format("%v")
+        )
