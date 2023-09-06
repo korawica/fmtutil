@@ -2,6 +2,13 @@
 
 ## Latest Changes
 
+## 0.1.3
+
+### Code Changes
+
+- :test_tube: test: add test case for passing value to formatter static method. (_2023-09-06_)
+- :test_tube: test: add examples test case for formatter group object. (_2023-09-06_)
+
 ## 0.1.2
 
 ### Features
