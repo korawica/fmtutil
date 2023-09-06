@@ -50,6 +50,14 @@ class SerialTestCase(unittest.TestCase):
             },
         )
 
+    def test_serial_formatter_raise(self):
+        with self.assertRaises(fmt.FormatterValueError) as context:
+            fmt.Serial.formatter(1.23)
+        self.assertTrue(
+            "Serial formatter does not support for value, 1.23."
+            in str(context.exception)
+        )
+
     def test_serial_properties(self):
         self.assertEqual("<Serial.parse('781', '%n')>", self.sr.__repr__())
         self.assertEqual(hash(self.sr.string), self.sr.__hash__())

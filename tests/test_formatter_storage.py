@@ -60,6 +60,14 @@ class StorageTestCase(unittest.TestCase):
             },
         )
 
+    def test_storage_formatter_raise(self):
+        with self.assertRaises(fmt.FormatterValueError) as context:
+            fmt.Storage.formatter(1.23)
+        self.assertTrue(
+            "Storage formatter does not support for value, 1.23."
+            in str(context.exception)
+        )
+
     def test_storage_properties(self):
         self.assertEqual("<Storage.parse('10481', '%b')>", self.st.__repr__())
         self.assertEqual(hash(self.st.string), self.st.__hash__())

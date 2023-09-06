@@ -26,6 +26,14 @@ class NamingTestCase(unittest.TestCase):
         self.nm_default: fmt.Naming = fmt.Naming()
         self.nm_p: fmt.Naming = fmt.Naming.parse("dataEngineer", "%c")
 
+    def test_naming_formatter_raise(self):
+        with self.assertRaises(fmt.FormatterValueError) as context:
+            fmt.Naming.formatter(2023)
+        self.assertTrue(
+            ("Naming formatter does not support for value, 2023.")
+            in str(context.exception)
+        )
+
     def test_naming_values(self):
         self.assertDictEqual(
             {

@@ -129,6 +129,14 @@ class VersionTestCase(unittest.TestCase):
             },
         )
 
+    def test_version_formatter_raise(self):
+        with self.assertRaises(fmt.FormatterValueError) as context:
+            fmt.Version.formatter("2.0.0")
+        self.assertTrue(
+            "Version formatter does not support for value, '2.0.0'."
+            in str(context.exception)
+        )
+
     def test_version_properties(self):
         self.assertEqual(
             "<Version.parse('v8.1.0post2+local1.0', 'v%m.%n.%c%p%l')>",

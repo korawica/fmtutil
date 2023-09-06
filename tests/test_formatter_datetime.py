@@ -7,7 +7,7 @@
 Test the Datetime formatter object.
 """
 import unittest
-from datetime import datetime
+from datetime import date, datetime
 
 import dup_fmt.formatter as fmt
 
@@ -29,6 +29,17 @@ class DatetimeTestCase(unittest.TestCase):
         self.dt3 = fmt.Datetime({"weeks_year_mon_pad": "35"})
         self.dt_default = fmt.Datetime()
         self.dt_p = fmt.Datetime.parse("2021-01-1 135043", "%Y-%m-%-d %f")
+
+    def test_datetime_formatter_raise(self):
+        with self.assertRaises(fmt.FormatterValueError) as context:
+            fmt.Datetime.formatter(date(2023, 1, 23))
+        self.assertTrue(
+            (
+                "Datetime formatter does not support for value, "
+                "datetime.date(2023, 1, 23)."
+            )
+            in str(context.exception)
+        )
 
     def test_datetime_regex(self):
         self.assertDictEqual(

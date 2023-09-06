@@ -2130,9 +2130,6 @@ def dict2const(
             _ = value
             return fmt
 
-        def __values(self):
-            ...
-
         def __search_fmt(self, value: str) -> str:
             """Return the first format that equal to an input string value."""
             return [k for k, v in iter(self.values().items()) if v == value][0]
