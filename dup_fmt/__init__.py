@@ -34,7 +34,6 @@ from .formatter import (
     Storage,
     Version,
     dict2const,
-    fmt2const,
     make_const,
     make_group,
 )
