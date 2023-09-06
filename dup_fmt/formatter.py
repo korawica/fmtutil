@@ -36,7 +36,7 @@ from typing import (
 # TODO: Review ``semver`` package instead ``packaging``.
 #  docs: https://pypi.org/project/semver/
 import packaging.version as pck_version
-from dup_utils.core import remove_pad  # type: ignore
+from dup_utils.core import can_int, remove_pad  # type: ignore
 
 from .exceptions import (
     FormatterArgumentError,
@@ -729,7 +729,11 @@ class Serial(Formatter):
         :rtype: Dict[str, Dict[str, Union[Callable, str]]]
         :return: the generated mapping values of all format strings
         """
-        _value: str = str(serial or 0)
+        if serial and not can_int(serial):
+            raise FormatterValueError(
+                f"Serial formatter does not support for value, {serial!r}."
+            )
+        _value: str = str(int(serial) or 0)
         return {
             "%n": {
                 "value": lambda: _value,
@@ -1064,6 +1068,10 @@ class Datetime(Formatter, level=8):
         :param dt: a datetime value
         :type dt: Optional[datetime](=None)
         """
+        if not isinstance(dt, datetime):
+            raise FormatterValueError(
+                f"Datetime formatter does not support for value, {dt!r}."
+            )
         _dt: datetime = dt or datetime.now()
         return {
             "%n": {
@@ -1391,6 +1399,10 @@ class Version(Formatter, level=3):
         :rtype: Dict[str, Dict[str, Union[Callable, str]]]
         :return: the generated mapping values of all format strings
         """
+        if not isinstance(version, pck_version.Version):
+            raise FormatterValueError(
+                f"Version formatter does not support for value, {version!r}."
+            )
         _version: pck_version.Version = version or pck_version.parse("0.0.1")
         return {
             "%f": {
@@ -1588,7 +1600,7 @@ class Naming(Formatter, level=5):
 
     @staticmethod
     def formatter(
-        value: Optional[Union[str, List[str]]] = None,
+        name: Optional[Union[str, List[str]]] = None,
     ) -> ReturnFormattersType:
         """Generate formatter that support mapping formatter,
 
@@ -1618,10 +1630,20 @@ class Naming(Formatter, level=5):
 
         docs: https://gist.github.com/SuppieRK/a6fb471cf600271230c8c7e532bdae4b
         """
+        if not isinstance(
+            name,
+            (
+                str,
+                list,
+            ),
+        ):
+            raise FormatterValueError(
+                f"Naming formatter does not support for value, {name!r}."
+            )
         _value: List[str] = (
-            Naming.__prepare_value(value)
-            if isinstance(value, str)
-            else (value or [""])
+            Naming.__prepare_value(name)
+            if isinstance(name, str)
+            else (name or [""])
         )
         return {
             "%n": {
@@ -1903,7 +1925,11 @@ class Storage(Formatter):
         %Y  : Yotta-Byte format
 
         """
-        size: str = str(storage or 0)
+        if storage and not can_int(storage):
+            raise FormatterValueError(
+                f"Storage formatter does not support for value, {storage!r}."
+            )
+        size: str = str(int(storage) or 0)
         return {
             "%b": {
                 "value": lambda: size,
@@ -2105,6 +2131,9 @@ def dict2const(
             """Return the constant values"""
             _ = value
             return fmt
+
+        def __values(self):
+            ...
 
         def __search_fmt(self, value: str) -> str:
             """Return the first format that equal to an input string value."""
