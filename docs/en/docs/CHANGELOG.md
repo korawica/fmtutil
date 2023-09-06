@@ -2,6 +2,19 @@
 
 ## Latest Changes
 
+## 0.1.2
+
+### Features
+
+- :dart: feat: add condition for validate value of formatter. (_2023-09-06_)
+- :dart: feat: add .to_const() method on formatter object. (_2023-09-06_)
+- :dart: feat: add base_fmt parameter on make_const func for ignore default. (_2023-09-06_)
+- :dart: feat: add more type argument for formatter group class. (_2023-09-06_)
+
+### Code Changes
+
+- :test_tube: test: update test case for make formatter group from Constant. (_2023-09-05_)
+
 ## 0.1.1
 
 ### Documents
