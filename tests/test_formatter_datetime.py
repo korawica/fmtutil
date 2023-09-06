@@ -150,3 +150,6 @@ class DatetimeTestCase(unittest.TestCase):
             self.dt_p.level.slot,
         )
         self.assertEqual(22, self.dt_p.level.value)
+
+    # def test_datetime_operation(self):
+    #     print(self.dt + self.dt2)

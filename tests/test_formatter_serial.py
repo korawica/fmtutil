@@ -103,3 +103,20 @@ class SerialTestCase(unittest.TestCase):
         self.assertTrue(self.sr_default.level < self.sr_p2.level)
         self.assertListEqual([True], self.sr_p.level.slot)
         self.assertListEqual([False], self.sr_default.level.slot)
+
+    def test_serial_operation(self):
+        self.assertEqual(fmt.Serial({"number": "790"}), self.sr + self.sr_p)
+        self.assertEqual(fmt.Serial({"number": "786"}), self.sr + 5)
+        self.assertEqual(fmt.Serial({"number": "786"}), 5 + self.sr)
+
+        self.assertEqual(fmt.Serial({"number": "761"}), self.sr - 20)
+        self.assertEqual(fmt.Serial({"number": "772"}), self.sr - self.sr_p)
+
+        with self.assertRaises(TypeError):
+            (self.sr + 5.1)
+            (self.sr + "1.0")
+            (self.sr + "a")
+            (5.1 + self.sr)
+            ("1.0" + self.sr)
+            ("a" + self.sr)
+            (self.sr - 800)

@@ -667,6 +667,37 @@ class Formatter(MetaFormatter):
             base_fmt=self.base_fmt,
         )
 
+    @staticmethod
+    @abstractmethod
+    def prepare_value(value: Any) -> Any:
+        return NotImplementedError(
+            "Please implement prepare value static method for this "
+            "sub-formatter class."
+        )
+
+    def __add__(self, other) -> Formatter:
+        if not isinstance(other, self.__class__):
+            try:
+                other: Formatter = self.__class__.passer(
+                    value=self.prepare_value(other),
+                )
+            except FormatterValueError:
+                return NotImplemented
+        return self.__class__.passer(value=self.value.__add__(other.value))
+
+    def __radd__(self, other) -> Formatter:
+        return self.__add__(other)
+
+    def __sub__(self, other) -> Formatter:
+        if not isinstance(other, self.__class__):
+            try:
+                other: Formatter = self.__class__.passer(
+                    value=self.prepare_value(other),
+                )
+            except FormatterValueError:
+                return NotImplemented
+        return self.__class__.passer(value=self.value.__sub__(other.value))
+
 
 class Serial(Formatter):
     """Serial object for register process that implement formatter and
@@ -729,28 +760,34 @@ class Serial(Formatter):
         :rtype: Dict[str, Dict[str, Union[Callable, str]]]
         :return: the generated mapping values of all format strings
         """
-        if serial and not can_int(serial):
-            raise FormatterValueError(
-                f"Serial formatter does not support for value, {serial!r}."
-            )
-        _value: str = str(int(serial or 0))
+        _value: int = Serial.prepare_value(serial)
         return {
             "%n": {
-                "value": lambda: _value,
+                "value": lambda: str(_value),
                 "regex": r"(?P<number>[0-9]*)",
             },
             "%p": {
-                "value": partial(Serial.to_padding, _value),
+                "value": partial(Serial.to_padding, str(_value)),
                 "regex": (
                     r"(?P<number_pad>"
                     rf"[0-9]{{{str(Serial.Config.serial_max_padding)}}})"
                 ),
             },
             "%b": {
-                "value": partial(Serial.to_binary, _value),
+                "value": partial(Serial.to_binary, str(_value)),
                 "regex": r"(?P<number_binary>[0-1]*)",
             },
         }
+
+    @staticmethod
+    def prepare_value(value: Optional[int]) -> int:
+        if value is None:
+            return 0
+        if not can_int(value) or (int(value) < 0):
+            raise FormatterValueError(
+                f"Serial formatter does not support for value, {value!r}."
+            )
+        return int(value)
 
     @staticmethod
     def to_padding(value: str) -> str:
@@ -1068,11 +1105,7 @@ class Datetime(Formatter, level=8):
         :param dt: a datetime value
         :type dt: Optional[datetime](=None)
         """
-        if dt and not isinstance(dt, datetime):
-            raise FormatterValueError(
-                f"Datetime formatter does not support for value, {dt!r}."
-            )
-        _dt: datetime = dt or datetime.now()
+        _dt: datetime = Datetime.prepare_value(dt)
         return {
             "%n": {
                 "value": partial(_dt.strftime, "%Y%m%d_%H%M%S"),
@@ -1201,6 +1234,16 @@ class Datetime(Formatter, level=8):
                 "regex": r"(?P<microsecond_pad>\d{6})",
             },
         }
+
+    @staticmethod
+    def prepare_value(value: Optional[datetime]) -> datetime:
+        if value is None:
+            return datetime.now()
+        if not isinstance(value, datetime):
+            raise FormatterValueError(
+                f"Datetime formatter does not support for value, {value!r}."
+            )
+        return value
 
     def _from_day_year(self, value: str) -> str:
         """Return date of year"""
@@ -1399,11 +1442,7 @@ class Version(Formatter, level=3):
         :rtype: Dict[str, Dict[str, Union[Callable, str]]]
         :return: the generated mapping values of all format strings
         """
-        if version and not isinstance(version, pck_version.Version):
-            raise FormatterValueError(
-                f"Version formatter does not support for value, {version!r}."
-            )
-        _version: pck_version.Version = version or pck_version.parse("0.0.1")
+        _version: pck_version.Version = Version.prepare_value(version)
         return {
             "%f": {
                 "value": lambda: (
@@ -1468,6 +1507,18 @@ class Version(Formatter, level=3):
                 "regex": r"(?P<local_str>[a-z0-9]+(?:[-_\.][a-z0-9]+)*)",
             },
         }
+
+    @staticmethod
+    def prepare_value(
+        value: Optional[pck_version.Version],
+    ) -> pck_version.Version:
+        if value is None:
+            return pck_version.parse("0.0.1")
+        if not isinstance(value, pck_version.Version):
+            raise FormatterValueError(
+                f"Version formatter does not support for value, {value!r}."
+            )
+        return value
 
     @staticmethod
     def __from_prefix(value: str) -> str:
@@ -1626,23 +1677,11 @@ class Naming(Formatter, level=5):
             %v  : normal name removed vowel
             %V  : normal name removed vowel with upper case
 
-        :param value:
+        :param nm:
 
         docs: https://gist.github.com/SuppieRK/a6fb471cf600271230c8c7e532bdae4b
         """
-        if nm and not isinstance(
-            nm,
-            (
-                str,
-                list,
-            ),
-        ):
-            raise FormatterValueError(
-                f"Naming formatter does not support for value, {nm!r}."
-            )
-        _value: List[str] = (
-            Naming.__prepare_value(nm) if isinstance(nm, str) else (nm or [""])
-        )
+        _value: List[str] = Naming.prepare_value(nm)
         return {
             "%n": {
                 "value": partial(Naming.__join_with, " ", _value),
@@ -1777,6 +1816,20 @@ class Naming(Formatter, level=5):
                 "regex": r"(?P<vowel_upper>[B-DF-HJ-NP-TV-Z]+)",
             },
         }
+
+    @staticmethod
+    def prepare_value(value: Optional[Union[str, List[str]]]) -> List[str]:
+        if value is None:
+            return [""]
+        if isinstance(value, str):
+            return Naming.__prepare_value(value)
+        elif not isinstance(value, list) or any(
+            not isinstance(v, str) for v in value
+        ):
+            raise FormatterValueError(
+                f"Naming formatter does not support for value, {value!r}."
+            )
+        return value
 
     @staticmethod
     def pascal_case(snake_case: str) -> str:
@@ -1923,18 +1976,14 @@ class Storage(Formatter):
         %Y  : Yotta-Byte format
 
         """
-        if storage and not can_int(storage):
-            raise FormatterValueError(
-                f"Storage formatter does not support for value, {storage!r}."
-            )
-        size: str = str(int(storage or 0))
+        size: int = Storage.prepare_value(storage)
         return {
             "%b": {
-                "value": lambda: size,
+                "value": lambda: str(size),
                 "regex": r"(?P<bit>[0-9]*)",
             },
             "%B": {
-                "value": lambda: f"{round(int(size) / 8)}B",
+                "value": lambda: f"{round(size / 8)}B",
                 "regex": r"(?P<byte>[0-9]*B)",
             },
             "%K": {
@@ -1971,6 +2020,16 @@ class Storage(Formatter):
             },
         }
 
+    @staticmethod
+    def prepare_value(value: Optional[int]) -> int:
+        if value is None:
+            return 0
+        if not can_int(value) or (int(value) < 0):
+            raise FormatterValueError(
+                f"Storage formatter does not support for value, {value!r}."
+            )
+        return int(value)
+
     def _from_byte(self) -> str:
         return str(int(self.byte or "0") * 8)
 
@@ -1978,9 +2037,9 @@ class Storage(Formatter):
         return str(round(int(self.bit or "0") / 8))
 
     @staticmethod
-    def bit2byte(value: str, order: str) -> str:
+    def bit2byte(value: int, order: str) -> str:
         p = math.pow(1024, SIZE.index(order))
-        return f"{(round((int(value) / 8) / p))}{order}"
+        return f"{(round((value / 8) / p))}{order}"
 
     @staticmethod
     def to_byte(value: str, order: str) -> str:
@@ -2068,6 +2127,10 @@ class __BaseConstant(Formatter):
 
     def __gt__(self, other: Formatter) -> bool:
         return not (self.value.__eq__(other.value))
+
+    @staticmethod
+    def prepare_value(value: Any) -> Any:
+        return value
 
 
 def dict2const(
