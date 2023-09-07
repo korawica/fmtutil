@@ -1899,6 +1899,12 @@ class Naming(Formatter, level=5):
             .split()
         )
 
+    def __sub__(self, other):  # no cov
+        return NotImplemented
+
+    def __rsub__(self, other):  # no cov
+        return NotImplemented
+
 
 SIZE: Tuple[str, ...] = (
     "B",
