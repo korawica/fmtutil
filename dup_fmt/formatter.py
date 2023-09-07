@@ -670,8 +670,8 @@ class Formatter(MetaFormatter):
     @staticmethod
     @abstractmethod
     def prepare_value(value: Any) -> Any:
-        return NotImplementedError(
-            "Please implement prepare value static method for this "
+        raise NotImplementedError(
+            "Please implement prepare_value static method for this "
             "sub-formatter class."
         )
 
@@ -683,20 +683,26 @@ class Formatter(MetaFormatter):
                 )
             except FormatterValueError:
                 return NotImplemented
-        return self.__class__.passer(value=self.value.__add__(other.value))
+        return self.__class__.passer(value=self.value + other.value)
 
     def __radd__(self, other) -> Formatter:
         return self.__add__(other)
 
     def __sub__(self, other) -> Formatter:
-        if not isinstance(other, self.__class__):
-            try:
+        try:
+            if not isinstance(other, self.__class__):
                 other: Formatter = self.__class__.passer(
                     value=self.prepare_value(other),
                 )
-            except FormatterValueError:
-                return NotImplemented
-        return self.__class__.passer(value=self.value.__sub__(other.value))
+            return self.__class__.passer(value=(self.value - other.value))
+        except FormatterValueError:
+            return NotImplemented
+
+    def __rsub__(self, other):
+        try:
+            return other - self.value
+        except (TypeError, FormatterValueError):
+            return NotImplemented
 
 
 class Serial(Formatter):
@@ -783,11 +789,16 @@ class Serial(Formatter):
     def prepare_value(value: Optional[int]) -> int:
         if value is None:
             return 0
-        if not can_int(value) or (int(value) < 0):
+        try:
+            if not can_int(value) or (int(value) < 0):
+                raise FormatterValueError(
+                    f"Serial formatter does not support for value, {value!r}."
+                )
+            return int(value)
+        except ValueError as err:
             raise FormatterValueError(
                 f"Serial formatter does not support for value, {value!r}."
-            )
-        return int(value)
+            ) from err
 
     @staticmethod
     def to_padding(value: str) -> str:
@@ -2173,6 +2184,7 @@ def dict2const(
         def formatter(  # type: ignore[override]
             v: Optional[str] = None,
         ) -> ReturnFormattersType:
+            _ = CustomConstant.prepare_value(v)
             return {
                 f: {
                     "regex": f"(?P<{convert_fmt_str(f)}>{fmt[f]})",
@@ -2190,7 +2202,7 @@ def dict2const(
 
         def values(self, value: Optional[Any] = None) -> Dict[str, str]:
             """Return the constant values"""
-            _ = value
+            _ = self.prepare_value(value)
             return fmt
 
         def __search_fmt(self, value: str) -> str:

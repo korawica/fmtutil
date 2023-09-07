@@ -183,6 +183,17 @@ class FormatterTestCase(unittest.TestCase):
             in str(context.exception)
         )
 
+    def test_base_formatter_prepare_value(self):
+        with self.assertRaises(NotImplementedError) as context:
+            fmt.Formatter.prepare_value("Demo")
+        self.assertTrue(
+            (
+                "Please implement prepare_value static method for this "
+                "sub-formatter class."
+            )
+            in str(context.exception)
+        )
+
     def test_new_format_with_wrong_formatter(self):
         with self.assertRaises(fmt.FormatterValueError) as context:
             self.wrong_fmt_cls.regex()
