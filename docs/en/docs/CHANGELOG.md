@@ -2,6 +2,21 @@
 
 ## Latest Changes
 
+## 0.1.4
+
+### Features
+
+- :dart: feat: implement cls.adjust func to formatter group object. (_2023-09-07_)
+- :dart: feat: custom operation property for Naming formatter obj. (_2023-09-07_)
+- :dart: feat: custom operation property for Datetime formatter obj. (_2023-09-07_)
+- :dart: feat: implement operation property to formatter object. (_2023-09-07_)
+- :dart: feat: add prepare_value staticmethod on parent formatter class. (_2023-09-07_)
+
+### Code Changes
+
+- :test_tube: test: upgrade pre-commit hooks. (_2023-09-07_)
+- :test_tube: test: add test case for serial operation scenarios. (_2023-09-07_)
+
 ## 0.1.3
 
 ### Code Changes
