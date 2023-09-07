@@ -7,7 +7,9 @@
 Test the Datetime formatter object.
 """
 import unittest
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
+
+from dateutil.relativedelta import relativedelta
 
 import dup_fmt.formatter as fmt
 
@@ -151,5 +153,50 @@ class DatetimeTestCase(unittest.TestCase):
         )
         self.assertEqual(22, self.dt_p.level.value)
 
-    # def test_datetime_operation(self):
-    #     print(self.dt + self.dt2)
+    def test_datetime_operation(self):
+        # 2022-12-30 00:00:43 + 10 days
+        self.assertEqual(
+            datetime(2023, 1, 9, 0, 0, 43),
+            (self.dt + relativedelta(days=10)).value,
+        )
+
+        # 2022-12-30 00:00:43 + 10 days
+        self.assertEqual(
+            datetime(2023, 1, 1, 10, 0, 43),
+            (self.dt + timedelta(days=2, hours=10)).value,
+        )
+
+        # 2022-12-30 00:00:43 + 1 years + 1 months
+        self.assertEqual(
+            datetime(2024, 1, 30, 0, 0, 43),
+            (relativedelta(years=1, months=1) + self.dt).value,
+        )
+
+        self.assertEqual(timedelta(days=349, seconds=43), (self.dt - self.dt2))
+
+        # 2022-12-30 00:00:43 + 10 days
+        self.assertEqual(
+            datetime(2022, 12, 27, 14, 0, 43),
+            (self.dt - timedelta(days=2, hours=10)).value,
+        )
+
+        with self.assertRaises(TypeError) as context:
+            (self.dt + self.dt)
+        self.assertEqual(
+            "unsupported operand type(s) for +: 'Datetime' and 'Datetime'",
+            str(context.exception),
+        )
+
+        with self.assertRaises(TypeError) as context:
+            (self.dt - 2)
+        self.assertEqual(
+            "unsupported operand type(s) for -: 'Datetime' and 'int'",
+            str(context.exception),
+        )
+
+        with self.assertRaises(TypeError) as context:
+            (2 - self.dt)
+        self.assertEqual(
+            "unsupported operand type(s) for -: 'int' and 'Datetime'",
+            str(context.exception),
+        )
