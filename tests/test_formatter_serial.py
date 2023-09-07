@@ -111,12 +111,32 @@ class SerialTestCase(unittest.TestCase):
 
         self.assertEqual(fmt.Serial({"number": "761"}), self.sr - 20)
         self.assertEqual(fmt.Serial({"number": "772"}), self.sr - self.sr_p)
+        self.assertEqual(1219, 2000 - self.sr)
+        self.assertEqual(1219.2, (2000.20 - self.sr))
 
         with self.assertRaises(TypeError):
             (self.sr + 5.1)
+
+        with self.assertRaises(TypeError):
             (self.sr + "1.0")
+
+        with self.assertRaises(TypeError):
             (self.sr + "a")
+
+        with self.assertRaises(TypeError):
             (5.1 + self.sr)
+
+        with self.assertRaises(TypeError):
             ("1.0" + self.sr)
+
+        with self.assertRaises(TypeError):
             ("a" + self.sr)
+
+        with self.assertRaises(TypeError):
             (self.sr - 800)
+
+        with self.assertRaises(TypeError):
+            (self.sr - 20.5)
+
+        with self.assertRaises(TypeError):
+            ("234" - self.sr)
