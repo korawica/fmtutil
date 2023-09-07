@@ -9,7 +9,7 @@ Test the formatter group object examples.
 import unittest
 from typing import List
 
-import dup_fmt.formatter as fmt
+import fmtutil.formatter as fmt
 
 
 class FormatterGroupExampleTestCase(unittest.TestCase):

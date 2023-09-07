@@ -8,7 +8,7 @@ Test the Serial formatter object.
 """
 import unittest
 
-import dup_fmt.formatter as fmt
+import fmtutil.formatter as fmt
 
 
 class StorageTestCase(unittest.TestCase):

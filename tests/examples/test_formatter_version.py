@@ -10,7 +10,7 @@ import unittest
 
 from packaging.version import Version
 
-import dup_fmt.formatter as fmt
+import fmtutil.formatter as fmt
 
 
 class VersionExampleTestCase(unittest.TestCase):

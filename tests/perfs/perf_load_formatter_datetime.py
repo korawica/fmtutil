@@ -4,7 +4,7 @@ from typing import Iterator, List
 
 from memory_profiler import profile
 
-from dup_fmt import Datetime
+from fmtutil import Datetime
 
 perf_path = Path().parent / "assets" / "perf_load_formatter_dt.log"
 perf_path.parent.mkdir(parents=True, exist_ok=True)

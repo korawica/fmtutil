@@ -11,7 +11,7 @@ from datetime import date, datetime, timedelta
 
 from dateutil.relativedelta import relativedelta
 
-import dup_fmt.formatter as fmt
+import fmtutil.formatter as fmt
 
 
 class DatetimeTestCase(unittest.TestCase):

@@ -10,7 +10,7 @@ import unittest
 from abc import ABC
 from typing import Any, Dict, Optional, Type
 
-import dup_fmt.formatter as fmt
+import fmtutil.formatter as fmt
 
 
 class SlotLevelTestCase(unittest.TestCase):

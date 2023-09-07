@@ -10,8 +10,8 @@ import unittest
 
 from packaging.version import Version
 
-import dup_fmt.formatter as fmt
-from dup_fmt.exceptions import FormatterValueError
+import fmtutil.formatter as fmt
+from fmtutil.exceptions import FormatterValueError
 
 
 class VersionTestCase(unittest.TestCase):

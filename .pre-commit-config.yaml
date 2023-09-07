@@ -53,7 +53,7 @@ repos:
         name: Prepare Commit Message
         stages: [ commit-msg ]
         types: [ python ]
-        entry: venv/Scripts/utils.exe git cm -e -l -o
+        entry: venv/Scripts/ddeutil.exe git cm -e -l -o
         language: system
         always_run: true
 

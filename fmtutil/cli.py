@@ -1,19 +1,18 @@
 from __future__ import annotations  # pragma: no cover.
 
-import sys
 import datetime
-from typing import Dict, Any
+import sys
+from typing import Any, Dict
 
 import click
 
-from .formatter import Datetime, Serial, Version, Naming, FormatterType
-
+from .formatter import Datetime, FormatterType, Naming, Serial, Version
 
 MAP_FMTS: Dict[str, FormatterType] = {
-    'datetime': Datetime,
-    'serial': Serial,
-    'version': Version,
-    'naming': Naming,
+    "datetime": Datetime,
+    "serial": Serial,
+    "version": Version,
+    "naming": Naming,
 }
 
 
@@ -28,42 +27,45 @@ def cli_datetime() -> None:
     """Datetime Formatter Object Interface CLI"""
     pass
 
+
 @click.group(name="serial")
 def cli_serial() -> None:
     """Serial Formatter Object Interface CLI"""
     pass
+
 
 @click.group(name="version")
 def cli_version() -> None:
     """Version Formatter Object Interface CLI"""
     pass
 
+
 @click.group(name="naming")
 def cli_naming() -> None:
     """Naming Formatter Object Interface CLI"""
     pass
 
-def dynamic_parse(name: str) -> Any:
 
+def dynamic_parse(name: str) -> Any:
     @click.option(
-        "-v", "--value",
+        "-v",
+        "--value",
         type=click.STRING,
     )
     @click.option(
-        "-f", "--format-in",
+        "-f",
+        "--format-in",
         type=click.STRING,
         default="%Y-%m-%d %H:%M:%S",
     )
     @click.option(
-        "-o","--format-out",
+        "-o",
+        "--format-out",
         type=click.STRING,
         default="%Y-%m-%d %H:%M:%S",
     )
     def parse(value: str, format_in: str, format_out: str) -> None:
-        dt = Datetime.parse(
-            value=value,
-            fmt=format_in
-        )
+        dt = Datetime.parse(value=value, fmt=format_in)
         sys.exit(dt.format(fmt=format_out))
 
     parse.__doc__ = f"""Parse {name.capitalize()} Formatter Object"""
@@ -73,24 +75,25 @@ def dynamic_parse(name: str) -> Any:
 
 @cli_datetime.command()
 @click.option(
-    "-f", "--format-out",
+    "-f",
+    "--format-out",
     type=click.STRING,
     default="%Y-%m-%d %H:%M:%S",
 )
 def now(format_out: str) -> None:
-    """Get Now Datetime with any string format value.
-    """
+    """Get Now Datetime with any string format value."""
     sys.exit(
         Datetime.parse(
             value=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            fmt="%Y-%m-%d %H:%M:%S"
+            fmt="%Y-%m-%d %H:%M:%S",
         ).format(format_out)
     )
 
-cli_datetime.command(dynamic_parse('datetime'))
-cli_serial.command(dynamic_parse('serial'))
-cli_version.command(dynamic_parse('version'))
-cli_naming.command(dynamic_parse('naming'))
+
+cli_datetime.command(dynamic_parse("datetime"))
+cli_serial.command(dynamic_parse("serial"))
+cli_version.command(dynamic_parse("version"))
+cli_naming.command(dynamic_parse("naming"))
 
 
 def main() -> None:

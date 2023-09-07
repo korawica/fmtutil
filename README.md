@@ -1,11 +1,9 @@
 # Data Utility Package: *Formatter*
 
-[![test](https://github.com/korawica/dup-fmt/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/korawica/dup-fmt/actions/workflows/tests.yml)
-[![codecov](https://codecov.io/gh/korawica/dup-fmt/branch/main/graph/badge.svg?token=J2MN63IFT0)](https://codecov.io/gh/korawica/dup-fmt)
-[![python support version](https://img.shields.io/pypi/pyversions/dup-fmt)](https://pypi.org/project/dup-fmt/)
-[![size](https://img.shields.io/github/languages/code-size/korawica/dup-fmt)](https://github.com/korawica/dup-fmt)
-
-**Type**: `DUP` | **Tag**: `Data Utility Package` `Data` `Utility` `Formatter`
+[![test](https://github.com/korawica/fmtutil/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/korawica/fmtutil/actions/workflows/tests.yml)
+[![codecov](https://codecov.io/gh/korawica/fmtutil/branch/main/graph/badge.svg?token=J2MN63IFT0)](https://codecov.io/gh/korawica/fmtutil)
+[![python support version](https://img.shields.io/pypi/pyversions/fmtutil)](https://pypi.org/project/fmtutil/)
+[![size](https://img.shields.io/github/languages/code-size/korawica/fmtutil)](https://github.com/korawica/fmtutil)
 
 **Table of Contents**:
 
@@ -25,7 +23,7 @@ co-pylot project for stating to my **Python Software Developer** role.
 **Install from PyPI**:
 
 ```shell
-pip install dup-fmt
+pip install fmtutil
 ```
 
 :dart: First objective of this project is include necessary formatter objects for
@@ -87,11 +85,11 @@ support in build-in `datetime` package.
 ### Datetime
 
 ```python
-from dup_fmt import Datetime
+from fmtutil import Datetime
 
 datetime = Datetime.parse(
-   value='This_is_time_20220101_000101',
-   fmt='This_is_time_%Y%m%d_%H%M%S'
+  value='This_is_time_20220101_000101',
+  fmt='This_is_time_%Y%m%d_%H%M%S'
 )
 datetime.format('This_datetime_format_%Y%b-%-d_%H:%M:%S')
 ```
@@ -105,11 +103,11 @@ datetime.format('This_datetime_format_%Y%b-%-d_%H:%M:%S')
 ### Version
 
 ```python
-from dup_fmt import Version
+from fmtutil import Version
 
 version = Version.parse(
-    value='This_is_version_2_0_1',
-    fmt='This_is_version_%m_%n_%c',
+  value='This_is_version_2_0_1',
+  fmt='This_is_version_%m_%n_%c',
 )
 version.format('New_version_%m%n%c')
 ```
@@ -123,11 +121,11 @@ version.format('New_version_%m%n%c')
 ### Serial
 
 ```python
-from dup_fmt import Serial
+from fmtutil import Serial
 
 serial = Serial.parse(
-    value='This_is_serial_62130',
-    fmt='This_is_serial_%n'
+  value='This_is_serial_62130',
+  fmt='This_is_serial_%n'
 )
 serial.format('Convert to binary: %b')
 ```
@@ -141,11 +139,11 @@ serial.format('Convert to binary: %b')
 ### Naming
 
 ```python
-from dup_fmt import Naming
+from fmtutil import Naming
 
 naming = Naming.parse(
-    value='de is data engineer',
-    fmt='%a is %n'
+  value='de is data engineer',
+  fmt='%a is %n'
 )
 naming.format('Camel case is %c')
 ```
@@ -159,11 +157,11 @@ naming.format('Camel case is %c')
 ### Storage
 
 ```python
-from dup_fmt import Storage
+from fmtutil import Storage
 
 storage = Storage.parse(
-    value='This file have 250MB size',
-    fmt='This file have %M size'
+  value='This file have 250MB size',
+  fmt='This file have %M size'
 )
 storage.format('The byte size is: %b')
 ```
@@ -177,21 +175,21 @@ storage.format('The byte size is: %b')
 ### Constant
 
 ```python
-from dup_fmt import Constant, make_const
-from dup_fmt.exceptions import FormatterError
+from fmtutil import Constant, make_const
+from fmtutil.exceptions import FormatterError
 
 const = make_const({
-    '%n': 'normal',
-    '%s': 'special',
+  '%n': 'normal',
+  '%s': 'special',
 })
 try:
-    parse_const: Constant = const.parse(
-        value='This_is_constant_normal',
-        fmt='This_is_constant_%n'
-    )
-    parse_const.format('The value of %%s is %s')
+  parse_const: Constant = const.parse(
+    value='This_is_constant_normal',
+    fmt='This_is_constant_%n'
+  )
+  parse_const.format('The value of %%s is %s')
 except FormatterError as err:
-    print(err)
+  print(err)
 ```
 
 ```text
@@ -199,7 +197,7 @@ except FormatterError as err:
 ```
 
 > **Note**: \
-> This package already implement environment constant object, `dup_fmt.EnvConstant`.
+> This package already implement environment constant object, `fmtutil.EnvConstant`.
 
 ## FormatterGroup Object
 
@@ -211,12 +209,12 @@ can define a name of formatter that you want, such as `name` for `Naming`, or
 **Parse**:
 
 ```python
-from dup_fmt import make_group, Naming, Datetime, FormatterGroupType
+from fmtutil import make_group, Naming, Datetime, FormatterGroupType
 
 group: FormatterGroupType = make_group({'name': Naming, 'datetime': Datetime})
 group.parse(
-    'data_engineer_in_20220101_de',
-    fmt='{name:%s}_in_{timestamp:%Y%m%d}_{name:%a}'
+  'data_engineer_in_20220101_de',
+  fmt='{name:%s}_in_{timestamp:%Y%m%d}_{name:%a}'
 )
 ```
 
@@ -230,12 +228,12 @@ group.parse(
 **Format**:
 
 ```python
-from dup_fmt import FormatterGroup
+from fmtutil import FormatterGroup
 from datetime import datetime
 
 group_01: FormatterGroup = group({
-    'name': 'data engineer',
-    'datetime': datetime(2022, 1, 1)
+  'name': 'data engineer',
+  'datetime': datetime(2022, 1, 1)
 })
 group_01.format('{name:%c}_{timestamp:%Y_%m_%d}')
 ```

@@ -7,8 +7,8 @@ requires = [
 build-backend = "hatchling.build"
 
 [project]
-name = "dup-fmt"
-description = "The utility formatter objects for the data engine package"
+name = "fmtutil"
+description = "The Utility Formatter Objects"
 readme = "README.md"
 requires-python = ">=3.8.10"
 license = "MIT"
@@ -32,30 +32,31 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
 ]
 dependencies = [
-    "dup-utils>=0.0.5.post0",
+    "ddeutil>=0.1.0",
     "python-dateutil>=2.8.2,<3.0.0",
     "packaging>=23.1,<24",
 ]
 dynamic = ["version"]
 
 [project.urls]
-Homepage = "https://github.com/korawica/dup-fmt/"
-"Source Code" = "https://github.com/korawica/dup-fmt/"
+Homepage = "https://github.com/korawica/fmtutil/"
+"Source Code" = "https://github.com/korawica/fmtutil/"
 
 [project.optional-dependencies]
 test = [
-    "dup-utils[test]>=0.0.5.post0",
+    "ddeutil[test]",
 ]
 dev = [
+    "ddeutil[dev]",
     "hatch>=1.6.0",
-    "dup-fmt[test]",
+    "fmtutil[test]",
 ]
 
 [project.scripts]
-fmt = "dup_fmt.__main__:main"
+fmtutil = "fmtutil.__main__:main"
 
 [tool.utils.version]
-version = "./dup_fmt/__about__.py"
+version = "./fmtutil/__about__.py"
 changelog = "./docs/en/docs/CHANGELOG.md"
 
 [tool.coverage.run]
@@ -64,22 +65,22 @@ concurrency = ["thread", "multiprocessing"]
 parallel = true
 context = '${CONTEXT}'
 source = [
-    "dup_fmt",
+    "fmtutil",
 ]
 omit = [
     "tests/perfs/",
     "scripts/",
-    "dup_fmt/__main__.py",
-    "dup_fmt/cli.py",
-    "dup_fmt/__about__.py",
-    "dup_fmt/utils.py",
+    "fmtutil/__main__.py",
+    "fmtutil/cli.py",
+    "fmtutil/__about__.py",
+    "fmtutil/utils.py",
 ]
 relative_files = true
 
 [tool.hatch.version]
 scheme = "standard"
 source = "code"
-path = "dup_fmt/__about__.py"
+path = "fmtutil/__about__.py"
 
 [tool.hatch.build.targets.sdist]
 exclude = [
@@ -89,7 +90,7 @@ exclude = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["dup_fmt"]
+packages = ["fmtutil"]
 
 [tool.coverage.report]
 exclude_lines = [
@@ -108,7 +109,7 @@ addopts = [
 
 [tool.mypy]
 python_version = "3.8"
-files = ["dup_fmt"]
+files = ["fmtutil"]
 show_error_codes = true
 pretty = true
 strict = true

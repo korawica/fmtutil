@@ -8,8 +8,8 @@ Test the Constant formatter object.
 """
 import unittest
 
-import dup_fmt.formatter as fmt
-from dup_fmt.exceptions import FormatterValueError
+import fmtutil.formatter as fmt
+from fmtutil.exceptions import FormatterValueError
 
 
 class ConstantTestCase(unittest.TestCase):

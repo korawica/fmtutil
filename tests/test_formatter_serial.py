@@ -8,8 +8,8 @@ Test the Serial formatter object.
 """
 import unittest
 
-import dup_fmt.formatter as fmt
-from dup_fmt.exceptions import FormatterKeyError
+import fmtutil.formatter as fmt
+from fmtutil.exceptions import FormatterKeyError
 
 
 class SerialTestCase(unittest.TestCase):

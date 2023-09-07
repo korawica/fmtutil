@@ -9,7 +9,7 @@ Test the formatter object.
 import datetime
 import unittest
 
-import dup_fmt.formatter as fmt
+import fmtutil.formatter as fmt
 
 
 class FormatterGroupTestCase(unittest.TestCase):
@@ -428,6 +428,6 @@ class FormatterGroupTestCase(unittest.TestCase):
             ).adjust({"timestamp": datetime.timedelta(days=10)})
         self.assertEqual(
             "Key of values, 'timestamp', does not support for this "
-            "<class 'dup_fmt.formatter.VersionDatetimeGroup'>.",
+            "<class 'fmtutil.formatter.VersionDatetimeGroup'>.",
             str(context.exception),
         )

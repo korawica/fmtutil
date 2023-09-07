@@ -9,7 +9,7 @@ Test the formatter object examples for Datetime.
 import unittest
 from datetime import datetime
 
-import dup_fmt.formatter as fmt
+import fmtutil.formatter as fmt
 
 
 class DatetimeExampleTestCase(unittest.TestCase):
