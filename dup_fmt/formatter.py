@@ -36,6 +36,7 @@ from typing import (
 # TODO: Review ``semver`` package instead ``packaging``.
 #  docs: https://pypi.org/project/semver/
 import packaging.version as pck_version
+from dateutil import relativedelta
 from dup_utils.core import can_int, remove_pad  # type: ignore
 
 from .exceptions import (
@@ -675,30 +676,26 @@ class Formatter(MetaFormatter):
             "sub-formatter class."
         )
 
-    def __add__(self, other) -> Formatter:
+    def __add__(self, other: Any) -> Formatter:
         if not isinstance(other, self.__class__):
             try:
-                other: Formatter = self.__class__.passer(
-                    value=self.prepare_value(other),
-                )
+                return self.__class__.passer(value=self.value + other)
             except FormatterValueError:
                 return NotImplemented
         return self.__class__.passer(value=self.value + other.value)
 
-    def __radd__(self, other) -> Formatter:
+    def __radd__(self, other: Any) -> Formatter:
         return self.__add__(other)
 
-    def __sub__(self, other) -> Formatter:
+    def __sub__(self, other: Any) -> Formatter:
         try:
             if not isinstance(other, self.__class__):
-                other: Formatter = self.__class__.passer(
-                    value=self.prepare_value(other),
-                )
+                return self.__class__.passer(value=(self.value - other))
             return self.__class__.passer(value=(self.value - other.value))
         except FormatterValueError:
             return NotImplemented
 
-    def __rsub__(self, other):
+    def __rsub__(self, other: Any) -> Any:
         try:
             return other - self.value
         except (TypeError, FormatterValueError):
@@ -1289,6 +1286,10 @@ class Datetime(Formatter, level=8):
     def remove_pad_dt(_dt: datetime, fmt: str) -> str:
         """Return padded datetime string that was formatted"""
         return str(remove_pad(_dt.strftime(fmt)))
+
+    def __add__(self, other) -> Datetime:
+        if isinstance(other, relativedelta):
+            return self.__class__.passer(self.value + other)
 
 
 class Version(Formatter, level=3):
@@ -2222,7 +2223,8 @@ def make_const(
 ) -> ConstantType:
     """Constant function constructor"""
     base_fmt: Optional[str] = None
-    if not formatter:
+    _fmt: Dict[str, str]
+    if formatter is None:
         if fmt is None or not inspect.isclass(fmt):
             raise FormatterArgumentError(
                 "formatter",
@@ -2230,13 +2232,16 @@ def make_const(
                 "arguments.",
             )
         name = f"{fmt.__name__}Const"
-        formatter = fmt().values(value=value)
+        _fmt = fmt().values(value=value)
         base_fmt = fmt.base_fmt
     elif isinstance(formatter, Formatter):
         return formatter.to_const()
+    else:
+        _fmt = formatter
+
     if not name:
         raise FormatterArgumentError("name", "The Constant want name arguments")
-    return dict2const(formatter, name=name, base_fmt=base_fmt)
+    return dict2const(_fmt, name=name, base_fmt=base_fmt)
 
 
 EnvConstant: ConstantType = make_const(
