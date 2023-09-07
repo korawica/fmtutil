@@ -36,7 +36,7 @@ from typing import (
 # TODO: Review ``semver`` package instead ``packaging``.
 #  docs: https://pypi.org/project/semver/
 import packaging.version as pck_version
-from dateutil import relativedelta
+from dateutil.relativedelta import relativedelta
 from dup_utils.core import can_int, remove_pad  # type: ignore
 
 from .exceptions import (
@@ -786,16 +786,11 @@ class Serial(Formatter):
     def prepare_value(value: Optional[int]) -> int:
         if value is None:
             return 0
-        try:
-            if not can_int(value) or (int(value) < 0):
-                raise FormatterValueError(
-                    f"Serial formatter does not support for value, {value!r}."
-                )
-            return int(value)
-        except ValueError as err:
+        if not can_int(value) or (int(value) < 0):
             raise FormatterValueError(
                 f"Serial formatter does not support for value, {value!r}."
-            ) from err
+            )
+        return int(value)
 
     @staticmethod
     def to_padding(value: str) -> str:
@@ -1287,9 +1282,20 @@ class Datetime(Formatter, level=8):
         """Return padded datetime string that was formatted"""
         return str(remove_pad(_dt.strftime(fmt)))
 
-    def __add__(self, other) -> Datetime:
-        if isinstance(other, relativedelta):
+    def __add__(self, other: Any) -> Formatter:
+        if isinstance(other, (relativedelta, timedelta)):
             return self.__class__.passer(self.value + other)
+        return NotImplemented
+
+    def __sub__(self, other: Any) -> Union[Formatter, timedelta]:
+        if isinstance(other, (relativedelta, timedelta)):
+            return self.__class__.passer(self.value - other)
+        elif isinstance(other, self.__class__):
+            return self.value - other.value
+        return NotImplemented
+
+    def __rsub__(self, other: Any) -> Any:
+        return NotImplemented
 
 
 class Version(Formatter, level=3):
@@ -1553,6 +1559,15 @@ class Version(Formatter, level=3):
         raise FormatterValueError(
             f"Convert prefix dose not valid for value `{value}`"
         )
+
+    def __add__(self, other):  # no cov
+        return NotImplemented
+
+    def __sub__(self, other):  # no cov
+        return NotImplemented
+
+    def __rsub__(self, other):  # no cov
+        return NotImplemented
 
 
 class Naming(Formatter, level=5):
@@ -2144,6 +2159,15 @@ class __BaseConstant(Formatter):
     def prepare_value(value: Any) -> Any:
         return value
 
+    def __add__(self, other):  # no cov
+        return NotImplemented
+
+    def __sub__(self, other):  # no cov
+        return NotImplemented
+
+    def __rsub__(self, other):  # no cov
+        return NotImplemented
+
 
 def dict2const(
     fmt: Dict[str, str],
@@ -2494,6 +2518,15 @@ class __FormatterGroup:
 
     def __str__(self) -> str:
         return ", ".join(v.string for v in self.groups.values())
+
+    def adjust(self, values: Dict[str, Any]):  # no cov
+        _keys: List[str] = [f"{k!r}" not in self.base_groups for k in values]
+        if _keys:
+            raise FormatterGroupValueError(
+                f"Key of values, {', '.join(_keys)}, does not support for this "
+                f"{self.__class__}."
+            )
+        raise NotImplementedError
 
 
 def make_group(group: GroupValue) -> FormatterGroupType:

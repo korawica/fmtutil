@@ -58,6 +58,8 @@ class SerialTestCase(unittest.TestCase):
             in str(context.exception)
         )
 
+        # fmt.Serial.formatter("a")
+
     def test_serial_properties(self):
         self.assertEqual("<Serial.parse('781', '%n')>", self.sr.__repr__())
         self.assertEqual(hash(self.sr.string), self.sr.__hash__())
