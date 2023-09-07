@@ -16,8 +16,8 @@ class NamingTestCase(unittest.TestCase):
         self.nm: fmt.Naming = fmt.Naming.parse("data engineer", "%n")
         self.nm2: fmt.Naming = fmt.Naming(
             {
-                "shorts": "de",
-                "strings": "data engineer",
+                "shorts": "dp",
+                "strings": "data pipeline",
             }
         )
         self.nm3: fmt.Naming = fmt.Naming({"flats": "framework"})
@@ -147,14 +147,14 @@ class NamingTestCase(unittest.TestCase):
             "<Naming.parse('data engineer', '%n')>", self.nm.__repr__()
         )
         self.assertEqual(
-            "<Naming.parse('data engineer', '%n')>", self.nm2.__repr__()
+            "<Naming.parse('data pipeline', '%n')>", self.nm2.__repr__()
         )
         self.assertEqual(
             "<Naming.parse('framework', '%n')>", self.nm3.__repr__()
         )
 
         self.assertEqual("data engineer", self.nm.__str__())
-        self.assertEqual("data engineer", self.nm2.__str__())
+        self.assertEqual("data pipeline", self.nm2.__str__())
         self.assertEqual("framework", self.nm3.__str__())
         self.assertEqual("dtengnr", self.nm4.__str__())
         self.assertEqual("d e", self.nm5.__str__())
@@ -178,4 +178,17 @@ class NamingTestCase(unittest.TestCase):
         self.assertEqual("DATA-ENGINEER", self.nm.format("%K"))
         self.assertEqual("de", self.nm.format("%a"))
         self.assertEqual("dataEngineer", self.nm.format("%c"))
-        self.assertEqual("data_engineer", self.nm2.format("%s"))
+        self.assertEqual("data_pipeline", self.nm2.format("%s"))
+
+    def test_naming_operation(self):
+        self.assertEqual(
+            ["data", "engineer", "data", "pipeline"],
+            (self.nm + self.nm2).value,
+        )
+
+        with self.assertRaises(TypeError) as context:
+            (self.nm - self.nm2)
+        self.assertEqual(
+            "unsupported operand type(s) for -: 'Naming' and 'Naming'",
+            str(context.exception),
+        )
