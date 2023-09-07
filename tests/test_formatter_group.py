@@ -408,3 +408,26 @@ class FormatterGroupTestCase(unittest.TestCase):
                 fmt="{datetime:%Y%m%d}_{version}",
             ),
         )
+
+    def test_fmt_group_operation(self):
+        self.assertEqual(
+            datetime.datetime(2022, 1, 11),
+            self.DateVersion.parse(
+                "20220101_1_0_0",
+                fmt="{datetime:%Y%m%d}_{version}",
+            )
+            .adjust({"datetime": datetime.timedelta(days=10)})
+            .groups["datetime"]
+            .value,
+        )
+
+        with self.assertRaises(fmt.FormatterGroupValueError) as context:
+            self.DateVersion.parse(
+                "20220101_1_0_0",
+                fmt="{datetime:%Y%m%d}_{version}",
+            ).adjust({"timestamp": datetime.timedelta(days=10)})
+        self.assertEqual(
+            "Key of values, 'timestamp', does not support for this "
+            "<class 'dup_fmt.formatter.VersionDatetimeGroup'>.",
+            str(context.exception),
+        )
