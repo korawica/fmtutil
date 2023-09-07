@@ -2526,13 +2526,19 @@ class __FormatterGroup:
         return ", ".join(v.string for v in self.groups.values())
 
     def adjust(self, values: Dict[str, Any]):  # no cov
-        _keys: List[str] = [f"{k!r}" not in self.base_groups for k in values]
+        _keys: List[str] = [
+            f"{k!r}" for k in values if k not in self.base_groups
+        ]
         if _keys:
             raise FormatterGroupValueError(
                 f"Key of values, {', '.join(_keys)}, does not support for this "
                 f"{self.__class__}."
             )
-        raise NotImplementedError
+        _groups: Dict[str, Formatter] = {
+            k: (fmt + values[k]) if k in values else fmt
+            for k, fmt in self.groups.items()
+        }
+        return self.__class__(_groups)
 
 
 def make_group(group: GroupValue) -> FormatterGroupType:
