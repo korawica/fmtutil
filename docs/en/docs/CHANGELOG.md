@@ -2,6 +2,12 @@
 
 ## Latest Changes
 
+## 0.2.0
+
+### Code Changes
+
+- :construction: refactored: rename package from dup-fmt to fmtutil on PyPI. (_2023-09-07_)
+
 ## 0.1.4
 
 ### Features
