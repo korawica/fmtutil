@@ -114,29 +114,65 @@ class SerialTestCase(unittest.TestCase):
         self.assertEqual(1219, 2000 - self.sr)
         self.assertEqual(1219.2, (2000.20 - self.sr))
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(TypeError) as context:
             (self.sr + 5.1)
+        self.assertEqual(
+            "unsupported operand type(s) for +: 'Serial' and 'float'",
+            str(context.exception),
+        )
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(TypeError) as context:
             (self.sr + "1.0")
+        self.assertEqual(
+            "unsupported operand type(s) for +: 'int' and 'str'",
+            str(context.exception),
+        )
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(TypeError) as context:
             (self.sr + "a")
+        self.assertEqual(
+            "unsupported operand type(s) for +: 'int' and 'str'",
+            str(context.exception),
+        )
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(TypeError) as context:
             (5.1 + self.sr)
+        self.assertEqual(
+            "unsupported operand type(s) for +: 'float' and 'Serial'",
+            str(context.exception),
+        )
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(TypeError) as context:
             ("1.0" + self.sr)
+        self.assertEqual(
+            "unsupported operand type(s) for +: 'int' and 'str'",
+            str(context.exception),
+        )
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(TypeError) as context:
             ("a" + self.sr)
+        self.assertEqual(
+            "unsupported operand type(s) for +: 'int' and 'str'",
+            str(context.exception),
+        )
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(TypeError) as context:
             (self.sr - 800)
+        self.assertEqual(
+            "unsupported operand type(s) for -: 'Serial' and 'int'",
+            str(context.exception),
+        )
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(TypeError) as context:
             (self.sr - 20.5)
+        self.assertEqual(
+            "unsupported operand type(s) for -: 'Serial' and 'float'",
+            str(context.exception),
+        )
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(TypeError) as context:
             ("234" - self.sr)
+        self.assertEqual(
+            "unsupported operand type(s) for -: 'str' and 'Serial'",
+            str(context.exception),
+        )
