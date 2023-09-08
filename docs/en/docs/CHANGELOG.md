@@ -2,6 +2,13 @@
 
 ## Latest Changes
 
+## 0.2.1
+
+### Code Changes
+
+- :construction: refactored: change deps package for dev and remove test from pyproject. (_2023-09-08_)
+- :construction: refactored: remove un-use deps package from pyproject. (_2023-09-08_)
+
 ## 0.2.0
 
 ### Code Changes
