@@ -43,13 +43,8 @@ Homepage = "https://github.com/korawica/fmtutil/"
 "Source Code" = "https://github.com/korawica/fmtutil/"
 
 [project.optional-dependencies]
-test = [
-    "ddeutil[test]",
-]
 dev = [
-    "ddeutil[dev]",
-    "hatch>=1.6.0",
-    "fmtutil[test]",
+    "clishelf",
 ]
 
 [project.scripts]
