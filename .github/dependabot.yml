@@ -13,9 +13,12 @@ updates:
     commit-message:
       prefix: ⬆
   # Python
-#   - package-ecosystem: "pip"
-#     directory: "/"
-#     schedule:
-#       interval: "weekly"
-#     commit-message:
-#       prefix: ⬆
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      day: "monday"
+      time: "12:00"
+      timezone: "UTC"
+    commit-message:
+      prefix: 📦
