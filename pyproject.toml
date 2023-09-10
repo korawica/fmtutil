@@ -45,6 +45,7 @@ Homepage = "https://github.com/korawica/fmtutil/"
 [project.optional-dependencies]
 dev = [
     "clishelf",
+    "types-python-dateutil",
 ]
 
 [project.scripts]

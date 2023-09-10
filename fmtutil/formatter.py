@@ -1287,7 +1287,10 @@ class Datetime(Formatter, level=8):
             return self.__class__.passer(self.value + other)
         return NotImplemented
 
-    def __sub__(self, other: Any) -> Union[Formatter, timedelta]:
+    def __sub__(  # type: ignore[override]
+        self,
+        other: Any,
+    ) -> Union[Formatter, timedelta]:
         if isinstance(other, (relativedelta, timedelta)):
             return self.__class__.passer(self.value - other)
         elif isinstance(other, self.__class__):
@@ -1312,6 +1315,12 @@ class Version(Formatter, level=3):
         - c/rc/pre/preview	1.0.0rc0
         - r/rev/post	    1.0.0.post0
         - dev	            1.0.0.dev0
+
+        Version segments reference from Semantic Versioning
+        - release           1.2.3
+        - pre-release       1.2.3-pre.2
+        - build             1.2.3+build.4
+                            1.2.3-pre.2+build.4
 
     .. ref::
         - The standard of versioning will align with the PEP0440
@@ -1560,16 +1569,17 @@ class Version(Formatter, level=3):
             f"Convert prefix dose not valid for value `{value}`"
         )
 
-    def __add__(self, other):  # no cov
+    def __add__(self, other):  # type: ignore # no cov
         return NotImplemented
 
-    def __sub__(self, other):  # no cov
+    def __sub__(self, other):  # type: ignore # no cov
         return NotImplemented
 
-    def __rsub__(self, other):  # no cov
+    def __rsub__(self, other):  # type: ignore # no cov
         return NotImplemented
 
 
+# TODO: implement validate value of vowel and flat from values.
 class Naming(Formatter, level=5):
     """Naming object for register process that implement formatter and parser.
 
@@ -1899,10 +1909,10 @@ class Naming(Formatter, level=5):
             .split()
         )
 
-    def __sub__(self, other):  # no cov
+    def __sub__(self, other):  # type: ignore # no cov
         return NotImplemented
 
-    def __rsub__(self, other):  # no cov
+    def __rsub__(self, other):  # type: ignore # no cov
         return NotImplemented
 
 
@@ -2165,13 +2175,13 @@ class __BaseConstant(Formatter):
     def prepare_value(value: Any) -> Any:
         return value
 
-    def __add__(self, other):  # no cov
+    def __add__(self, other):  # type: ignore # no cov
         return NotImplemented
 
-    def __sub__(self, other):  # no cov
+    def __sub__(self, other):  # type: ignore # no cov
         return NotImplemented
 
-    def __rsub__(self, other):  # no cov
+    def __rsub__(self, other):  # type: ignore # no cov
         return NotImplemented
 
 
@@ -2525,7 +2535,7 @@ class __FormatterGroup:
     def __str__(self) -> str:
         return ", ".join(v.string for v in self.groups.values())
 
-    def adjust(self, values: Dict[str, Any]):  # no cov
+    def adjust(self, values: Dict[str, Any]) -> __FormatterGroup:  # no cov
         _keys: List[str] = [
             f"{k!r}" for k in values if k not in self.base_groups
         ]
