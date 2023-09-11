@@ -15,6 +15,7 @@
   - [Storage](#storage)
   - [Constant](#constant)
 - [FormatterGroup Object](#formattergroup-object)
+- [Usecase](#usecase)
 
 This **Formatter** package was created for `parse` and `format` any string values
 that match format pattern with Python regular expression. This package be the
@@ -240,6 +241,51 @@ group_01.format('{name:%c}_{timestamp:%Y_%m_%d}')
 
 ```text
 >>> dataEngineer_2022_01_01
+```
+
+## Usecase
+
+If you have multi-format files on data source directory, and you want to dynamic
+getting these files to your app, you can make a formatter group for this.
+
+```python
+from typing import List
+
+from fmtutil import (
+  make_group, make_const, Naming, Datetime, FormatterGroup, FormatterGroupType,
+  FormatterArgumentError,
+)
+
+fmt_group: FormatterGroupType = make_group(
+    {
+        "naming": make_const(fmt=Naming, value=['google', 'map']),
+        "timestamp": Datetime,
+    }
+)
+
+rs: List[FormatterGroup] = []
+for file in (
+  'googleMap_20230101.json',
+  'googleMap_20230103.json',
+  'googleMap_20230103_bk.json',
+  'googleMap_with_usage_20230105.json',
+  'googleDrive_with_usage_20230105.json',
+):
+    try:
+        rs.append(
+            fmt_group.parse(
+                file,
+                fmt=r'{naming:c}_{timestamp:%Y%m%d}\.json',
+            )
+        )
+    except FormatterArgumentError:
+        continue
+
+repr(max(rs).groups['timestamp'])
+```
+
+```text
+>>> <Datetime.parse('2023-01-03 00:00:00.000000', '%Y-%m-%d %H:%M:%S.%f')>
 ```
 
 ## License

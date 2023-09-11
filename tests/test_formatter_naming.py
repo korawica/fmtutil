@@ -119,25 +119,44 @@ class NamingTestCase(unittest.TestCase):
             {
                 "%u": "(?P<strings_upper>[A-Z0-9]+(?:\\s[A-Z0-9]+)*)",
                 "%l": "(?P<strings>[a-z0-9]+(?:\\s[a-z0-9]+)*)",
-                "%t": "(?P<strings_title>[A-Z][a-z0-9]+(?:\\s[A-Z]+[a-z0-9]*)*)",
+                "%t": (
+                    "(?P<strings_title>[A-Z][a-z0-9]+(?:\\s[A-Z]+[a-z0-9]*)*)"
+                ),
                 "%a": "(?P<shorts>[a-z0-9]+)",
                 "%A": "(?P<shorts_upper>[A-Z0-9]+)",
-                "%c": "(?P<strings_camel>[a-z]+((\\d)|([A-Z0-9][a-z0-9]+))*([A-Z])?)",
-                "%p": "(?P<strings_pascal>[A-Z]([A-Z0-9]*[a-z][a-z0-9]*[A-Z]|[a-z0-9]*[A-Z][A-Z0-9]*[a-z])[A-Za-z0-9]*)",
+                "%c": (
+                    "(?P<strings_camel>[a-z]+((\\d)|([A-Z0-9][a-z0-9]+))*"
+                    "([A-Z])?)"
+                ),
+                "%p": (
+                    "(?P<strings_pascal>[A-Z]([A-Z0-9]*[a-z][a-z0-9]*[A-Z]|"
+                    "[a-z0-9]*[A-Z][A-Z0-9]*[a-z])[A-Za-z0-9]*)"
+                ),
                 "%k": "(?P<strings_kebab>[a-z0-9]+(?:-[a-z0-9]+)*)",
                 "%K": "(?P<strings_kebab_upper>[A-Z0-9]+(?:-[A-Z0-9]+)*)",
-                "%-K": "(?P<strings_kebab_title>[A-Z][a-z0-9]+(?:-[A-Z]+[a-z0-9]*)*)",
+                "%-K": (
+                    "(?P<strings_kebab_title>[A-Z][a-z0-9]+"
+                    "(?:-[A-Z]+[a-z0-9]*)*)"
+                ),
                 "%f": "(?P<flats>[a-z0-9]+)",
                 "%F": "(?P<flats_upper>[A-Z0-9]+)",
                 "%s": "(?P<strings_snake>[a-z0-9]+(?:_[a-z0-9]+)*)",
                 "%S": "(?P<strings_snake_upper>[A-Z0-9]+(?:_[A-Z0-9]+)*)",
-                "%-S": "(?P<strings_snake_title>[A-Z][a-z0-9]+(?:_[A-Z]+[a-z0-9]*)*)",
+                "%-S": (
+                    "(?P<strings_snake_title>[A-Z][a-z0-9]+"
+                    "(?:_[A-Z]+[a-z0-9]*)*)"
+                ),
                 "%v": "(?P<vowel>[b-df-hj-np-tv-z]+)",
                 "%V": "(?P<vowel_upper>[B-DF-HJ-NP-TV-Z]+)",
                 "%n": "(?P<strings>[a-z0-9]+(?:\\s[a-z0-9]+)*)",
                 "%N": "(?P<strings_upper>[A-Z0-9]+(?:\\s[A-Z0-9]+)*)",
-                "%-N": "(?P<strings_title>[A-Z][a-z0-9]+(?:\\s[A-Z]+[a-z0-9]*)*)",
-                "%-c": "(?P<strings_pascal>[A-Z]([A-Z0-9]*[a-z][a-z0-9]*[A-Z]|[a-z0-9]*[A-Z][A-Z0-9]*[a-z])[A-Za-z0-9]*)",
+                "%-N": (
+                    "(?P<strings_title>[A-Z][a-z0-9]+(?:\\s[A-Z]+[a-z0-9]*)*)"
+                ),
+                "%-c": (
+                    "(?P<strings_pascal>[A-Z]([A-Z0-9]*[a-z][a-z0-9]*[A-Z]|"
+                    "[a-z0-9]*[A-Z][A-Z0-9]*[a-z])[A-Za-z0-9]*)"
+                ),
             },
             fmt.Naming.regex(),
         )

@@ -47,7 +47,8 @@ class DatetimeTestCase(unittest.TestCase):
         self.assertDictEqual(
             {
                 "%n": (
-                    "(?P<year>\\d{4})(?P<month_pad>01|02|03|04|05|06|07|08|09|10|11|12)"
+                    "(?P<year>\\d{4})"
+                    "(?P<month_pad>01|02|03|04|05|06|07|08|09|10|11|12)"
                     "(?P<day_pad>[0-3][0-9])_(?P<hour_pad>[0-2][0-9])"
                     "(?P<minute_pad>[0-6][0-9])(?P<second_pad>[0-6][0-9])"
                 ),
@@ -56,10 +57,19 @@ class DatetimeTestCase(unittest.TestCase):
                 "%-y": "(?P<year_cut>\\d{1,2})",
                 "%m": "(?P<month_pad>01|02|03|04|05|06|07|08|09|10|11|12)",
                 "%-m": "(?P<month>1|2|3|4|5|6|7|8|9|10|11|12)",
-                "%b": "(?P<month_short>Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)",
-                "%B": "(?P<month_full>January|February|March|April|May|June|July|August|September|October|November|December)",
+                "%b": (
+                    "(?P<month_short>Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|"
+                    "Nov|Dec)"
+                ),
+                "%B": (
+                    "(?P<month_full>January|February|March|April|May|June|"
+                    "July|August|September|October|November|December)"
+                ),
                 "%a": "(?P<week_shortname>Mon|Thu|Wed|Tue|Fri|Sat|Sun)",
-                "%A": "(?P<week_fullname>Monday|Thursday|Wednesday|Tuesday|Friday|Saturday|Sunday)",
+                "%A": (
+                    "(?P<week_fullname>Monday|Thursday|Wednesday|Tuesday|"
+                    "Friday|Saturday|Sunday)"
+                ),
                 "%w": "(?P<week>[0-6])",
                 "%u": "(?P<week_mon>[1-7])",
                 "%d": "(?P<day_pad>[0-3][0-9])",
