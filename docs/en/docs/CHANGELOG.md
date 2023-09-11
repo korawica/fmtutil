@@ -2,6 +2,22 @@
 
 ## Latest Changes
 
+## 0.2.2
+
+### Code Changes
+
+- :art: style: make newline on testing code and update usecase on README. (_2023-09-11_)
+- :construction: refactored: add type hint and comment for mypy. (_2023-09-10_)
+
+### Documents
+
+- :page_facing_up: docs: update README on usecase topic. (_2023-09-11_)
+
+### Build & Workflow
+
+- :toolbox: build: add dependabot for pip package. (_2023-09-10_)
+- :toolbox: build: add condition for receive cache in the ci workflow. (_2023-09-08_)
+
 ## 0.2.1
 
 ### Code Changes
