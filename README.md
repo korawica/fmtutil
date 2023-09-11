@@ -89,8 +89,8 @@ support in build-in `datetime` package.
 from fmtutil import Datetime
 
 datetime = Datetime.parse(
-  value='This_is_time_20220101_000101',
-  fmt='This_is_time_%Y%m%d_%H%M%S'
+    value='This_is_time_20220101_000101',
+    fmt='This_is_time_%Y%m%d_%H%M%S'
 )
 datetime.format('This_datetime_format_%Y%b-%-d_%H:%M:%S')
 ```
@@ -107,8 +107,8 @@ datetime.format('This_datetime_format_%Y%b-%-d_%H:%M:%S')
 from fmtutil import Version
 
 version = Version.parse(
-  value='This_is_version_2_0_1',
-  fmt='This_is_version_%m_%n_%c',
+    value='This_is_version_2_0_1',
+    fmt='This_is_version_%m_%n_%c',
 )
 version.format('New_version_%m%n%c')
 ```
@@ -125,8 +125,8 @@ version.format('New_version_%m%n%c')
 from fmtutil import Serial
 
 serial = Serial.parse(
-  value='This_is_serial_62130',
-  fmt='This_is_serial_%n'
+    value='This_is_serial_62130',
+    fmt='This_is_serial_%n'
 )
 serial.format('Convert to binary: %b')
 ```
@@ -143,8 +143,8 @@ serial.format('Convert to binary: %b')
 from fmtutil import Naming
 
 naming = Naming.parse(
-  value='de is data engineer',
-  fmt='%a is %n'
+    value='de is data engineer',
+    fmt='%a is %n'
 )
 naming.format('Camel case is %c')
 ```
@@ -184,13 +184,13 @@ const = make_const({
   '%s': 'special',
 })
 try:
-  parse_const: Constant = const.parse(
-    value='This_is_constant_normal',
-    fmt='This_is_constant_%n'
-  )
-  parse_const.format('The value of %%s is %s')
+    parse_const: Constant = const.parse(
+        value='This_is_constant_normal',
+        fmt='This_is_constant_%n'
+    )
+    parse_const.format('The value of %%s is %s')
 except FormatterError as err:
-  print(err)
+    pass
 ```
 
 ```text
@@ -245,20 +245,23 @@ group_01.format('{name:%c}_{timestamp:%Y_%m_%d}')
 
 ## Usecase
 
-If you have multi-format files on data source directory, and you want to dynamic
-getting these files to your app, you can make a formatter group for this.
+If you have multi-format filenames on data source directory, and you want to
+dynamic getting these filenames to your app, you can make a formatter group for
+this.
 
 ```python
 from typing import List
 
 from fmtutil import (
-  make_group, make_const, Naming, Datetime, FormatterGroup, FormatterGroupType,
+  make_group, Naming, Datetime, FormatterGroup, FormatterGroupType,
   FormatterArgumentError,
 )
 
+name: Naming = Naming.parse('Google Map', fmt='%t')
+
 fmt_group: FormatterGroupType = make_group(
     {
-        "naming": make_const(fmt=Naming, value=['google', 'map']),
+        "naming": name.to_const(),
         "timestamp": Datetime,
     }
 )
@@ -287,6 +290,11 @@ repr(max(rs).groups['timestamp'])
 ```text
 >>> <Datetime.parse('2023-01-03 00:00:00.000000', '%Y-%m-%d %H:%M:%S.%f')>
 ```
+
+> **Note**: \
+> The above example will convert the name, Naming instance, to Constant
+> instance before passing to a formatter group because I do not want to dynamic
+> the naming format to find the filenames.
 
 ## License
 
