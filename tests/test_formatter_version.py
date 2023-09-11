@@ -89,11 +89,17 @@ class VersionTestCase(unittest.TestCase):
         self.assertDictEqual(
             {
                 "%f": {
-                    "regex": "(?P<major>\\d{1,3})_(?P<minor>\\d{1,3})_(?P<micro>\\d{1,3})",
+                    "regex": (
+                        "(?P<major>\\d{1,3})_(?P<minor>\\d{1,3})_"
+                        "(?P<micro>\\d{1,3})"
+                    ),
                     "value": "0_5_6",
                 },
                 "%-f": {
-                    "regex": "(?P<major>\\d{1,3})-(?P<minor>\\d{1,3})-(?P<micro>\\d{1,3})",
+                    "regex": (
+                        "(?P<major>\\d{1,3})-(?P<minor>\\d{1,3})-"
+                        "(?P<micro>\\d{1,3})"
+                    ),
                     "value": "0_5_6",
                 },
                 "%m": {"regex": "(?P<major>\\d{1,3})", "value": "0"},
@@ -102,11 +108,16 @@ class VersionTestCase(unittest.TestCase):
                 "%e": {"regex": "(?P<epoch>[0-9]+!)", "value": "0!"},
                 "%-e": {"regex": "(?P<epoch_num>[0-9]+)", "value": "0"},
                 "%q": {
-                    "regex": "(?P<pre>(a|b|c|rc|alpha|beta|pre|preview)[-_\\.]?[0-9]+)",
+                    "regex": (
+                        "(?P<pre>(a|b|c|rc|alpha|beta|pre|preview)[-_\\.]?"
+                        "[0-9]+)"
+                    ),
                     "value": "",
                 },
                 "%p": {
-                    "regex": "(?P<post>(?:(post|rev|r)[-_\\.]?[0-9]+)|(?:-[0-9]+))",
+                    "regex": (
+                        "(?P<post>(?:(post|rev|r)[-_\\.]?[0-9]+)|(?:-[0-9]+))"
+                    ),
                     "value": "",
                 },
                 "%-p": {"regex": "(?P<post_num>[0-9]+)", "value": ""},
