@@ -5,8 +5,8 @@
 # --------------------------------------------------------------------------
 # mypy: disable-error-code="attr-defined"
 """
-The main object of formatter is able to format every thing you want by less
-config when inherit base class.
+The main module of formatter object that able to format every thing you want
+by less config when inherit from base formatter class.
 """
 from __future__ import annotations
 
@@ -194,9 +194,10 @@ class SlotLevel:
         parameter if it is not tuple.
 
         :param value: a tuple of integers or any integer
-        :type value: Union[int, tuple]
+        :type value: Union[int, Tuple[int, ...]]
 
-        :rtype: tuple
+        :rtype: Tuple[int, ...]
+        :return: Return tuple of integer value that was created from input
         """
         return (value,) if isinstance(value, int) else value
 
@@ -219,7 +220,7 @@ class MetaFormatter(metaclass=ABCMeta):
     """Metaclass Formatter object that implement `__slots__` attribute for any
     instance classes.
 
-    .. meta-class attributes::
+    .. metaclass attributes::
 
         - __slots__: Tuple[str, ...]
     """
@@ -280,7 +281,11 @@ class Formatter(MetaFormatter):
         /,
         level: int = 1,
         **kwargs: Any,
-    ) -> None:
+    ) -> NoReturn:
+        """
+        :param level
+        :type level: int (default=1)
+        """
         cls.base_level = level
         super().__init_subclass__(**kwargs)
 
@@ -304,6 +309,10 @@ class Formatter(MetaFormatter):
 
         :param value: an any value that able to pass to `cls.formatter` method.
         :type value: Any
+
+        :rtype: Formatter
+        :return: an instance that was use ``cls.parse`` from any correct value
+            and ``cls.base_fmt``.
         """
         fmt_filter = [
             (k, caller(v["value"]))
@@ -368,12 +377,19 @@ class Formatter(MetaFormatter):
 
         :param fmt: a format string value pass from input argument.
         :type fmt: str
-        :param prefix
+        :param prefix: a prefix string value that will add to alias format
+            string value.
         :type prefix: Optional[str]
-        :param suffix
+        :param suffix: a suffix string value that will add to alias format
+            string value.
         :type suffix: Optional[str]
-        :param alias
+        :param alias: an alias boolean flag that will pass alias name if it
+            true to the format string value.
         :type alias: bool
+
+        :rtype: str
+        :return: a format string value that change format string to regular
+            expression string for complied to the `re` module.
         """
         _cache: Dict[str, int] = defaultdict(lambda: 0)
         _prefix: str = prefix or ""
@@ -409,9 +425,13 @@ class Formatter(MetaFormatter):
         """Return mapping of formats and regular expression values of
         `cls.formatter`.
 
+        :raises FormatterValueError: if any key of value in formatter mapping
+            does not contain `regex` nor `cregex`.
+
         :rtype: Dict[str, str]
         :return: a mapping of format, and it's regular expression string
-            like:
+
+            .. like::
                 {
                     "%n": "(?P<normal>...)",
                     ...
@@ -550,6 +570,7 @@ class Formatter(MetaFormatter):
             )
 
     def __setattr__(self, name: str, value: Any) -> None:
+        """Set Attribute build-in method."""
         super().__setattr__(name, value)
 
     def __hash__(self) -> int:
@@ -615,12 +636,20 @@ class Formatter(MetaFormatter):
     def __priorities(self) -> Dict[str, PriorityData]:
         """Return private property of extracted mapping from
         `self.priorities` value.
+
+        :rtype: Dict[str, PriorityData]
         """
         return {k: PriorityData(**v) for k, v in self.priorities.items()}
 
     @staticmethod
     def __validate_format(formats: Dict[str, Any]) -> Dict[str, Any]:
-        """Raise error if any duplication format name do not all equal."""
+        """Raise error if any duplication format name do not all equal.
+
+        :param formats:
+        :type formats: Dict[str, Any]
+
+        :rtype: Dict[str, Any]
+        """
         results: Dict[str, Any] = {}
         for fmt in formats:
             _fmt: str = fmt.split("__", maxsplit=1)[0]
@@ -1570,9 +1599,11 @@ class Version(Formatter, level=3):
         )
 
     def __add__(self, other):  # type: ignore # no cov
+        # TODO: Implement add property for Version instance.
         return NotImplemented
 
     def __sub__(self, other):  # type: ignore # no cov
+        # TODO: Implement sub property for Version instance.
         return NotImplemented
 
     def __rsub__(self, other):  # type: ignore # no cov
@@ -2261,7 +2292,15 @@ def make_const(
     fmt: Optional[FormatterType] = None,
     value: Optional[Any] = None,
 ) -> ConstantType:
-    """Constant function constructor"""
+    """Constant function constructor
+
+    :param name:
+    :param formatter:
+    :param fmt:
+    :param value:
+
+    :rtype: ConstantType
+    """
     base_fmt: Optional[str] = None
     _fmt: Dict[str, str]
     if formatter is None:
@@ -2306,6 +2345,8 @@ EnvConstant: ConstantType = make_const(
 
 @final
 class GenFormatValue(TypedDict):
+    """Type Dictionary for value of mapping of ``ReturnGroupGenFormatType``"""
+
     fmt: str
 
 
@@ -2387,6 +2428,11 @@ class __FormatterGroup:
         value: str,
         fmt: str,
     ) -> ReturnPVParseType:
+        """Private Parse that return the mapping of necessary value for main
+        parsing method.
+
+        :rtype: ReturnPVParseType
+        """
         _fmt, _fmt_getter = cls.gen_format(fmt=fmt)
         if not (_search := re.search(rf"^{_fmt}$", value)):
             raise FormatterGroupArgumentError(
@@ -2417,6 +2463,8 @@ class __FormatterGroup:
 
         :param fmt: a format string value pass from input argument.
         :type fmt: str
+
+        :rtype: Tuple[str, ReturnGroupGenFormatType]
         """
         fmt_getter: ReturnGroupGenFormatType = {}
         for group, formatter in cls.base_groups.items():
@@ -2453,6 +2501,8 @@ class __FormatterGroup:
 
         :param fmt: a string format value
         :type fmt: str
+
+        :rtype: str
         """
         for fmt_match in re.finditer(
             r"(?P<found>{(?P<group>\w+):?(?P<format>[^{}]+)?})", fmt
@@ -2513,6 +2563,11 @@ class __FormatterGroup:
         group: str,
         v: Union[Dict[str, str], Formatter, Any],
     ) -> Formatter:
+        """Group attribute constructor function that receive any value that
+        able to pass with Formatter object.
+
+        :rtype: Formatter
+        """
         if isinstance(v, Formatter):
             return v
         elif isinstance(v, dict):
@@ -2536,6 +2591,10 @@ class __FormatterGroup:
         return ", ".join(v.string for v in self.groups.values())
 
     def adjust(self, values: Dict[str, Any]) -> __FormatterGroup:  # no cov
+        """Adjust any formatter instance in ``self.groups``.
+
+        :type: __FormatterGroup
+        """
         _keys: List[str] = [
             f"{k!r}" for k in values if k not in self.base_groups
         ]
