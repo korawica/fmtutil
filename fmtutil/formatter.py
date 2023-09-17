@@ -2278,15 +2278,15 @@ def dict2const(
         def __hash__(self) -> int:
             return hash(tuple(self.value))
 
-        def __eq__(self, other: Formatter) -> bool:
+        def __eq__(self, other: BaseConstant) -> bool:
             if issubclass(other.__class__, BaseConstant):
                 return self.value.__eq__(other.value)
             return NotImplemented
 
-        def __lt__(self, other: Formatter) -> bool:
+        def __lt__(self, other: BaseConstant) -> bool:
             return not (self.__eq__(other))
 
-        def __gt__(self, other: Formatter) -> bool:
+        def __gt__(self, other: BaseConstant) -> bool:
             return self.__lt__(other)
 
     CustomConstant.__name__ = name
