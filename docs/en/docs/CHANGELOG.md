@@ -2,6 +2,25 @@
 
 ## Latest Changes
 
+## 0.2.3
+
+### Code Changes
+
+- :test_tube: test: add test data path to gitignore file. (_2023-09-17_)
+- :construction: refactor: [pre-commit.ci] pre-commit autoupdate (_2023-09-12_)
+
+### Documents
+
+- :page_facing_up: docs: add more detail in doc-string in formatter module. (_2023-09-12_)
+
+### Fix Bugs
+
+- :gear: fixed: change logic of ordering property of formatter constant and group. (_2023-09-17_)
+
+### Build & Workflow
+
+- :toolbox: build: add skip local repo on pre-commit ci config. (_2023-09-12_)
+
 ## 0.2.2
 
 ### Code Changes
