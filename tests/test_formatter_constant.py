@@ -182,6 +182,7 @@ class ConstantTestCase(unittest.TestCase):
         self.assertEqual("gzip", self.ct02.string)
         self.assertEqual(["data engineer"], self.ct03.value)
         self.assertEqual("data engineer", self.ct03.string)
+        self.assertEqual(hash(tuple(self.ct.value)), self.ct.__hash__())
 
     def test_const_format(self):
         self.assertEqual("special", self.ct.format("%s"))
@@ -190,6 +191,7 @@ class ConstantTestCase(unittest.TestCase):
     def test_const_order(self):
         self.assertTrue(self.ct < self.ct02)
         self.assertTrue(self.ct > self.ct02)
+        self.assertFalse(self.ct == "demo")
 
     def test_const_from_formatter_method(self):
         name_const = fmt.Naming.parse("data engineer", fmt="%n").to_const()

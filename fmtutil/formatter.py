@@ -54,8 +54,8 @@ from .utils import (
 )
 
 FormatterType = Type["Formatter"]
-FormatterGroupType = Type["__FormatterGroup"]
-ConstantType = Type["__BaseConstant"]
+FormatterGroupType = Type["BaseFormatterGroup"]
+ConstantType = Type["BaseConstant"]
 
 PriorityCallable = Union[Callable[[Any], Any], Callable[[], Any], partial]
 FormatterCallable = Union[Callable[[], Any], partial]
@@ -2121,10 +2121,10 @@ class Storage(Formatter):
         return f"{round(int(value.replace(order, '')) * p)}"
 
 
-Constant = TypeVar("Constant", bound="__BaseConstant")
+Constant = TypeVar("Constant", bound="BaseConstant")
 
 
-class __BaseConstant(Formatter):
+class BaseConstant(Formatter):
     """Constant object for register process that implement formatter and
     parser.
     """
@@ -2196,12 +2196,6 @@ class __BaseConstant(Formatter):
             "formatter class"
         )
 
-    def __lt__(self, other: Formatter) -> bool:
-        return not (self.value.__eq__(other.value))
-
-    def __gt__(self, other: Formatter) -> bool:
-        return not (self.value.__eq__(other.value))
-
     @staticmethod
     def prepare_value(value: Any) -> Any:
         return value
@@ -2233,7 +2227,7 @@ def dict2const(
     """
     _base_fmt: str = base_fmt or "".join(fmt.keys())
 
-    class CustomConstant(__BaseConstant):
+    class CustomConstant(BaseConstant):
         base_fmt: str = _base_fmt
 
         __qualname__ = name
@@ -2280,6 +2274,20 @@ def dict2const(
         def __search_fmt(self, value: str) -> str:
             """Return the first format that equal to an input string value."""
             return [k for k, v in iter(self.values().items()) if v == value][0]
+
+        def __hash__(self) -> int:
+            return hash(tuple(self.value))
+
+        def __eq__(self, other: Formatter) -> bool:
+            if issubclass(other.__class__, BaseConstant):
+                return self.value.__eq__(other.value)
+            return NotImplemented
+
+        def __lt__(self, other: Formatter) -> bool:
+            return not (self.__eq__(other))
+
+        def __gt__(self, other: Formatter) -> bool:
+            return self.__lt__(other)
 
     CustomConstant.__name__ = name
     return CustomConstant
@@ -2361,11 +2369,11 @@ ReturnGroupGenFormatType = Dict[str, GenFormatValue]
 ReturnPVParseType = Dict[str, PVParseValue]
 
 
-FormatterGroup = TypeVar("FormatterGroup", bound="__FormatterGroup")
+FormatterGroup = TypeVar("FormatterGroup", bound="BaseFormatterGroup")
 GroupValue = Dict[str, FormatterType]
 
 
-class __FormatterGroup:
+class BaseFormatterGroup:
     """Group of any Formatters together with dynamic group naming like
     timestamp for Datetime formatter object.
 
@@ -2404,7 +2412,7 @@ class __FormatterGroup:
         cls,
         value: str,
         fmt: str,
-    ) -> __FormatterGroup:
+    ) -> BaseFormatterGroup:
         """Parse formatter by generator values like timestamp, version,
         or serial.
 
@@ -2590,10 +2598,10 @@ class __FormatterGroup:
     def __str__(self) -> str:
         return ", ".join(v.string for v in self.groups.values())
 
-    def adjust(self, values: Dict[str, Any]) -> __FormatterGroup:  # no cov
+    def adjust(self, values: Dict[str, Any]) -> BaseFormatterGroup:  # no cov
         """Adjust any formatter instance in ``self.groups``.
 
-        :type: __FormatterGroup
+        :type: BaseFormatterGroup
         """
         _keys: List[str] = [
             f"{k!r}" for k in values if k not in self.base_groups
@@ -2632,7 +2640,7 @@ def make_group(group: GroupValue) -> FormatterGroupType:
     name: str = f'{"".join(_.__name__ for _ in group.values())}Group'
 
     @total_ordering
-    class CustomGroup(__FormatterGroup):
+    class CustomGroup(BaseFormatterGroup):
         base_groups: GroupValue = group
 
         __qualname__ = name
@@ -2641,12 +2649,12 @@ def make_group(group: GroupValue) -> FormatterGroupType:
             return hash(self.__str__())
 
         def __eq__(self, other: Union[CustomGroup, Any]) -> bool:
-            return isinstance(other, self.__class__) and all(
+            return self.__cmp(other) and all(
                 self.groups[g] == other.groups[g] for g in self.base_groups
             )
 
         def __gt__(self, other: Union[CustomGroup, Any]) -> bool:
-            if isinstance(other, self.__class__):
+            if self.__cmp(other):
                 return any(
                     self.groups[g].__gt__(other.groups[g])
                     for g in self.base_groups
@@ -2657,7 +2665,7 @@ def make_group(group: GroupValue) -> FormatterGroupType:
             return NotImplemented
 
         def __lt__(self, other: Union[CustomGroup, Any]) -> bool:
-            if isinstance(other, self.__class__):
+            if self.__cmp(other):
                 return any(
                     self.groups[g].__lt__(other.groups[g])
                     for g in self.base_groups
@@ -2666,6 +2674,11 @@ def make_group(group: GroupValue) -> FormatterGroupType:
                     for g in self.base_groups
                 )
             return NotImplemented
+
+        def __cmp(self, other: Union[CustomGroup, Any]) -> bool:
+            return issubclass(other.__class__, BaseFormatterGroup) and (
+                self.__class__.__name__ == other.__class__.__name__
+            )
 
     CustomGroup.__name__ = name
     return CustomGroup
