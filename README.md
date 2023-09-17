@@ -7,6 +7,7 @@
 
 **Table of Contents**:
 
+- [Installation](#installation)
 - [Formatter Objects](#formatter-objects)
   - [Datetime](#datetime)
   - [Version](#version)
@@ -21,7 +22,7 @@ This **Formatter** package was created for `parse` and `format` any string value
 that match format pattern with Python regular expression. This package be the
 co-pylot project for stating to my **Python Software Developer** role.
 
-**Install from PyPI**:
+## Installation
 
 ```shell
 pip install fmtutil
