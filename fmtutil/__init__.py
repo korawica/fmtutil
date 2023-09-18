@@ -22,7 +22,7 @@ from .formatter import (
     Constant,
     ConstantType,
     Datetime,
-    EnvConstant,
+    EnvConst,
     # Formatter
     Formatter,
     # Formatter Group
@@ -52,7 +52,7 @@ __all__ = (
     "Storage",
     "ConstantType",
     "Constant",
-    "EnvConstant",
+    "EnvConst",
     "dict2const",
     "make_const",
     # Formatter Group

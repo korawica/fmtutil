@@ -95,17 +95,18 @@ class SlotLevel:
     and update level to an instance when it has some action, it will
     be make the level more than another instance.
 
-    :param level: a level number of the slot object.
+    :param level: a level number of this slot instance.
     :type level: int
 
     .. attributes:
-
         - count
         - value
 
     .. methods:
-
         - update
+
+    .. static-methods::
+        - make_tuple
 
     """
 
@@ -118,7 +119,7 @@ class SlotLevel:
         """Main initialize of the slot object that define a slot list
         with level input value length of False.
         """
-        self.level: int = level
+        self.level = level
         self.slot: List[bool] = [False] * level
 
     def __repr__(self) -> str:
@@ -151,7 +152,7 @@ class SlotLevel:
         position.
 
         :rtype: int
-        :return: a sum of weighted value from a True value in any slot
+        :return: A sum of weighted value from a True value in any slot
             position.
         """
         return sum(x[0] * int(x[1]) for x in enumerate(self.slot, start=1))
@@ -164,7 +165,7 @@ class SlotLevel:
         """Update value in slot from False to True
 
         :param numbers: updated numbers of this SlotLevel object.
-        :type numbers: Union[int, tuple]
+        :type numbers: Union[int, Tuple[int, ...]]
         :param strict: a strict flag for raise error when pass out of
             range numbers.
         :type strict: bool(=True)
@@ -221,7 +222,6 @@ class MetaFormatter(metaclass=ABCMeta):
     instance classes.
 
     .. metaclass attributes::
-
         - __slots__: Tuple[str, ...]
     """
 
@@ -237,15 +237,22 @@ class Formatter(MetaFormatter):
 
     :param formats: A mapping value of priority attribute data.
     :type formats: Optional[dict](=None)
+    :param set_std_value: A flag to allow for set standard value form string,
+        `self.class-name.lower()` if it True.
+    :type set_std_value: bool(=True)
 
     .. class attributes::
+        - base_fmt: str : the base default format string value for this object.
+        - base_level: int : the maximum level of slot level of this instance.
+        - Config: object : Configuration object that use for keep any config.
 
-        - base_fmt: str
-        - base_level: int : the maximum level of slot level of this instance
-        - Config: object : Configuration object
+    .. class-methods::
+        - passer  # TODO: change this method name to `cls.from_value`
+        - parse
+        - gen_format
+        - regex
 
     .. attributes::
-
         - value
         - string
         - validate
@@ -254,9 +261,14 @@ class Formatter(MetaFormatter):
         - __priorities
 
     .. methods::
-
-        - formatter
+        - valid
         - default
+        - to_const
+
+    .. static-methods::
+        - __validate_format
+        - formatter
+        - prepare_value
 
     .. seealso::
 
@@ -307,7 +319,7 @@ class Formatter(MetaFormatter):
     ) -> Formatter:
         """Passer the value of this formatter subclass data.
 
-        :param value: an any value that able to pass to `cls.formatter` method.
+        :param value: An any value that able to pass to `cls.formatter` method.
         :type value: Any
 
         :rtype: Formatter
@@ -332,7 +344,7 @@ class Formatter(MetaFormatter):
         This method generates the value for itself data that can be formatted
         to another format string values.
 
-        :param value: a string value that match with fmt.
+        :param value: A string value that match with fmt.
         :type value: str
         :param fmt: a format value will use `cls.base_fmt` if it does not pass
             from input argument.
@@ -700,6 +712,9 @@ class Formatter(MetaFormatter):
     @staticmethod
     @abstractmethod
     def prepare_value(value: Any) -> Any:
+        """Prepare value before passing to convert logic in the formatter
+        method.
+        """
         raise NotImplementedError(
             "Please implement prepare_value static method for this "
             "sub-formatter class."
@@ -1278,7 +1293,13 @@ class Datetime(Formatter, level=8):
         return value
 
     def _from_day_year(self, value: str) -> str:
-        """Return date of year"""
+        """Return date of year
+
+        :param value:
+        :type value: str
+
+        :rtype: str
+        """
         _this_year: datetime = datetime.strptime(self.year, "%Y") + timedelta(
             days=int(value)
         )
@@ -1286,7 +1307,13 @@ class Datetime(Formatter, level=8):
         return _this_year.strftime("%d")
 
     def _from_week_year_mon(self, value: str) -> str:
-        """Return validate week year with Monday value"""
+        """Return validate week year with Monday value
+
+        :param value:
+        :type value: str
+
+        :rtype: str
+        """
         _this_week: str = (
             str(((int(self.week) - 1) % 7) + 1) if self.week else "1"
         )
@@ -1298,7 +1325,13 @@ class Datetime(Formatter, level=8):
         return _this_year.strftime("%w")
 
     def _from_week_year_sun(self, value: str) -> str:
-        """Return validate week year with Sunday value"""
+        """Return validate week year with Sunday value
+
+        :param value:
+        :type value: str
+
+        :rtype: str
+        """
         _this_year: datetime = datetime.strptime(
             f"{self.year}-W{value}-{self.week or '0'}", "%Y-W%U-%w"
         )
@@ -1308,7 +1341,15 @@ class Datetime(Formatter, level=8):
 
     @staticmethod
     def remove_pad_dt(_dt: datetime, fmt: str) -> str:
-        """Return padded datetime string that was formatted"""
+        """Return padded datetime string that was formatted
+
+        :param _dt: A datetime instance that want to convert to string format.
+        :type _dt: datetime
+        :param fmt: A format string value of datetime package.
+        :type: str
+
+        :rtype: str
+        """
         return str(remove_pad(_dt.strftime(fmt)))
 
     def __add__(self, other: Any) -> Formatter:
@@ -1333,6 +1374,8 @@ class Datetime(Formatter, level=8):
 class Version(Formatter, level=3):
     """Version object for register process that implement formatter and
     parser.
+
+    .. patterns::
 
         Version segments reference from Hatch:
         - release	        1.0.0
@@ -1389,7 +1432,6 @@ class Version(Formatter, level=3):
 
     @property
     def value(self) -> pck_version.Version:
-        """"""
         return pck_version.parse(self.string)
 
     @property
@@ -2219,7 +2261,9 @@ def dict2const(
     """Constant function constructor that receive the dict of format string
     value and constant value.
 
-    :param fmt:
+    :param fmt: A mapping of format string and value of its format that want
+        to make constant object.
+    :type fmt: Dict[str, str]
     :param name:
     :param base_fmt:
 
@@ -2272,7 +2316,13 @@ def dict2const(
             return fmt
 
         def __search_fmt(self, value: str) -> str:
-            """Return the first format that equal to an input string value."""
+            """Return the first format that equal to an input string value.
+
+            :param value:
+            :type value: str
+
+            :rtype: str
+            """
             return [k for k, v in iter(self.values().items()) if v == value][0]
 
         def __hash__(self) -> int:
@@ -2300,7 +2350,7 @@ def make_const(
     fmt: Optional[FormatterType] = None,
     value: Optional[Any] = None,
 ) -> ConstantType:
-    """Constant function constructor
+    """Constant function constructor.
 
     :param name:
     :param formatter:
@@ -2331,8 +2381,8 @@ def make_const(
     return dict2const(_fmt, name=name, base_fmt=base_fmt)
 
 
-EnvConstant: ConstantType = make_const(
-    name="EnvConstant",
+EnvConst: ConstantType = make_const(
+    name="EnvConst",
     formatter={
         "%d": "development",
         "%-d": "dev",
@@ -2380,19 +2430,26 @@ class BaseFormatterGroup:
     :param formats: A mapping value of priority attribute data.
     :type formats: Optional[dict](=None)
 
-    .. class attributes::
+    .. class-attributes::
 
         - base_groups: GroupValue
 
-    .. attributes::
+    .. class-method::
+        - parse
+        - __parse
+        - gen_format
 
+    .. attributes::
         - groups
 
     .. methods::
+        - format
+        - __construct_groups
+        - adjust
 
-        -
-
-        This class is abstract class for any formatter group class.
+        This class is an abstract class for any formatter group that override
+    the cls.base_groups value with mapping for gruop str name and Formatter
+    object.
     """
 
     # This value must reassign from child class
@@ -2408,6 +2465,24 @@ class BaseFormatterGroup:
             )
 
     @classmethod
+    def from_formatter(
+        cls,
+        formats: Dict[str, Formatter],
+    ) -> BaseFormatterGroup:  # no cove
+        raise NotImplementedError(
+            "This `from_formatter` method does not implement yet."
+        )
+
+    @classmethod
+    def from_value(
+        cls,
+        formats: Dict[str, Any],
+    ) -> BaseFormatterGroup:  # no cove
+        raise NotImplementedError(
+            "This `from_value` method does not implement yet."
+        )
+
+    @classmethod
     def parse(
         cls,
         value: str,
@@ -2416,12 +2491,13 @@ class BaseFormatterGroup:
         """Parse formatter by generator values like timestamp, version,
         or serial.
 
-        :param value:
+        :param value: A string value that match with fmt.
         :type value: str
-        :param fmt:
+        :param fmt: a format string value that must have the formatter group
+            pattern like `{group-name:fmt-str}`.
         :type fmt: str
 
-        :rtype: Dict[str, Formatter]
+        :rtype: BaseFormatterGroup
         """
         parser_rs: ReturnPVParseType = cls.__parse(value, fmt)
         rs: Dict[str, Dict[str, str]] = defaultdict(dict)
@@ -2439,7 +2515,15 @@ class BaseFormatterGroup:
         """Private Parse that return the mapping of necessary value for main
         parsing method.
 
+        :param value: A string value that match with fmt.
+        :type value: str
+        :param fmt: a format string value that must have the formatter group
+            pattern like `{group-name:fmt-str}`.
+        :type fmt: str
+
         :rtype: ReturnPVParseType
+        :return: Return a mapping of fmt, value, and props keys that passing
+            from searching step with `re` module.
         """
         _fmt, _fmt_getter = cls.gen_format(fmt=fmt)
         if not (_search := re.search(rf"^{_fmt}$", value)):
@@ -2466,13 +2550,16 @@ class BaseFormatterGroup:
 
     @classmethod
     def gen_format(cls, fmt: str) -> Tuple[str, ReturnGroupGenFormatType]:
-        """Generate format string value to regular expression value that able
-        to search with any input value.
+        """Generate format string value that combine from any matching of
+        format name to regular expression value that able to search with any
+        input value string.
 
         :param fmt: a format string value pass from input argument.
         :type fmt: str
 
         :rtype: Tuple[str, ReturnGroupGenFormatType]
+        :return: A format string value that change format string to regular
+            expression string for complied to the `re` module.
         """
         fmt_getter: ReturnGroupGenFormatType = {}
         for group, formatter in cls.base_groups.items():
@@ -2511,11 +2598,13 @@ class BaseFormatterGroup:
         :type fmt: str
 
         :rtype: str
+        :return: Return string value that was filled by the input format pattern
+            argument.
         """
         for fmt_match in re.finditer(
             r"(?P<found>{(?P<group>\w+):?(?P<format>[^{}]+)?})", fmt
         ):
-            # Format Dict Example:
+            # Format Dict Example::
             # {
             #   'name': '{timestamp:%Y_%m_%d}',
             #   'group': 'timestamp',
@@ -2548,13 +2637,14 @@ class BaseFormatterGroup:
         formats: Union[
             Dict[str, Dict[str, str]],
             Dict[str, Formatter],
-            Any,
+            Dict[str, Any],
         ],
     ) -> None:
         """Main initialization get the formatter value, a mapping of name
         and formatter from input argument and generate the necessary
         attributes for define the value of this formatter group object.
         """
+        # Make default formatter instance from `cls.base_groups` mapping.
         self.groups: Dict[str, Formatter] = {
             group: fmt() for group, fmt in self.base_groups.items()
         }
@@ -2599,9 +2689,14 @@ class BaseFormatterGroup:
         return ", ".join(v.string for v in self.groups.values())
 
     def adjust(self, values: Dict[str, Any]) -> BaseFormatterGroup:  # no cov
-        """Adjust any formatter instance in ``self.groups``.
+        """Adjust any formatter instance in ``self.groups`` of this
+        formatter group.
 
-        :type: BaseFormatterGroup
+        :param values: A mapping of group and its value that able to adding
+            to origin value.
+        :type values: Dict[str, Any]
+
+        :rtype: BaseFormatterGroup
         """
         _keys: List[str] = [
             f"{k!r}" for k in values if k not in self.base_groups
@@ -2619,6 +2714,10 @@ class BaseFormatterGroup:
 
 
 def make_group(group: GroupValue) -> FormatterGroupType:
+    """Formatter Group function constructor.
+    :param group:
+    :type group: GroupValue
+    """
     # Validate argument group that should contain ``FormatterType``
     for _ in group.values():
         try:
@@ -2676,6 +2775,10 @@ def make_group(group: GroupValue) -> FormatterGroupType:
             return NotImplemented
 
         def __cmp(self, other: Union[CustomGroup, Any]) -> bool:
+            """Private Compare method that use for compare between two
+            instances that different unique identity, but it has that same
+            constructor property.
+            """
             return issubclass(other.__class__, BaseFormatterGroup) and (
                 self.__class__.__name__ == other.__class__.__name__
             )
@@ -2697,7 +2800,7 @@ __all__ = (
     "Storage",
     "ConstantType",
     "Constant",
-    "EnvConstant",
+    "EnvConst",
     "dict2const",
     "make_const",
     # Formatter Group
