@@ -8,6 +8,7 @@
   - [Serial](#serial)
   - [Naming](#naming)
   - [Storage](#storage)
+  - [EnvConst](#environment-constant)
 
 ## Formatter Objects
 
@@ -16,6 +17,7 @@
 - [Serial](#serial)
 - [Naming](#naming)
 - [Storage](#storage)
+- [EnvConst](#environment-constant)
 
 ### Datetime
 
@@ -129,4 +131,22 @@
 %E  : Exa-Byte format
 %Z  : Zetta-Byte format
 %Y  : Yotta-Byte format
+```
+
+### Environment Constant
+
+```text
+%d  : present for "development" value
+%-d : present for "dev" value
+%s  : present for "sit" value
+%-s : present for "sit" value
+%u  : present for "uat" value
+%-u : present for "uat" value
+%p  : present for "production" value
+%-p : present for "prd" value
+%t  : present for "test" value
+%-t : present for "test" value
+%b  : present for "sandbox" value
+%-b : present for "box" value
+%c  : present for "poc" value
 ```

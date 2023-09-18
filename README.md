@@ -18,19 +18,20 @@
 - [FormatterGroup Object](#formattergroup-object)
 - [Usecase](#usecase)
 
-This **Formatter** package was created for `parse` and `format` any string values
-that match format pattern with Python regular expression. This package be the
-co-pylot project for stating to my **Python Software Developer** role.
+This **Formatter Utility Objects** package was created for `parse` and `format`
+any string values that match a format pattern string with Python regular
+expression. This package be the co-pylot project for stating to my
+**Python Software Developer** role.
+
+:dart: First objective of this project is include necessary formatter objects for
+any data components package which mean we can `parse` any complicate names on
+data source and ingest the right names to in-house or data target.
 
 ## Installation
 
 ```shell
 pip install fmtutil
 ```
-
-:dart: First objective of this project is include necessary formatter objects for
-any data components package which mean we can `parse` any complicate names on
-data source and ingest the right names to in-house or data target.
 
 For example, we want to get filename with the format like, `filename_20220101.csv`,
 on the file system storage, and we want to incremental ingest the latest file with
@@ -59,7 +60,7 @@ better package than this project.
 
 > **Note**: \
 > Any formatter object was implemented the `self.valid` method for help us validate
-> format string value like the above example scenario,
+> format string value like the above the example scenario,
 > ```python
 > this_date = Datetime.parse('20220101', '%Y%m%d')
 > this_date.valid('any_files_20220101.csv', 'any_files_%Y%m%d.csv')  # True
@@ -76,10 +77,11 @@ better package than this project.
 
 The main purpose is **Formatter Objects** for `parse` and `format` with string
 value, such as `Datetime`, `Version`, and `Serial` formatter objects. These objects
-were used for parse any filename with put the format string value. The formatter
-able to enhancement any format value from sting value, like in `Datetime`, for `%B`
-value that was designed for month shortname (`Jan`, `Feb`, etc.) that does not
-support in build-in `datetime` package.
+were used for parse any filename with put the format string value.
+
+The formatter able to enhancement any format value from sting value, like in
+`Datetime`, for `%B` value that was designed for month shortname (`Jan`,
+`Feb`, etc.) that does not support in build-in `datetime` package.
 
 > **Note**: \
 > The main usage of this formatter object is `parse` and `format` method.
@@ -199,7 +201,9 @@ except FormatterError as err:
 ```
 
 > **Note**: \
-> This package already implement environment constant object, `fmtutil.EnvConstant`.
+> This package already implement the environment constant object,
+> `fmtutil.EnvConst`. \
+> [Read more about this formats](/docs/en/docs/API.md#environment-constant)
 
 ## FormatterGroup Object
 
@@ -254,8 +258,7 @@ this.
 from typing import List
 
 from fmtutil import (
-  make_group, Naming, Datetime, FormatterGroup, FormatterGroupType,
-  FormatterArgumentError,
+  make_group, Naming, Datetime, FormatterGroup, FormatterGroupType, FormatterArgumentError,
 )
 
 name: Naming = Naming.parse('Google Map', fmt='%t')
@@ -269,11 +272,11 @@ fmt_group: FormatterGroupType = make_group(
 
 rs: List[FormatterGroup] = []
 for file in (
-  'googleMap_20230101.json',
-  'googleMap_20230103.json',
-  'googleMap_20230103_bk.json',
-  'googleMap_with_usage_20230105.json',
-  'googleDrive_with_usage_20230105.json',
+    'googleMap_20230101.json',
+    'googleMap_20230103.json',
+    'googleMap_20230103_bk.json',
+    'googleMap_with_usage_20230105.json',
+    'googleDrive_with_usage_20230105.json',
 ):
     try:
         rs.append(
