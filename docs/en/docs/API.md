@@ -136,17 +136,27 @@
 ### Environment Constant
 
 ```text
-%d  : present for "development" value
-%-d : present for "dev" value
-%s  : present for "sit" value
-%-s : present for "sit" value
-%u  : present for "uat" value
-%-u : present for "uat" value
-%p  : present for "production" value
-%-p : present for "prd" value
-%t  : present for "test" value
-%-t : present for "test" value
-%b  : present for "sandbox" value
-%-b : present for "box" value
-%c  : present for "poc" value
+%d  : development
+%-d : dev
+%D  : DEVELOPMENT
+%-D : DEV
+%s  : sit
+%-s : sit
+%S  : SIT
+%u  : uat
+%-u : uat
+%U  : UAT
+%p  : production
+%-p : prd
+%P  : PRODUCTION
+%-P : PROD
+%t  : test
+%-t : test
+%T  : TEST
+%b  : sandbox
+%-b : box
+%B  : SANDBOX
+%-B : BOX
+%c  : poc
+%C  : POC
 ```
