@@ -91,15 +91,12 @@ The formatter able to enhancement any format value from sting value, like in
 ```python
 from fmtutil import Datetime
 
-datetime = Datetime.parse(
-    value='This_is_time_20220101_000101',
-    fmt='This_is_time_%Y%m%d_%H%M%S'
-)
-datetime.format('This_datetime_format_%Y%b-%-d_%H:%M:%S')
+datetime = Datetime.parse(value='Datetime_20220101_000101', fmt='Datetime_%Y%m%d_%H%M%S')
+datetime.format('New_datetime_%Y%b-%-d_%H:%M:%S')
 ```
 
 ```text
->>> 'This_datetime_format_2022Jan-1_00:01:01'
+>>> 'New_datetime_2022Jan-1_00:01:01'
 ```
 
 [Supported Datetime formats](/docs/en/docs/API.md#datetime)
@@ -109,10 +106,7 @@ datetime.format('This_datetime_format_%Y%b-%-d_%H:%M:%S')
 ```python
 from fmtutil import Version
 
-version = Version.parse(
-    value='This_is_version_2_0_1',
-    fmt='This_is_version_%m_%n_%c',
-)
+version = Version.parse(value='Version_2_0_1', fmt='Version_%m_%n_%c')
 version.format('New_version_%m%n%c')
 ```
 
@@ -127,10 +121,7 @@ version.format('New_version_%m%n%c')
 ```python
 from fmtutil import Serial
 
-serial = Serial.parse(
-    value='This_is_serial_62130',
-    fmt='This_is_serial_%n'
-)
+serial = Serial.parse(value='Serial_62130', fmt='Serial_%n')
 serial.format('Convert to binary: %b')
 ```
 
@@ -145,10 +136,7 @@ serial.format('Convert to binary: %b')
 ```python
 from fmtutil import Naming
 
-naming = Naming.parse(
-    value='de is data engineer',
-    fmt='%a is %n'
-)
+naming = Naming.parse(value='de is data engineer', fmt='%a is %n')
 naming.format('Camel case is %c')
 ```
 
@@ -163,10 +151,7 @@ naming.format('Camel case is %c')
 ```python
 from fmtutil import Storage
 
-storage = Storage.parse(
-  value='This file have 250MB size',
-  fmt='This file have %M size'
-)
+storage = Storage.parse(value='This file have 250MB size', fmt='This file have %M size')
 storage.format('The byte size is: %b')
 ```
 
@@ -182,17 +167,11 @@ storage.format('The byte size is: %b')
 from fmtutil import Constant, make_const
 from fmtutil.exceptions import FormatterError
 
-const = make_const({
-  '%n': 'normal',
-  '%s': 'special',
-})
+const = make_const({'%n': 'normal', '%s': 'special'})
 try:
-    parse_const: Constant = const.parse(
-        value='This_is_constant_normal',
-        fmt='This_is_constant_%n'
-    )
+    parse_const: Constant = const.parse(value='Constant_normal', fmt='Constant_%n')
     parse_const.format('The value of %%s is %s')
-except FormatterError as err:
+except FormatterError:
     pass
 ```
 
@@ -218,10 +197,7 @@ can define a name of formatter that you want, such as `name` for `Naming`, or
 from fmtutil import make_group, Naming, Datetime, FormatterGroupType
 
 group: FormatterGroupType = make_group({'name': Naming, 'datetime': Datetime})
-group.parse(
-  'data_engineer_in_20220101_de',
-  fmt='{name:%s}_in_{timestamp:%Y%m%d}_{name:%a}'
-)
+group.parse('data_engineer_in_20220101_de', fmt='{name:%s}_in_{timestamp:%Y%m%d}_{name:%a}')
 ```
 
 ```text
@@ -237,10 +213,7 @@ group.parse(
 from fmtutil import FormatterGroup
 from datetime import datetime
 
-group_01: FormatterGroup = group({
-  'name': 'data engineer',
-  'datetime': datetime(2022, 1, 1)
-})
+group_01: FormatterGroup = group({'name': 'data engineer', 'datetime': datetime(2022, 1, 1)})
 group_01.format('{name:%c}_{timestamp:%Y_%m_%d}')
 ```
 
@@ -263,12 +236,7 @@ from fmtutil import (
 
 name: Naming = Naming.parse('Google Map', fmt='%t')
 
-fmt_group: FormatterGroupType = make_group(
-    {
-        "naming": name.to_const(),
-        "timestamp": Datetime,
-    }
-)
+fmt_group: FormatterGroupType = make_group({"naming": name.to_const(), "timestamp": Datetime})
 
 rs: List[FormatterGroup] = []
 for file in (
@@ -280,10 +248,7 @@ for file in (
 ):
     try:
         rs.append(
-            fmt_group.parse(
-                file,
-                fmt=r'{naming:c}_{timestamp:%Y%m%d}\.json',
-            )
+            fmt_group.parse(file, fmt=r'{naming:c}_{timestamp:%Y%m%d}\.json')
         )
     except FormatterArgumentError:
         continue
