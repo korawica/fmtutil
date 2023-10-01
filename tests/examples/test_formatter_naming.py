@@ -18,8 +18,19 @@ class NamingExampleTestCase(unittest.TestCase):
             fmt.Naming.parse("monkey-d-luffy", "%k").value,
         )
 
-        # FIXME: shortname does not match with the Kebab name
         self.assertListEqual(
             ["monkey", "d", "luffy"],
-            fmt.Naming.parse("monkey-d-luffy ddd", "%k %a").value,
+            fmt.Naming.parse("monkey-d-luffy MDL", "%k %A").value,
+        )
+
+        self.assertListEqual(
+            ["data", "is", "new", "oil"],
+            fmt.Naming.parse("data_is_new_oil dtsnwl", "%s %v").value,
+        )
+
+        self.assertListEqual(
+            ["data", "engine", "framework"],
+            fmt.Naming.parse(
+                "data_engine_framework dataengineframework", "%s %f"
+            ).value,
         )

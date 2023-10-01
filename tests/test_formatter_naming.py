@@ -146,8 +146,8 @@ class NamingTestCase(unittest.TestCase):
                     "(?P<strings_snake_title>[A-Z][a-z0-9]+"
                     "(?:_[A-Z]+[a-z0-9]*)*)"
                 ),
-                "%v": "(?P<vowel>[b-df-hj-np-tv-z]+)",
-                "%V": "(?P<vowel_upper>[B-DF-HJ-NP-TV-Z]+)",
+                "%v": "(?P<vowels>[b-df-hj-np-tv-z]+)",
+                "%V": "(?P<vowels_upper>[B-DF-HJ-NP-TV-Z]+)",
                 "%n": "(?P<strings>[a-z0-9]+(?:\\s[a-z0-9]+)*)",
                 "%N": "(?P<strings_upper>[A-Z0-9]+(?:\\s[A-Z0-9]+)*)",
                 "%-N": (
@@ -190,6 +190,29 @@ class NamingTestCase(unittest.TestCase):
         self.assertEqual(
             "data engineer",
             fmt.Naming.parse("dataEngineer%|data engineer", "%c%\\|%n").string,
+        )
+
+        with self.assertRaises(fmt.FormatterValueError) as context:
+            fmt.Naming.parse("monkey-d-luffy ddd", "%k %a")
+        self.assertTrue(
+            "Parsing value does not valid with short from strings: "
+            "['m', 'd', 'l'] and shorts: ['d', 'd', 'd']."
+            in str(context.exception)
+        )
+
+        with self.assertRaises(fmt.FormatterValueError) as context:
+            fmt.Naming.parse("data_is_new_oil bcd", "%s %v")
+        self.assertTrue(
+            "Parsing value does not valid with vowel from strings: "
+            "['dtsnwl'] and vowels: ['bcd']." in str(context.exception)
+        )
+
+        with self.assertRaises(fmt.FormatterValueError) as context:
+            fmt.Naming.parse("data_engine_framework dataframework", "%s %f")
+        self.assertTrue(
+            "Parsing value does not valid with flat from strings: "
+            "['dataengineframework'] and flats: ['dataframework']."
+            in str(context.exception)
         )
 
     def test_naming_format(self):

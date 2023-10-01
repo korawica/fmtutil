@@ -298,7 +298,7 @@ class Formatter(MetaFormatter):
     def __init_subclass__(
         cls: FormatterType,
         /,
-        level: int = 1,
+        level: Optional[int] = None,
         **kwargs: Any,
     ) -> NoReturn:
         """Subclass Initialize method.
@@ -306,7 +306,7 @@ class Formatter(MetaFormatter):
         :param level
         :type level: int (default=1)
         """
-        cls.base_level = level
+        cls.base_level = level or cls.base_level
         super().__init_subclass__(**kwargs)
 
         if not cls.base_fmt:
@@ -804,11 +804,16 @@ class Serial(Formatter):
     def priorities(
         self,
     ) -> ReturnPrioritiesType:
-        """Level Priority:
-        [
-            0: default
-            1: number
-        ]
+        """Priority Properties of the serial object
+
+        Level Priority:
+            [
+                0: default
+                1: number
+            ]
+
+        :rtype: ReturnPrioritiesType
+        :returns: a priority properties of the serial object
         """
         return {
             "number": {
@@ -971,7 +976,7 @@ class Datetime(Formatter, level=10):
         )
 
     @property
-    def validate(self) -> bool:  # no cov
+    def validate(self) -> bool:
         if self.week != (w := self.value.strftime("%w")):
             raise FormatterValueError(
                 f"Week that was parsed does not equal with standard datetime, "
@@ -1005,7 +1010,7 @@ class Datetime(Formatter, level=10):
                 10: year
             ]
 
-        :rtype: Dict[str, Dict[str, Union[Callable, Tuple[int, ...], int]]]
+        :rtype: ReturnPrioritiesType
         :returns: a priority properties of the datetime object
         """
         return {
@@ -1481,7 +1486,7 @@ class Datetime(Formatter, level=10):
         return NotImplemented
 
 
-class Version(Formatter, level=3):
+class Version(Formatter, level=4):
     """Version object for register process that implement formatter and
     parser.
 
@@ -1563,14 +1568,28 @@ class Version(Formatter, level=3):
     def priorities(
         self,
     ) -> ReturnPrioritiesType:
+        """Priority Properties of the version object
+
+        Level Priority:
+            [
+                0: default
+                1: micro
+                2: minor
+                3: major
+                4: epoch
+            ]
+
+        :rtype: ReturnPrioritiesType
+        :returns: a priority properties of the version object
+        """
         return {
             "epoch": {
                 "value": lambda x: x.rstrip("!"),
-                "level": 3,
+                "level": 4,
             },
             "epoch_num": {
                 "value": lambda x: x,
-                "level": 3,
+                "level": 4,
             },
             "epoch_default": {
                 "value": self.default("0"),
@@ -1762,7 +1781,6 @@ class Version(Formatter, level=3):
         return NotImplemented
 
 
-# TODO: implement validate value of vowel and flat from values.
 class Naming(Formatter, level=5):
     """Naming object for register process that implement formatter and parser.
 
@@ -1797,9 +1815,30 @@ class Naming(Formatter, level=5):
         return ""
 
     @property
+    def validate(self) -> bool:
+        print("strings:", self.strings)
+        print("shorts:", self.shorts)
+        return True
+
+    @property
     def priorities(
         self,
     ) -> ReturnPrioritiesType:
+        """Priority Properties of the naming object
+
+        Level Priority:
+            [
+                0: default
+                1: vowels
+                2: shorts
+                3: flats
+                4: -
+                5: strings
+            ]
+
+        :rtype: ReturnPrioritiesType
+        :returns: a priority properties of the naming object
+        """
         return {
             "strings": {"value": lambda x: x.split(), "level": 5},
             "strings_upper": {
@@ -1843,29 +1882,45 @@ class Naming(Formatter, level=5):
                 "value": lambda x: x.lower().split("_"),
                 "level": 5,
             },
+            "strings_default": {
+                "value": self.default([]),
+                "level": 0,
+            },
             "flats": {
-                "value": lambda x: [x],
-                "level": 1,
+                "value": self._from_flats,
+                "level": 3,
             },
             "flats_upper": {
-                "value": lambda x: [x.lower()],
-                "level": 1,
+                "value": lambda x: self._from_flats(x.lower()),
+                "level": 3,
+            },
+            "flats_default": {
+                "value": self._default_flats,
+                "level": 0,
             },
             "shorts": {
-                "value": lambda x: list(x),
-                "level": 1,
+                "value": self._from_shorts,
+                "level": 2,
             },
             "shorts_upper": {
-                "value": lambda x: list(x.lower()),
-                "level": 1,
+                "value": lambda x: self._from_shorts(x.lower()),
+                "level": 2,
+            },
+            "shorts_default": {
+                "value": self._default_shorts,
+                "level": 0,
             },
             "vowels": {
-                "value": lambda x: [x],
+                "value": self._from_vowels,
                 "level": 1,
             },
             "vowels_upper": {
-                "value": lambda x: [x.lower()],
+                "value": lambda x: self._from_vowels(x.lower()),
                 "level": 1,
+            },
+            "vowels_default": {
+                "value": self._default_vowels,
+                "level": 0,
             },
         }
 
@@ -2027,13 +2082,13 @@ class Naming(Formatter, level=5):
             },
             "%v": {
                 "value": partial(re.sub, r"[aeiou]", "", "".join(_value)),
-                "regex": r"(?P<vowel>[b-df-hj-np-tv-z]+)",
+                "regex": r"(?P<vowels>[b-df-hj-np-tv-z]+)",
             },
             "%V": {
                 "value": partial(
                     re.sub, r"[AEIOU]", "", "".join(_value).upper()
                 ),
-                "regex": r"(?P<vowel_upper>[B-DF-HJ-NP-TV-Z]+)",
+                "regex": r"(?P<vowels_upper>[B-DF-HJ-NP-TV-Z]+)",
             },
         }
 
@@ -2050,6 +2105,75 @@ class Naming(Formatter, level=5):
                 f"Naming formatter does not support for value, {value!r}."
             )
         return value
+
+    def _from_flats(self, value: str) -> List[str]:
+        """Return validated flats value.
+
+        :param value: A format string value that pass from initialize.
+        :type value: str
+
+        :rtype: str
+        """
+        v: List[str] = [value]
+        if self.level.slot[4] and (_s := ["".join(self.strings)]) != v:
+            raise FormatterValueError(
+                f"Parsing value does not valid with flat from "
+                f"strings: {_s} and flats: {v}."
+            )
+        return v
+
+    def _from_shorts(self, value: str) -> List[str]:
+        """Return validated shorts value.
+
+        :param value: A format string value that pass from initialize.
+        :type value: str
+
+        :rtype: str
+        """
+        v: List[str] = list(value)
+        if self.level.slot[4] and (_s := [s[0] for s in self.strings]) != v:
+            raise FormatterValueError(
+                f"Parsing value does not valid with short from "
+                f"strings: {_s} and shorts: {v}."
+            )
+        return v
+
+    def _from_vowels(self, value: str) -> List[str]:
+        """Return validated vowels value.
+
+        :param value: A format string value that pass from initialize.
+        :type value: str
+
+        :rtype: str
+        """
+        v: List[str] = [value]
+        if (
+            self.level.slot[4]
+            and (_s := [re.sub(r"[aeiou]", "", "".join(self.strings))]) != v
+        ):
+            raise FormatterValueError(
+                f"Parsing value does not valid with vowel from "
+                f"strings: {_s} and vowels: {v}."
+            )
+        return v
+
+    def _default_flats(self) -> List[str]:
+        """Return default of shorts value."""
+        if not self.level.slot[4]:
+            return []
+        return ["".join(self.strings)]
+
+    def _default_shorts(self) -> List[str]:
+        """Return default of shorts value."""
+        if not self.level.slot[4]:
+            return []
+        return [s[0] for s in self.strings]
+
+    def _default_vowels(self) -> List[str]:
+        """Return default of vowels value."""
+        if not self.level.slot[4]:
+            return []
+        return [re.sub(r"[aeiou]", "", "".join(self.strings))]
 
     @staticmethod
     def pascal_case(snake_case: str) -> str:
@@ -2091,6 +2215,11 @@ class Naming(Formatter, level=5):
             .strip()
             .split()
         )
+
+    @staticmethod
+    def default(value: List[str]) -> Callable[[], List[str]]:
+        """Return wrapper function of value"""
+        return lambda: value
 
     def __sub__(self, other):  # type: ignore # no cov
         return NotImplemented
@@ -2135,6 +2264,17 @@ class Storage(Formatter):
 
     @property
     def priorities(self) -> ReturnPrioritiesType:
+        """Priority Properties of the storage object
+
+        Level Priority:
+            [
+                0: default
+                1: bit, byte
+            ]
+
+        :rtype: ReturnPrioritiesType
+        :returns: a priority properties of the storage object
+        """
         return {
             "bit": {
                 "value": lambda x: x,
