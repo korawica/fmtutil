@@ -75,20 +75,8 @@ class FormatterGroupError(FormatterError):
     """Core Base Error object for formatter group"""
 
 
-class FormatterGroupNotFoundError(FormatterNotFoundError):
-    """Error raise for a method not found the config file or data."""
-
-
-class FormatterGroupTypeError(FormatterTypeError):
-    """Error raise for typing does not match or support."""
-
-
 class FormatterGroupValueError(FormatterValueError):
     """Error raise for value does not valid"""
-
-
-class FormatterGroupKeyError(FormatterKeyError):
-    """Error raise for key does not exist"""
 
 
 class FormatterGroupArgumentError(FormatterArgumentError):

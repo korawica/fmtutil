@@ -57,10 +57,11 @@ def itself(x: Any = None) -> Any:
 def caller(func: Union[Callable[[], Any], Any]) -> Any:
     """Call function if it was callable
 
-    .. usage::
-        >>> some_func = lambda: 100
-        >>> caller(some_func)
-        100
+    Examples:
+
+    >>> some_func = lambda: 100
+    >>> caller(some_func)
+    100
     """
     return func() if callable(func) else func
 
@@ -68,19 +69,20 @@ def caller(func: Union[Callable[[], Any], Any]) -> Any:
 def convert_fmt_str(fmt: str) -> str:
     """Convert format string to format string name
 
-    .. usage::
-        >>> convert_fmt_str('%a')
-        'alpha'
-        >>> convert_fmt_str('%!b')
-        'bravo_exclamation'
-        >>> convert_fmt_str('%S')
-        'sierra_upper'
-        >>> convert_fmt_str('%-N')
-        'november_upper_minus'
-        >>> convert_fmt_str('G')
-        'G'
-        >>> convert_fmt_str('%H')
-        'hotel_upper'
+    Examples:
+
+    >>> convert_fmt_str('%a')
+    'alpha'
+    >>> convert_fmt_str('%!b')
+    'bravo_exclamation'
+    >>> convert_fmt_str('%S')
+    'sierra_upper'
+    >>> convert_fmt_str('%-N')
+    'november_upper_minus'
+    >>> convert_fmt_str('G')
+    'G'
+    >>> convert_fmt_str('%H')
+    'hotel_upper'
     """
     _fmt_re: str = fmt
     if search := re.search(r"^%(?P<prefix>[-+!*]?)(?P<format>[a-zA-Z])$", fmt):

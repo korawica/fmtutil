@@ -5,8 +5,9 @@
 # --------------------------------------------------------------------------
 # mypy: disable-error-code="attr-defined"
 """
-The main module of formatter object that able to format every thing you want
-by less config when inherit from base formatter class.
+This is the Main of the Formatter Objects that able to format every string
+value that you want by less config and abstract override methods when inherit
+from the Base Formatter class.
 """
 from __future__ import annotations
 
@@ -98,22 +99,26 @@ class SlotLevel:
     :param level: a level number of this slot instance.
     :type level: int
 
-    .. attributes:
-        - count
-        - value
+    Attributes:
+        level:
+            A number of level that represent n-layer of this instance.
+        slot:
+            A list of boolean that have index equal the level attribute.
+        count:
+            ...
+        value:
+            ...
 
-    .. methods:
-        - update
+    Methods:
+        update:
+            ...
 
-    .. static-methods::
-        - make_tuple
-
+    Static-methods:
+        make_tuple:
+            ...
     """
 
-    __slots__ = (
-        "level",
-        "slot",
-    )
+    __slots__ = ("level", "slot")
 
     def __init__(self, level: int) -> None:
         """Main initialize of the slot object that define a slot list
@@ -162,7 +167,7 @@ class SlotLevel:
         numbers: Optional[Union[int, Tuple[int, ...]]] = None,
         strict: bool = True,
     ) -> SlotLevel:
-        """Update value in slot from False to True
+        """Update boolean value in ``self.slot`` from False to True.
 
         :param numbers: updated numbers of this SlotLevel object.
         :type numbers: Union[int, Tuple[int, ...]]
@@ -237,6 +242,8 @@ class Formatter(MetaFormatter):
 
     :param formats: A mapping value of priority attribute data.
     :type formats: Optional[dict](=None)
+    :param set_strict_mode: A flag to allow checking duplicate attribute value.
+    :type set_strict_mode: bool(=False)
     :param set_std_value: A flag to allow for set standard value form string,
         `self.class-name.lower()` if it True.
     :type set_std_value: bool(=True)
@@ -294,7 +301,8 @@ class Formatter(MetaFormatter):
         level: int = 1,
         **kwargs: Any,
     ) -> NoReturn:
-        """
+        """Subclass Initialize method.
+
         :param level
         :type level: int (default=1)
         """
@@ -408,6 +416,8 @@ class Formatter(MetaFormatter):
         _suffix: str = suffix or ""
         for fmt_match in re.finditer(r"(%[-+!*]?[A-Za-z])", fmt):
             fmt_str: str = fmt_match.group()
+            # FIXME: KeyError raise when pass format that does not exists
+            #  Example: - `%s` on Datetime format object.
             regex: str = cls.regex()[fmt_str]
             if _alias_match := re.search(
                 r"^\(\?P<(?P<alias_name>\w+)>(?P<fmt_regex>.+)?\)$",
@@ -441,9 +451,8 @@ class Formatter(MetaFormatter):
             does not contain `regex` nor `cregex`.
 
         :rtype: Dict[str, str]
-        :return: a mapping of format, and it's regular expression string
-
-            .. like::
+        :return: a mapping of format, and it's regular expression string.
+            example of return result;
                 {
                     "%n": "(?P<normal>...)",
                     ...
@@ -482,7 +491,8 @@ class Formatter(MetaFormatter):
         """Return mapping of formats and formatter values of `cls.formatter`
 
         :rtype: Dict[str, str]
-        :return: a mapping of formats and formatter values like:
+        :return: A mapping of formats and formatter values.
+            example of return result;
                 {
                     "%n": "normal-value",
                     ...
@@ -504,7 +514,7 @@ class Formatter(MetaFormatter):
             `cls.formatter`.
 
         :rtype: str
-        :return: a formatted string value
+        :return: A formatted string value
         """
         _fmts: ReturnFormattersType = self.formatter(self.value)
         fmt = fmt.replace("%%", "[ESCAPE]")
@@ -524,6 +534,7 @@ class Formatter(MetaFormatter):
         self,
         formats: Optional[Dict[str, Any]] = None,
         *,
+        set_strict_mode: bool = False,
         set_std_value: bool = True,
     ) -> None:
         """Main initialization get the format mapping from input argument
@@ -532,12 +543,11 @@ class Formatter(MetaFormatter):
 
             The setter of attribute does not do anything to __slot__ variable.
         """
-        _formats: Dict[str, Any] = self.__validate_format(formats or {})
+        _formats: Dict[str, Any] = self.__validate_format(formats)
 
         # Set level of SlotLevel object that set from `base_level` and pass this
         # value to _level variable for update process in priorities loop.
-        self._level = SlotLevel(level=self.base_level)
-        _level: SlotLevel = self._level
+        self.level = SlotLevel(level=self.base_level)
 
         # Set None default of any set up value in `cls.__slots__`
         for attr in getattr(self, "__slots__", ()):
@@ -550,13 +560,23 @@ class Formatter(MetaFormatter):
             attr = name.split("_", maxsplit=1)[0]
 
             # Set attr condition
-            if getattr(self, attr):
-                continue
+            if getter := getattr(self, attr):
+                if not set_strict_mode:
+                    continue
+                elif (name in _formats) and getter != (
+                    p := props.value(_formats[name])
+                ):
+                    raise FormatterValueError(
+                        f"Parsing duplicate values, {getter} and {p}, in "
+                        f"attribute {attr} does not equal."
+                    )
+
             elif any(name.endswith(i) for i in {"_default", "_fix"}):
+                # Set default value
                 setattr(self, attr, caller(props.value))
 
                 # Update level by default it will update at first level
-                _level.update(props.level)
+                self.level.update(props.level)
             elif name in _formats:
                 setattr(
                     self,
@@ -565,7 +585,7 @@ class Formatter(MetaFormatter):
                 )
 
                 # Update level by default it will update at first level
-                _level.update(props.level)
+                self.level.update(props.level)
 
         # Run validate method.
         if not self.validate:
@@ -582,19 +602,15 @@ class Formatter(MetaFormatter):
             )
 
     def __setattr__(self, name: str, value: Any) -> None:
-        """Set Attribute build-in method."""
         super().__setattr__(name, value)
 
     def __hash__(self) -> int:
-        """Return hashed string value of str property"""
         return hash(self.string)
 
     def __str__(self) -> str:
-        """Return string value of str property"""
         return self.string
 
     def __repr__(self) -> str:
-        """Return represent string"""
         return (
             f"<{self.__class__.__name__}"
             f".parse('{self.string}', "
@@ -640,35 +656,34 @@ class Formatter(MetaFormatter):
         )
 
     @property
-    def level(self) -> SlotLevel:
-        """Return the slot level object of any subclass."""
-        return self._level
-
-    @property
     def __priorities(self) -> Dict[str, PriorityData]:
         """Return private property of extracted mapping from
         `self.priorities` value.
 
         :rtype: Dict[str, PriorityData]
+        :return: A mapping of string and PriorityData.
         """
         return {k: PriorityData(**v) for k, v in self.priorities.items()}
 
     @staticmethod
-    def __validate_format(formats: Dict[str, Any]) -> Dict[str, Any]:
+    def __validate_format(
+        formats: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
         """Raise error if any duplication format name do not all equal.
 
         :param formats:
-        :type formats: Dict[str, Any]
+        :type formats: Optional[Dict[str, Any]]
 
         :rtype: Dict[str, Any]
         """
         results: Dict[str, Any] = {}
-        for fmt in formats:
+        _formats: Dict[str, Any] = formats or {}
+        for fmt in _formats:
             _fmt: str = fmt.split("__", maxsplit=1)[0]
             if _fmt not in results:
-                results[_fmt] = formats[fmt]
+                results[_fmt] = _formats[fmt]
                 continue
-            if results[_fmt] != formats[fmt]:
+            if results[_fmt] != _formats[fmt]:
                 raise FormatterValueError(
                     "Parsing with some duplicate format name that have "
                     "value do not all equal."
@@ -677,9 +692,7 @@ class Formatter(MetaFormatter):
 
     @property
     @abstractmethod
-    def priorities(
-        self,
-    ) -> ReturnPrioritiesType:
+    def priorities(self) -> ReturnPrioritiesType:
         """Return priorities"""
         raise NotImplementedError(
             "Please implement priorities property for this sub-formatter class"
@@ -687,9 +700,7 @@ class Formatter(MetaFormatter):
 
     @staticmethod
     @abstractmethod
-    def formatter(
-        value: Optional[Any] = None,
-    ) -> ReturnFormattersType:
+    def formatter(value: Optional[Any] = None) -> ReturnFormattersType:
         """Return formatter"""
         raise NotImplementedError(
             "Please implement formatter static method for this "
@@ -776,6 +787,12 @@ class Serial(Formatter):
     def priorities(
         self,
     ) -> ReturnPrioritiesType:
+        """Level Priority:
+        [
+            0: default
+            1: number
+        ]
+        """
         return {
             "number": {
                 "value": lambda x: x,
@@ -879,7 +896,7 @@ WEEKS: Dict[str, str] = {
 }
 
 
-class Datetime(Formatter, level=8):
+class Datetime(Formatter, level=9):
     """Datetime object for register process that implement formatter and
     parser.
     """
@@ -933,6 +950,20 @@ class Datetime(Formatter, level=8):
     ) -> ReturnPrioritiesType:
         """Priority Properties of the datetime object
 
+        Level Priority:
+            [
+                0: week, default
+                1: local
+                2: microsecond
+                3: second
+                4: minute
+                5: hour, hour_12
+                6: hour
+                7: day, day_year
+                8: month, day_year, week_year
+                9: year
+            ]
+
         :rtype: Dict[str, Dict[str, Union[Callable, Tuple[int, ...], int]]]
         :returns: a priority properties of the datetime object
         """
@@ -941,53 +972,39 @@ class Datetime(Formatter, level=8):
         return {
             "local": {
                 "value": lambda x: x,
-                "level": 4,
+                "level": 1,
             },
             "year": {
                 "value": lambda x: x,
-                "level": 8,
+                "level": 9,
             },
             "year_cut_pad": {
                 "value": lambda x: f"19{x}",
-                "level": 8,
+                "level": 9,
             },
             "year_cut": {
                 "value": lambda x: f"19{x}",
-                "level": 8,
+                "level": 9,
             },
             "year_default": {
                 "value": self.default("1990"),
                 "level": 0,
             },
-            "day_year": {
-                "value": self._from_day_year,
-                "level": (
-                    7,
-                    6,
-                ),
-            },
-            "day_year_pad": {
-                "value": self._from_day_year,
-                "level": (
-                    7,
-                    6,
-                ),
-            },
             "month": {
                 "value": lambda x: x.rjust(2, "0"),
-                "level": 7,
+                "level": 8,
             },
             "month_pad": {
                 "value": lambda x: x,
-                "level": 7,
+                "level": 8,
             },
             "month_short": {
                 "value": lambda x: MONTHS[x],
-                "level": 7,
+                "level": 8,
             },
             "month_full": {
                 "value": lambda x: MONTHS[x[:3]],
-                "level": 7,
+                "level": 8,
             },
             "month_default": {
                 "value": self.default("01"),
@@ -995,11 +1012,25 @@ class Datetime(Formatter, level=8):
             },
             "day": {
                 "value": lambda x: x.rjust(2, "0"),
-                "level": 6,
+                "level": 7,
             },
             "day_pad": {
                 "value": lambda x: x,
-                "level": 6,
+                "level": 7,
+            },
+            "day_year": {
+                "value": self._from_day_year,
+                "level": (
+                    7,
+                    8,
+                ),
+            },
+            "day_year_pad": {
+                "value": self._from_day_year,
+                "level": (
+                    7,
+                    8,
+                ),
             },
             # TODO: switch make default day before validate week
             "day_default": {
@@ -1024,21 +1055,16 @@ class Datetime(Formatter, level=8):
             },
             "weeks_year_mon_pad": {
                 "value": self._from_week_year_mon,
-                "level": (
-                    7,
-                    6,
-                ),
+                "level": 8,
             },
             "weeks_year_sun_pad": {
                 "value": self._from_week_year_sun,
-                "level": (
-                    7,
-                    6,
-                ),
+                "level": 8,
             },
             "week_default": {
                 "value": lambda: datetime.strptime(
-                    self.iso_date, "%Y-%m-%d"
+                    self.iso_date,
+                    "%Y-%m-%d",
                 ).strftime("%w"),
                 "level": 0,
             },
@@ -1046,14 +1072,14 @@ class Datetime(Formatter, level=8):
                 "value": lambda x: x.rjust(2, "0"),
                 "level": (
                     5,
-                    4,
+                    6,
                 ),
             },
             "hour_pad": {
                 "value": lambda x: x,
                 "level": (
                     5,
-                    4,
+                    6,
                 ),
             },
             "hour_12": {
@@ -1078,11 +1104,11 @@ class Datetime(Formatter, level=8):
             },
             "minute": {
                 "value": lambda x: x.rjust(2, "0"),
-                "level": 3,
+                "level": 4,
             },
             "minute_pad": {
                 "value": lambda x: x,
-                "level": 3,
+                "level": 4,
             },
             "minute_default": {
                 "value": self.default("00"),
@@ -1090,11 +1116,11 @@ class Datetime(Formatter, level=8):
             },
             "second": {
                 "value": lambda x: x.rjust(2, "0"),
-                "level": 2,
+                "level": 3,
             },
             "second_pad": {
                 "value": lambda x: x,
-                "level": 2,
+                "level": 3,
             },
             "second_default": {
                 "value": self.default("00"),
@@ -1102,7 +1128,7 @@ class Datetime(Formatter, level=8):
             },
             "microsecond_pad": {
                 "value": lambda x: x,
-                "level": 1,
+                "level": 2,
             },
             "microsecond_default": {
                 "value": self.default("000000"),
@@ -1301,9 +1327,16 @@ class Datetime(Formatter, level=8):
         :rtype: str
         """
         _this_year: datetime = datetime.strptime(self.year, "%Y") + timedelta(
-            days=int(value)
+            days=(int(value) - 1)
         )
-        self.month = _this_year.strftime("%m")
+        _month: str = _this_year.strftime("%m")
+        if self.level.slot[7] and self.month != _month:
+            raise FormatterValueError(
+                f"Parsing value does not valid with month {self.month} "
+                f"and day-year: {value}."
+            )
+        else:
+            self.month = _month
         return _this_year.strftime("%d")
 
     def _from_week_year_mon(self, value: str) -> str:
@@ -1314,14 +1347,43 @@ class Datetime(Formatter, level=8):
 
         :rtype: str
         """
-        _this_week: str = (
-            str(((int(self.week) - 1) % 7) + 1) if self.week else "1"
+        _this_week: str = str(
+            (
+                (
+                    int(
+                        self.week
+                        or int(
+                            datetime.strptime(
+                                self.iso_date, "%Y-%m-%d"
+                            ).strftime("%w")
+                        )
+                    )
+                    - 1
+                )
+                % 7
+            )
+            + 1
         )
         _this_year: datetime = datetime.strptime(
             f"{self.year}-W{value}-{_this_week}", "%G-W%V-%u"
         )
-        self.month = _this_year.strftime("%m")
-        self.day = _this_year.strftime("%d")
+        _month: str = _this_year.strftime("%m")
+        if self.level.slot[7] and self.month != _month:
+            raise FormatterValueError(
+                f"Parsing value does not valid with month {self.month} "
+                f"and week-year-monday: {value}."
+            )
+        else:
+            self.month = _month
+
+        _day: str = _this_year.strftime("%d")
+        if self.level.slot[6] and self.day != _day:
+            raise FormatterValueError(
+                f"Parsing value does not valid with day {self.day} "
+                f"and week-year-monday: {value}."
+            )
+        else:
+            self.day = _day
         return _this_year.strftime("%w")
 
     def _from_week_year_sun(self, value: str) -> str:
@@ -1332,11 +1394,34 @@ class Datetime(Formatter, level=8):
 
         :rtype: str
         """
-        _this_year: datetime = datetime.strptime(
-            f"{self.year}-W{value}-{self.week or '0'}", "%Y-W%U-%w"
+        _this_week: str = str(
+            int(
+                self.week
+                or int(
+                    datetime.strptime(self.iso_date, "%Y-%m-%d").strftime("%w")
+                )
+            )
         )
-        self.month = _this_year.strftime("%m")
-        self.day = _this_year.strftime("%d")
+        _this_year: datetime = datetime.strptime(
+            f"{self.year}-W{value}-{_this_week}", "%Y-W%U-%w"
+        )
+        _month: str = _this_year.strftime("%m")
+        if self.level.slot[7] and self.month != _month:
+            raise FormatterValueError(
+                f"Parsing value does not valid with month {self.month} "
+                f"and week-year-sunday: {value}."
+            )
+        else:
+            self.month = _month
+
+        _day: str = _this_year.strftime("%d")
+        if self.level.slot[6] and self.day != _day:
+            raise FormatterValueError(
+                f"Parsing value does not valid with day {self.day} "
+                f"and week-year-sunday: {value}."
+            )
+        else:
+            self.day = _day
         return _this_year.strftime("%w")
 
     @staticmethod

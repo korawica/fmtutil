@@ -13,6 +13,53 @@ import fmtutil.formatter as fmt
 
 
 class DatetimeExampleTestCase(unittest.TestCase):
+    def test_format_example(self):
+        dt = fmt.Datetime.parse(
+            "20230907 23:08:56.041000", "%Y%m%d %H:%M:%S.%f"
+        )
+
+        # Common format of Datetime use-case.
+        self.assertEqual("2023", dt.format("%Y"))
+        self.assertEqual("09", dt.format("%m"))
+        self.assertEqual("9", dt.format("%-m"))
+        self.assertEqual("07", dt.format("%d"))
+        self.assertEqual("7", dt.format("%-d"))
+        self.assertEqual("23", dt.format("%H"))
+        self.assertEqual("23", dt.format("%-H"))
+        self.assertEqual("08", dt.format("%M"))
+        self.assertEqual("8", dt.format("%-M"))
+        self.assertEqual("56", dt.format("%S"))
+        self.assertEqual("56", dt.format("%-S"))
+        self.assertEqual("041000", dt.format("%f"))
+
+    def test_format_example_special(self):
+        dt = fmt.Datetime.parse(
+            "20050904 19:08:56.041000", "%Y%m%d %H:%M:%S.%f"
+        )
+
+        self.assertEqual("05", dt.format("%y"))
+        self.assertEqual("5", dt.format("%-y"))
+        self.assertEqual("Sep", dt.format("%b"))
+        self.assertEqual("September", dt.format("%B"))
+        self.assertEqual("Sun", dt.format("%a"))
+        self.assertEqual("Sunday", dt.format("%A"))
+        self.assertEqual("0", dt.format("%w"))
+        self.assertEqual("7", dt.format("%u"))
+        self.assertEqual("07", dt.format("%I"))
+        self.assertEqual("7", dt.format("%-I"))
+        self.assertEqual("PM", dt.format("%p"))
+
+    def test_format_example_numbers(self):
+        dt = fmt.Datetime.parse(
+            "20230205 01:25:36.141200", "%Y%m%d %H:%M:%S.%f"
+        )
+
+        self.assertEqual("036", dt.format("%j"))
+        self.assertEqual("36", dt.format("%-j"))
+        self.assertEqual("Sunday", dt.format("%A"))
+        self.assertEqual("06", dt.format("%U"))  # Sunday
+        self.assertEqual("05", dt.format("%W"))  # Monday
+
     def test_parse_examples(self):
         self.assertEqual(
             datetime(2021, 1, 1, microsecond=135000),
@@ -24,19 +71,8 @@ class DatetimeExampleTestCase(unittest.TestCase):
             fmt.Datetime.parse("2021-Jan Monday 3", "%Y-%b %A %-d").value,
         )
 
-    def test_format_example(self):
-        dt = fmt.Datetime.parse(
-            "20230917 23:08:56.041000", "%Y%m%d %H:%M:%S.%f"
+        # FIXME: this datetime does not match with day of year
+        self.assertEqual(
+            datetime(2023, 2, 5),
+            fmt.Datetime.parse("2023-Feb 05 36", "%Y-%b %W %-j").value,
         )
-        self.assertEqual("2023", dt.format("%Y"))
-        self.assertEqual("09", dt.format("%m"))
-        self.assertEqual("9", dt.format("%-m"))
-        self.assertEqual("17", dt.format("%d"))
-        self.assertEqual("17", dt.format("%-d"))
-        self.assertEqual("23", dt.format("%H"))
-        self.assertEqual("23", dt.format("%-H"))
-        self.assertEqual("08", dt.format("%M"))
-        self.assertEqual("8", dt.format("%-M"))
-        self.assertEqual("56", dt.format("%S"))
-        self.assertEqual("56", dt.format("%-S"))
-        self.assertEqual("041000", dt.format("%f"))

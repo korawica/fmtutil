@@ -114,7 +114,7 @@ class DatetimeTestCase(unittest.TestCase):
         self.assertEqual(datetime(2022, 12, 30, second=43), self.dt.value)
 
         # Test static methods
-        self.assertEqual("20", self.dt._from_day_year(value="50"))
+        self.assertEqual("30", self.dt._from_day_year(value="364"))
 
         self.assertTrue(self.dt2.valid("20220115-00", "%Y%m%d-%S"))
 
@@ -153,15 +153,15 @@ class DatetimeTestCase(unittest.TestCase):
 
     def test_level_compare(self):
         self.assertListEqual(
-            [False, False, False, False, False, True, True, True],
+            [False, False, False, False, False, False, False, True, True],
             self.dt2.level.slot,
         )
-        self.assertEqual(21, self.dt2.level.value)
+        self.assertEqual(17, self.dt2.level.value)
         self.assertListEqual(
-            [True, False, False, False, False, True, True, True],
+            [False, True, False, False, False, False, True, True, True],
             self.dt_p.level.slot,
         )
-        self.assertEqual(22, self.dt_p.level.value)
+        self.assertEqual(26, self.dt_p.level.value)
 
     def test_datetime_operation(self):
         # 2022-12-30 00:00:43 + 10 days
