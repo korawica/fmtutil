@@ -17,7 +17,7 @@ import re
 from abc import ABCMeta, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from functools import lru_cache, partial, total_ordering
 from typing import (
     Any,
@@ -347,6 +347,8 @@ class Formatter(MetaFormatter):
         cls,
         value: str,
         fmt: Optional[str] = None,
+        *,
+        strict: bool = False,
     ) -> Formatter:
         """Parse string value with its format to subclass of formatter object.
         This method generates the value for itself data that can be formatted
@@ -357,6 +359,8 @@ class Formatter(MetaFormatter):
         :param fmt: a format value will use `cls.base_fmt` if it does not pass
             from input argument.
         :type fmt: Optional[str](=None)
+        :param strict: A flag strict validate that pass to ``set_strict_mode``.
+        :type strict: bool(=False)
 
         :raises NotImplementedError: if fmt value parameter does not pass form
             input, or `cls.base_fmt` does not implement.
@@ -377,7 +381,7 @@ class Formatter(MetaFormatter):
 
         _fmt = cls.gen_format(_fmt)
         if _search := re.search(rf"^{_fmt}$", value):
-            return cls(_search.groupdict())
+            return cls(_search.groupdict(), set_strict_mode=strict)
 
         raise FormatterValueError(
             f"value {value!r} does not match with format {_fmt!r}"
@@ -567,8 +571,8 @@ class Formatter(MetaFormatter):
                     p := props.value(_formats[name])
                 ):
                     raise FormatterValueError(
-                        f"Parsing duplicate values, {getter} and {p}, in "
-                        f"attribute {attr} does not equal."
+                        f"Parsing duplicate values do not equal, {getter} and "
+                        f"{p}, in ``self.{attr}`` with strict mode."
                     )
 
             elif any(name.endswith(i) for i in {"_default", "_fix"}):
@@ -654,6 +658,19 @@ class Formatter(MetaFormatter):
         return self.value.__eq__(  # type: ignore[no-any-return]
             self.__class__.parse(value, fmt).value,
         )
+
+    def _sub_validate(self, level: int, checker: bool, error: str) -> bool:
+        """Return True if validate condition does not raise the Error.
+
+        :param level: A level number that check for slot exists.
+        :param checker: A validate result.
+        :param error: An error statement that raise from FormatterValueError
+        """
+        if (sl := self.level.slot[(level - 1)]) and checker:
+            raise FormatterValueError(
+                f"Parsing value does not valid with {error}."
+            )
+        return not sl
 
     @property
     def __priorities(self) -> Dict[str, PriorityData]:
@@ -886,17 +903,27 @@ MONTHS: Dict[str, str] = {
 }
 
 WEEKS: Dict[str, str] = {
-    "Mon": "0",
-    "Thu": "1",
-    "Wed": "2",
-    "Tue": "3",
-    "Fri": "4",
-    "Sat": "5",
-    "Sun": "6",
+    "Sun": "0",
+    "Mon": "1",
+    "Thu": "2",
+    "Wed": "3",
+    "Tue": "4",
+    "Fri": "5",
+    "Sat": "6",
+}
+
+WEEKS_FULL: Dict[str, str] = {
+    "0": "Sunday",
+    "1": "Monday",
+    "2": "Thursday",
+    "3": "Wednesday",
+    "4": "Tuesday",
+    "5": "Friday",
+    "6": "Saturday",
 }
 
 
-class Datetime(Formatter, level=9):
+class Datetime(Formatter, level=10):
     """Datetime object for register process that implement formatter and
     parser.
     """
@@ -913,7 +940,7 @@ class Datetime(Formatter, level=9):
         "minute",
         "second",
         "microsecond",
-        "local",
+        "locale",
         "datetime",
     )
 
@@ -937,11 +964,24 @@ class Datetime(Formatter, level=9):
         )
 
     @property
-    def iso_date(self) -> str:
-        return f"{self.year}-{self.month}-{self.day}"
+    def iso_date(self) -> datetime:
+        """Return Datetime that parsing from ISO format."""
+        return datetime.strptime(
+            f"{self.year}-{self.month}-{self.day}", "%Y-%m-%d"
+        )
 
     @property
     def validate(self) -> bool:  # no cov
+        if self.week != (w := self.value.strftime("%w")):
+            raise FormatterValueError(
+                f"Week that was parsed does not equal with standard datetime, "
+                f"this weekday should be {WEEKS_FULL[w]}."
+            )
+        if self.locale != (p := self.value.strftime("%p")):
+            raise FormatterValueError(
+                f"Locale that was parsed does not equal with standard "
+                f"datetime, this locale should be {p}."
+            )
         return True
 
     @property
@@ -952,39 +992,38 @@ class Datetime(Formatter, level=9):
 
         Level Priority:
             [
-                0: week, default
-                1: local
-                2: microsecond
-                3: second
-                4: minute
-                5: hour, hour_12
-                6: hour
-                7: day, day_year
-                8: month, day_year, week_year
-                9: year
+                0: default
+                1: locale
+                2: week
+                3: microsecond
+                4: second
+                5: minute
+                6: hour, hour_12
+                7: hour
+                8: day, day_year
+                9: month, day_year, week_year
+                10: year
             ]
 
         :rtype: Dict[str, Dict[str, Union[Callable, Tuple[int, ...], int]]]
         :returns: a priority properties of the datetime object
         """
-        # TODO: Check about week value should keep first and validate if
-        #  date value does not match with common sense.
         return {
-            "local": {
+            "locale": {
                 "value": lambda x: x,
                 "level": 1,
             },
             "year": {
                 "value": lambda x: x,
-                "level": 9,
+                "level": 10,
             },
             "year_cut_pad": {
                 "value": lambda x: f"19{x}",
-                "level": 9,
+                "level": 10,
             },
             "year_cut": {
                 "value": lambda x: f"19{x}",
-                "level": 9,
+                "level": 10,
             },
             "year_default": {
                 "value": self.default("1990"),
@@ -992,19 +1031,19 @@ class Datetime(Formatter, level=9):
             },
             "month": {
                 "value": lambda x: x.rjust(2, "0"),
-                "level": 8,
+                "level": 9,
             },
             "month_pad": {
                 "value": lambda x: x,
-                "level": 8,
+                "level": 9,
             },
             "month_short": {
                 "value": lambda x: MONTHS[x],
-                "level": 8,
+                "level": 9,
             },
             "month_full": {
                 "value": lambda x: MONTHS[x[:3]],
-                "level": 8,
+                "level": 9,
             },
             "month_default": {
                 "value": self.default("01"),
@@ -1012,61 +1051,57 @@ class Datetime(Formatter, level=9):
             },
             "day": {
                 "value": lambda x: x.rjust(2, "0"),
-                "level": 7,
+                "level": 8,
             },
             "day_pad": {
                 "value": lambda x: x,
-                "level": 7,
+                "level": 8,
             },
             "day_year": {
                 "value": self._from_day_year,
                 "level": (
-                    7,
                     8,
+                    9,
                 ),
             },
             "day_year_pad": {
                 "value": self._from_day_year,
                 "level": (
-                    7,
                     8,
+                    9,
                 ),
             },
-            # TODO: switch make default day before validate week
             "day_default": {
                 "value": self.default("01"),
                 "level": 0,
             },
             "week": {
                 "value": lambda x: x,
-                "level": 0,
+                "level": 2,
             },
             "week_mon": {
                 "value": lambda x: str(int(x) % 7),
-                "level": 0,
+                "level": 2,
             },
             "week_short": {
                 "value": lambda x: WEEKS[x],
-                "level": 0,
+                "level": 2,
             },
             "week_full": {
                 "value": lambda x: WEEKS[x[:3]],
+                "level": 2,
+            },
+            "week_default": {
+                "value": lambda: self.iso_date.strftime("%w"),
                 "level": 0,
             },
             "weeks_year_mon_pad": {
                 "value": self._from_week_year_mon,
-                "level": 8,
+                "level": 9,
             },
             "weeks_year_sun_pad": {
                 "value": self._from_week_year_sun,
-                "level": 8,
-            },
-            "week_default": {
-                "value": lambda: datetime.strptime(
-                    self.iso_date,
-                    "%Y-%m-%d",
-                ).strftime("%w"),
-                "level": 0,
+                "level": 9,
             },
             "hour": {
                 "value": lambda x: x.rjust(2, "0"),
@@ -1083,23 +1118,19 @@ class Datetime(Formatter, level=9):
                 ),
             },
             "hour_12": {
-                "value": (
-                    lambda x: str(int(x) + 12).rjust(2, "0")
-                    if self.local == "PM"
-                    else x.rjust(2, "0")
-                ),
+                "value": self._from_hour_12,
                 "level": 5,
             },
             "hour_12_pad": {
-                "value": (
-                    lambda x: str(int(x) + 12).rjust(2, "0")
-                    if self.local == "PM"
-                    else x
-                ),
+                "value": self._from_hour_12,
                 "level": 5,
             },
             "hour_default": {
                 "value": self.default("00"),
+                "level": 0,
+            },
+            "locale_default": {
+                "value": self._default_locale,
                 "level": 0,
             },
             "minute": {
@@ -1142,6 +1173,8 @@ class Datetime(Formatter, level=9):
     ) -> ReturnFormattersType:
         """Generate formatter that support mapping formatter,
             %n  : Normal format with `%Y%m%d_%H%M%S`
+        **  %G  : ISO 8601 year
+        **  %C  : Century
             %Y  : Year with century as a decimal number.
             %y  : Year without century as a zero-padded decimal number.
             %-y : Year without century as a decimal number.
@@ -1153,6 +1186,7 @@ class Datetime(Formatter, level=9):
             %A  : the full weekday name
             %w  : weekday as a decimal number, 0 as Sunday and 6 as Saturday.
             %u  : weekday as a decimal number, 1 as Monday and 7 as Sunday.
+                  ISO 8601 weekday (1-7)
             %d  : Day of the month as a zero-padded decimal.
             %-d : Day of the month as a decimal number.
             %H  : Hour (24-hour clock) as a zero-padded decimal number.
@@ -1172,8 +1206,11 @@ class Datetime(Formatter, level=9):
                 ). All days in a new year preceding the first Monday are
                 considered
                 to be in week 0.
+        **  %V  : ISO 8601 week-number (01-53)
             %p  : Locale’s AM or PM.
             %f  : Microsecond as a decimal number, zero-padded on the left.
+        **  %x  : Local version of date (%Y/%m/%d)
+        **  %X  : Local version of time (%H:%M:%S)
 
         :param dt: a datetime value
         :type dt: Optional[datetime](=None)
@@ -1221,12 +1258,12 @@ class Datetime(Formatter, level=9):
             },
             "%a": {
                 "value": partial(_dt.strftime, "%a"),
-                "regex": r"(?P<week_shortname>Mon|Thu|Wed|Tue|Fri|Sat|Sun)",
+                "regex": r"(?P<week_short>Mon|Thu|Wed|Tue|Fri|Sat|Sun)",
             },
             "%A": {
                 "value": partial(_dt.strftime, "%A"),
                 "regex": (
-                    r"(?P<week_fullname>"
+                    r"(?P<week_full>"
                     r"Monday|Thursday|Wednesday|Tuesday|Friday|"
                     r"Saturday|Sunday)"
                 ),
@@ -1300,7 +1337,7 @@ class Datetime(Formatter, level=9):
             },
             "%p": {
                 "value": partial(_dt.strftime, "%p"),
-                "regex": r"(?P<local>PM|AM)",
+                "regex": r"(?P<locale>PM|AM)",
             },
             "%f": {
                 "value": partial(_dt.strftime, "%f"),
@@ -1319,9 +1356,9 @@ class Datetime(Formatter, level=9):
         return value
 
     def _from_day_year(self, value: str) -> str:
-        """Return date of year
+        """Return validated date of year
 
-        :param value:
+        :param value: A format string value that pass from initialize.
         :type value: str
 
         :rtype: str
@@ -1330,99 +1367,79 @@ class Datetime(Formatter, level=9):
             days=(int(value) - 1)
         )
         _month: str = _this_year.strftime("%m")
-        if self.level.slot[7] and self.month != _month:
-            raise FormatterValueError(
-                f"Parsing value does not valid with month {self.month} "
-                f"and day-year: {value}."
-            )
-        else:
+        if self._sub_validate(
+            level=9,
+            checker=(self.month != _month),
+            error=f"month: {self.month} and day-year: {value}",
+        ):
             self.month = _month
         return _this_year.strftime("%d")
 
     def _from_week_year_mon(self, value: str) -> str:
-        """Return validate week year with Monday value
+        """Return validated week year with Monday value
 
-        :param value:
+        :param value: A format string value that pass from initialize.
         :type value: str
 
         :rtype: str
         """
-        _this_week: str = str(
-            (
-                (
-                    int(
-                        self.week
-                        or int(
-                            datetime.strptime(
-                                self.iso_date, "%Y-%m-%d"
-                            ).strftime("%w")
-                        )
-                    )
-                    - 1
-                )
-                % 7
-            )
-            + 1
-        )
         _this_year: datetime = datetime.strptime(
-            f"{self.year}-W{value}-{_this_week}", "%G-W%V-%u"
+            f"{self.year}-W{value}-{self.week}", "%Y-W%W-%w"
         )
         _month: str = _this_year.strftime("%m")
-        if self.level.slot[7] and self.month != _month:
-            raise FormatterValueError(
-                f"Parsing value does not valid with month {self.month} "
-                f"and week-year-monday: {value}."
-            )
-        else:
+        if self._sub_validate(
+            level=9,
+            checker=(self.month != _month),
+            error=f"month: {self.month} and week-year-monday: {value}",
+        ):
             self.month = _month
 
         _day: str = _this_year.strftime("%d")
-        if self.level.slot[6] and self.day != _day:
-            raise FormatterValueError(
-                f"Parsing value does not valid with day {self.day} "
-                f"and week-year-monday: {value}."
-            )
-        else:
+        if self._sub_validate(
+            level=8,
+            checker=(self.day != _day),
+            error=f"day: {self.day} and week-year-monday: {value}",
+        ):
             self.day = _day
         return _this_year.strftime("%w")
 
     def _from_week_year_sun(self, value: str) -> str:
-        """Return validate week year with Sunday value
+        """Return validated week year with Sunday value
 
-        :param value:
+        :param value: A format string value that pass from initialize.
         :type value: str
 
         :rtype: str
         """
-        _this_week: str = str(
-            int(
-                self.week
-                or int(
-                    datetime.strptime(self.iso_date, "%Y-%m-%d").strftime("%w")
-                )
-            )
-        )
         _this_year: datetime = datetime.strptime(
-            f"{self.year}-W{value}-{_this_week}", "%Y-W%U-%w"
+            f"{self.year}-W{value}-{self.week}", "%Y-W%U-%w"
         )
         _month: str = _this_year.strftime("%m")
-        if self.level.slot[7] and self.month != _month:
-            raise FormatterValueError(
-                f"Parsing value does not valid with month {self.month} "
-                f"and week-year-sunday: {value}."
-            )
-        else:
+        if self._sub_validate(
+            level=9,
+            checker=(self.month != _month),
+            error=f"month: {self.month} and week-year-sunday: {value}",
+        ):
             self.month = _month
 
         _day: str = _this_year.strftime("%d")
-        if self.level.slot[6] and self.day != _day:
-            raise FormatterValueError(
-                f"Parsing value does not valid with day {self.day} "
-                f"and week-year-sunday: {value}."
-            )
-        else:
+        if self._sub_validate(
+            level=8,
+            checker=(self.day != _day),
+            error=f"day: {self.day} and week-year-sunday: {value}",
+        ):
             self.day = _day
         return _this_year.strftime("%w")
+
+    def _from_hour_12(self, value: str) -> str:
+        """Return validated hour value that map with locale value."""
+        if self.level.slot[0] and self.locale and self.locale == "PM":
+            return str(int(value) + 12).rjust(2, "0")
+        return value.rjust(2, "0")
+
+    def _default_locale(self) -> str:
+        """Return default value of locale that generate from hour value."""
+        return "PM" if int(self.hour) >= 12 else "AM"
 
     @staticmethod
     def remove_pad_dt(_dt: datetime, fmt: str) -> str:
@@ -1436,6 +1453,14 @@ class Datetime(Formatter, level=9):
         :rtype: str
         """
         return str(remove_pad(_dt.strftime(fmt)))
+
+    @staticmethod
+    def week_year_mon_to_isoweek(year: int, week: int) -> datetime:
+        """Convert week numbers with Monday to ISO week numbers."""
+        dt: datetime = datetime.strptime(f"{year}-{week}-1", "%Y-%W-%w")
+        if date(year, 1, 4).isoweekday() > 4:
+            dt -= timedelta(days=7)
+        return dt
 
     def __add__(self, other: Any) -> Formatter:
         if isinstance(other, (relativedelta, timedelta)):
@@ -2268,24 +2293,36 @@ class BaseConstant(Formatter):
         )
 
     @classmethod
-    def parse(cls, value: str, fmt: Optional[str] = None) -> Formatter:
+    def parse(
+        cls,
+        value: str,
+        fmt: Optional[str] = None,
+        *,
+        strict: bool = False,
+    ) -> Formatter:
         if fmt is None:
             raise NotImplementedError(
                 "The Constant class does not support for default format string "
                 "when parsing with this unknown format value."
             )
-        return super().parse(value, fmt)
+        return super().parse(value, fmt, strict=strict)
 
     def __init__(
         self,
         formats: Optional[Dict[str, Any]] = None,
+        *,
+        set_strict_mode: bool = False,
     ) -> None:
         if not self.formatter():
             raise NotImplementedError(
                 "The Constant object should define the `cls.base_formatter` "
                 "before make a instance."
             )
-        super().__init__(formats=formats, set_std_value=False)
+        super().__init__(
+            formats=formats,
+            set_strict_mode=set_strict_mode,
+            set_std_value=False,
+        )
 
         # Set constant property
         self._constant: List[str] = [

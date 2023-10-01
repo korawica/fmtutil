@@ -65,9 +65,9 @@ class DatetimeTestCase(unittest.TestCase):
                     "(?P<month_full>January|February|March|April|May|June|"
                     "July|August|September|October|November|December)"
                 ),
-                "%a": "(?P<week_shortname>Mon|Thu|Wed|Tue|Fri|Sat|Sun)",
+                "%a": "(?P<week_short>Mon|Thu|Wed|Tue|Fri|Sat|Sun)",
                 "%A": (
-                    "(?P<week_fullname>Monday|Thursday|Wednesday|Tuesday|"
+                    "(?P<week_full>Monday|Thursday|Wednesday|Tuesday|"
                     "Friday|Saturday|Sunday)"
                 ),
                 "%w": "(?P<week>[0-6])",
@@ -86,7 +86,7 @@ class DatetimeTestCase(unittest.TestCase):
                 "%-j": "(?P<day_year>\\d{1,3})",
                 "%U": "(?P<weeks_year_sun_pad>[0-5][0-9])",
                 "%W": "(?P<weeks_year_mon_pad>[0-5][0-9])",
-                "%p": "(?P<local>PM|AM)",
+                "%p": "(?P<locale>PM|AM)",
                 "%f": "(?P<microsecond_pad>\\d{6})",
             },
             fmt.Datetime.regex(),
@@ -116,6 +116,13 @@ class DatetimeTestCase(unittest.TestCase):
         # Test static methods
         self.assertEqual("30", self.dt._from_day_year(value="364"))
 
+        self.assertEqual(
+            datetime(2023, 1, 2), self.dt.week_year_mon_to_isoweek(2023, 1)
+        )
+        self.assertEqual(
+            datetime(2019, 12, 23), self.dt.week_year_mon_to_isoweek(2020, 0)
+        )
+
         self.assertTrue(self.dt2.valid("20220115-00", "%Y%m%d-%S"))
 
     def test_datetime_parser(self):
@@ -123,12 +130,99 @@ class DatetimeTestCase(unittest.TestCase):
             fmt.Datetime.parse("2021-01-01 20210101", "%Y-%m-%d %Y%m%d"),
             fmt.Datetime.parse("2021-01-01", "%Y-%m-%d"),
         )
+
         with self.assertRaises(fmt.FormatterValueError) as context:
             fmt.Datetime.parse("2021-01-01 20220101", "%Y-%m-%d %Y%m%d")
         self.assertTrue(
             (
                 "Parsing with some duplicate format name that have value "
                 "do not all equal."
+            )
+            in str(context.exception)
+        )
+
+        with self.assertRaises(fmt.FormatterValueError) as context:
+            fmt.Datetime.parse("2023-Sep Monday 5", "%Y-%b %A %-d")
+        self.assertTrue(
+            (
+                "Week that was parsed does not equal with standard datetime, "
+                "this weekday should be Thursday."
+            )
+            in str(context.exception)
+        )
+
+        # Week year with monday raise with month value.
+        with self.assertRaises(fmt.FormatterValueError) as context:
+            fmt.Datetime.parse("2023-Feb 03 36", "%Y-%b %W %-j")
+        self.assertTrue(
+            (
+                "Parsing value does not valid with month: 02 and "
+                "week-year-monday: 03."
+            )
+            in str(context.exception)
+        )
+
+        # Week year with monday raise with day value.
+        with self.assertRaises(fmt.FormatterValueError) as context:
+            fmt.Datetime.parse("2023-Feb 05 10", "%Y-%b %W %d")
+        self.assertTrue(
+            (
+                "Parsing value does not valid with day: 10 and "
+                "week-year-monday: 05."
+            )
+            in str(context.exception)
+        )
+
+        # Week year with sunday raise with month value.
+        with self.assertRaises(fmt.FormatterValueError) as context:
+            fmt.Datetime.parse("2023-Feb 03 36", "%Y-%b %U %-j")
+        self.assertTrue(
+            (
+                "Parsing value does not valid with month: 02 and "
+                "week-year-sunday: 03."
+            )
+            in str(context.exception)
+        )
+
+        # Week year with monday raise with day value.
+        with self.assertRaises(fmt.FormatterValueError) as context:
+            fmt.Datetime.parse("2023-Feb 05 10", "%Y-%b %U %d")
+        self.assertTrue(
+            (
+                "Parsing value does not valid with day: 10 and "
+                "week-year-sunday: 05."
+            )
+            in str(context.exception)
+        )
+
+        with self.assertRaises(fmt.FormatterValueError) as context:
+            fmt.Datetime.parse("2023-Aug 253", "%Y-%b %-j")
+        self.assertTrue(
+            "Parsing value does not valid with month: 08 and day-year: 253."
+            in str(context.exception)
+        )
+
+        with self.assertRaises(fmt.FormatterValueError) as context:
+            fmt.Datetime.parse("2023 D60, 21AM", "%Y D%-j, %H%p")
+        self.assertTrue(
+            "Locale that was parsed does not equal with standard datetime, "
+            "this locale should be PM." in str(context.exception)
+        )
+
+    def test_datetime_parser_strict(self):
+        self.assertEqual(
+            fmt.Datetime.parse("2023-09 5", "%Y-%m %-d"),
+            fmt.Datetime.parse("2023-09 Sep October 5", "%Y-%m %b %B %-d"),
+        )
+
+        with self.assertRaises(fmt.FormatterValueError) as context:
+            fmt.Datetime.parse(
+                "2023-09 Sep October 5", "%Y-%m %b %B %-d", strict=True
+            )
+        self.assertTrue(
+            (
+                "Parsing duplicate values do not equal, 09 and 10, in "
+                "``self.month`` with strict mode."
             )
             in str(context.exception)
         )
@@ -153,15 +247,15 @@ class DatetimeTestCase(unittest.TestCase):
 
     def test_level_compare(self):
         self.assertListEqual(
-            [False, False, False, False, False, False, False, True, True],
+            [False, True, False, False, False, False, False, False, True, True],
             self.dt2.level.slot,
         )
-        self.assertEqual(17, self.dt2.level.value)
+        self.assertEqual(21, self.dt2.level.value)
         self.assertListEqual(
-            [False, True, False, False, False, False, True, True, True],
+            [False, True, False, False, False, False, False, True, True, True],
             self.dt_p.level.slot,
         )
-        self.assertEqual(26, self.dt_p.level.value)
+        self.assertEqual(29, self.dt_p.level.value)
 
     def test_datetime_operation(self):
         # 2022-12-30 00:00:43 + 10 days

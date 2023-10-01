@@ -60,19 +60,50 @@ class DatetimeExampleTestCase(unittest.TestCase):
         self.assertEqual("06", dt.format("%U"))  # Sunday
         self.assertEqual("05", dt.format("%W"))  # Monday
 
+        dt = fmt.Datetime.parse(
+            "20230910 03:12:07.000200", "%Y%m%d %H:%M:%S.%f"
+        )
+
+        self.assertEqual("253", dt.format("%j"))
+        self.assertEqual("253", dt.format("%-j"))
+        self.assertEqual("Sunday", dt.format("%A"))
+        self.assertEqual("37", dt.format("%U"))  # Sunday
+        self.assertEqual("36", dt.format("%W"))  # Monday
+
     def test_parse_examples(self):
         self.assertEqual(
             datetime(2021, 1, 1, microsecond=135000),
             fmt.Datetime.parse("2021-01-1 135043", "%Y-%m-%-d %f").value,
         )
-        # FIXME: this datetime does not match with monday in this week
+
         self.assertEqual(
-            datetime(2021, 1, 3),
-            fmt.Datetime.parse("2021-Jan Monday 3", "%Y-%b %A %-d").value,
+            datetime(2023, 9, 5),
+            fmt.Datetime.parse("2023-Sep Thursday 5", "%Y-%b %A %-d").value,
         )
 
-        # FIXME: this datetime does not match with day of year
         self.assertEqual(
-            datetime(2023, 2, 5),
+            datetime(2023, 2, 5, 0, 0, 0),
             fmt.Datetime.parse("2023-Feb 05 36", "%Y-%b %W %-j").value,
+        )
+
+        self.assertEqual(
+            datetime(2023, 9, 10, 0, 0, 0),
+            fmt.Datetime.parse("2023-Sep 37 253", "%Y-%b %U %-j").value,
+        )
+
+        self.assertEqual(
+            datetime(2023, 9, 10, 0, 0, 0),
+            fmt.Datetime.parse("2023 37 253", "%Y %U %-j").value,
+        )
+
+        self.assertEqual(
+            datetime(2023, 3, 1, 8, 0, 0),
+            fmt.Datetime.parse("2023 D60, 08:00:00", "%Y D%-j, %I:%M:%S").value,
+        )
+
+        self.assertEqual(
+            datetime(2023, 3, 1, 20, 0, 0),
+            fmt.Datetime.parse(
+                "2023 D60, 08:00:00PM", "%Y D%-j, %I:%M:%S%p"
+            ).value,
         )
