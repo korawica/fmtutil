@@ -39,7 +39,6 @@ from typing import (
 #  docs: https://pypi.org/project/semver/
 import packaging.version as pck_version
 from dateutil.relativedelta import relativedelta
-from ddeutil.core import can_int, remove_pad  # type: ignore
 
 from .exceptions import (
     FormatterArgumentError,
@@ -50,9 +49,11 @@ from .exceptions import (
 )
 from .utils import (
     caller,
+    can_int,
     concat,
     convert_fmt_str,
     itself,
+    remove_pad,
 )
 
 FormatterType = Type["Formatter"]

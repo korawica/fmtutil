@@ -97,3 +97,29 @@ def convert_fmt_str(fmt: str) -> str:
         if prefix := search_dict["prefix"]:
             _fmt_re = f"{_fmt_re}{FMT_STR_MAP[prefix]}"
     return _fmt_re
+
+
+def can_int(value: Any) -> bool:
+    """Check value that able to integer
+    .. usage:
+        >>> can_int('0.0')
+        True
+        >>> can_int('-1.0')
+        True
+    """
+    try:
+        return float(str(value)).is_integer()
+    except (TypeError, ValueError):
+        return False
+
+
+def remove_pad(value: str) -> str:
+    """Remove zero padding of string
+    :usage:
+        >>> remove_pad('000')
+        '0'
+
+        >>> remove_pad('0123')
+        '123'
+    """
+    return _last_char if (_last_char := value[-1]) == "0" else value.lstrip("0")
