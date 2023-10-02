@@ -81,6 +81,7 @@ path = "fmtutil/__about__.py"
 exclude = [
     "/.github",
     "/docs",
+    "/tests",
     "/.pre-commit-config.yaml",
 ]
 
