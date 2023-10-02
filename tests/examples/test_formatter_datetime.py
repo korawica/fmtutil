@@ -72,7 +72,7 @@ class DatetimeExampleTestCase(unittest.TestCase):
 
     def test_parse_examples(self):
         self.assertEqual(
-            datetime(2021, 1, 1, microsecond=135000),
+            datetime(2021, 1, 1, microsecond=135043),
             fmt.Datetime.parse("2021-01-1 135043", "%Y-%m-%-d %f").value,
         )
 

@@ -101,14 +101,14 @@ class DatetimeTestCase(unittest.TestCase):
             ),
             self.dt.__repr__(),
         )
-        self.assertEqual("2022-12-30 00:00:43.000", self.dt.__str__())
+        self.assertEqual("2022-12-30 00:00:43.000000", self.dt.__str__())
 
         # Test `cls.string` property
-        self.assertEqual("2022-12-30 00:00:43.000", self.dt.string)
-        self.assertEqual("2022-01-15 00:00:00.000", self.dt2.string)
-        self.assertEqual("1990-08-27 00:00:00.000", self.dt3.string)
-        self.assertEqual("1990-01-01 00:00:00.000", self.dt_default.string)
-        self.assertEqual("2021-01-01 00:00:00.135", self.dt_p.string)
+        self.assertEqual("2022-12-30 00:00:43.000000", self.dt.string)
+        self.assertEqual("2022-01-15 00:00:00.000000", self.dt2.string)
+        self.assertEqual("1900-08-27 00:00:00.000000", self.dt3.string)
+        self.assertEqual("1900-01-01 00:00:00.000000", self.dt_default.string)
+        self.assertEqual("2021-01-01 00:00:00.135043", self.dt_p.string)
 
         # Test `cls.value` property
         self.assertEqual(datetime(2022, 12, 30, second=43), self.dt.value)
@@ -216,6 +216,65 @@ class DatetimeTestCase(unittest.TestCase):
             "``cls.regex``." in str(context.exception)
         )
 
+    def test_datetime_parser_cmp_datetime(self):
+        self.assertEqual(
+            datetime.strptime("2023-09 Sep", "%Y-%m %b"),
+            fmt.Datetime.parse("2023-09 Sep", "%Y-%m %b").value,
+        )
+        self.assertEqual(
+            datetime.strptime("2023", "%Y"),
+            fmt.Datetime.parse("2023", "%Y").value,
+        )
+        self.assertEqual(
+            datetime.strptime("12", "%m"),
+            fmt.Datetime.parse("12", "%m").value,
+        )
+        self.assertEqual(
+            datetime.strptime("31", "%d"),
+            fmt.Datetime.parse("31", "%d").value,
+        )
+        self.assertEqual(
+            datetime.strptime("12", "%H"),
+            fmt.Datetime.parse("12", "%H").value,
+        )
+        self.assertEqual(
+            datetime.strptime("11", "%I"),
+            fmt.Datetime.parse("11", "%I").value,
+        )
+        self.assertEqual(
+            datetime.strptime("59", "%M"),
+            fmt.Datetime.parse("59", "%M").value,
+        )
+        self.assertEqual(
+            datetime.strptime("01", "%S"),
+            fmt.Datetime.parse("01", "%S").value,
+        )
+        self.assertEqual(
+            datetime.strptime("640090", "%f"),
+            fmt.Datetime.parse("640090", "%f").value,
+        )
+        self.assertEqual(
+            datetime.strptime("123", "%j"),
+            fmt.Datetime.parse("123", "%j").value,
+        )
+        self.assertEqual(
+            datetime.strptime("AM", "%p"),
+            fmt.Datetime.parse("AM", "%p").value,
+        )
+        # NOTE: The case of result from %W and %U that datetime
+        #   does not handle with this case.
+        # ---
+        self.assertEqual(
+            # datetime.strptime("09", "%W"),  # datetime(1900, 1, 1, 0, 0)
+            datetime(1900, 2, 26),
+            fmt.Datetime.parse("09", "%W").value,
+        )
+        self.assertEqual(
+            # datetime.strptime("17", "%U"),  # datetime(1900, 1, 1, 0, 0)
+            datetime(1900, 4, 30),
+            fmt.Datetime.parse("17", "%U").value,
+        )
+
     def test_datetime_parser_strict(self):
         self.assertEqual(
             fmt.Datetime.parse("2023-09 5", "%Y-%m %-d"),
@@ -240,7 +299,7 @@ class DatetimeTestCase(unittest.TestCase):
             fmt.Datetime.gen_format("%Y%m%d", alias=False),
         )
         self.assertEqual("22", self.dt.format("%-y"))
-        self.assertEqual("19900101", self.dt_default.format("%Y%m%d"))
+        self.assertEqual("19000101", self.dt_default.format("%Y%m%d"))
 
     def test_datetime_order(self):
         self.assertTrue(

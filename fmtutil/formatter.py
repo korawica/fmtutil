@@ -1014,7 +1014,7 @@ class Datetime(Formatter, level=10):
     def __repr__(self) -> str:
         return (
             f"<{self.__class__.__name__}"
-            f".parse('{self.string}000', "
+            f".parse('{self.string}', "
             f"'{self.base_fmt}')>"
         )
 
@@ -1027,7 +1027,7 @@ class Datetime(Formatter, level=10):
         return (
             f"{self.year}-{self.month}-{self.day} "
             f"{self.hour}:{self.minute}:{self.second}."
-            f"{self.microsecond[:3]}"
+            f"{self.microsecond}"
         )
 
     @property
@@ -1093,7 +1093,7 @@ class Datetime(Formatter, level=10):
                 "level": 10,
             },
             "year_default": {
-                "value": self.default("1990"),
+                "value": self.default("1900"),
                 "level": 0,
             },
             "month": {

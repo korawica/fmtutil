@@ -63,8 +63,8 @@ class ConstantTestCase(unittest.TestCase):
             fmt.make_const(fmt=fmt.Naming).parse("test", "test%n").value,
         )
         self.assertListEqual(
-            ["1990"],
-            fmt.make_const(fmt=fmt.Datetime).parse("D1990", "D%Y").value,
+            ["1900"],
+            fmt.make_const(fmt=fmt.Datetime).parse("D1900", "D%Y").value,
         )
         self.assertListEqual(
             ["0"],
