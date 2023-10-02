@@ -872,6 +872,14 @@ class Serial(Formatter):
                 "value": lambda x: str(int(x, 2)),
                 "level": 1,
             },
+            "number_comma": {
+                "value": lambda x: x.replace(",", ""),
+                "level": 1,
+            },
+            "number_underscore": {
+                "value": lambda x: x.replace("_", ""),
+                "level": 1,
+            },
             "number_default": {"value": self.default("0"), "level": 0},
         }
 
@@ -883,6 +891,8 @@ class Serial(Formatter):
             %n  : Normal format
             %p  : Padding number
             %b  : Binary number
+            %c  : Normal with comma separate number
+            %u  : Normal with underscore separate number
 
         :param serial: the serial value that pars to generate all format
         :type serial: Optional[int](=None)
@@ -906,6 +916,14 @@ class Serial(Formatter):
             "%b": {
                 "value": partial(Serial.to_binary, str(_value)),
                 "regex": r"(?P<number_binary>[0-1]*)",
+            },
+            "%c": {
+                "value": lambda: f"{_value:,}",
+                "regex": r"(?P<number_comma>\d{1,3}(?:,\d{3})*)",
+            },
+            "%u": {
+                "value": lambda: f"{_value:_}",
+                "regex": r"(?P<number_underscore>\d{1,3}(?:_\d{3})*)",
             },
         }
 

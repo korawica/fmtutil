@@ -135,6 +135,8 @@ class ConstantTestCase(unittest.TestCase):
                 "%n": "(?P<november>199)",
                 "%p": "(?P<papa>199)",
                 "%b": "(?P<bravo>11000111)",
+                "%c": "(?P<charlie>199)",
+                "%u": "(?P<uniform>199)",
             },
             self.const04.regex(),
         )

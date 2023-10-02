@@ -25,6 +25,8 @@ class SerialTestCase(unittest.TestCase):
                 "%n": "(?P<number>[0-9]*)",
                 "%p": "(?P<number_pad>[0-9]{3})",
                 "%b": "(?P<number_binary>[0-1]*)",
+                "%c": "(?P<number_comma>\\d{1,3}(?:,\\d{3})*)",
+                "%u": "(?P<number_underscore>\\d{1,3}(?:_\\d{3})*)",
             },
             fmt.Serial.regex(),
         )
@@ -40,6 +42,14 @@ class SerialTestCase(unittest.TestCase):
                 },
                 "%n": {"regex": "(?P<number>[0-9]*)", "value": "512"},
                 "%p": {"regex": "(?P<number_pad>[0-9]{3})", "value": "512"},
+                "%c": {
+                    "regex": "(?P<number_comma>\\d{1,3}(?:,\\d{3})*)",
+                    "value": "512",
+                },
+                "%u": {
+                    "regex": "(?P<number_underscore>\\d{1,3}(?:_\\d{3})*)",
+                    "value": "512",
+                },
             },
             {
                 i: {
