@@ -49,7 +49,7 @@ class ConstantTestCase(unittest.TestCase):
             value=["data", "pipeline"],
         )
 
-        self.const06: fmt.ConstantType = fmt.Serial.passer(2023).to_const()
+        self.const06: fmt.ConstantType = fmt.Serial.from_value(2023).to_const()
         self.ct: fmt.Constant = self.const.parse("normal_life", "%n_life")
         self.ct02: fmt.Constant = self.const02.parse("gzip_life", "%g_life")
         self.ct03: fmt.Constant = self.const03.parse("data engineer", "%n")

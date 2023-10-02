@@ -282,7 +282,7 @@ class Formatter(MetaFormatter):
         - Config: object : Configuration object that use for keep any config.
 
     .. class-methods::
-        - passer  # TODO: change this method name to `cls.from_value`
+        - from_value
         - parse
         - gen_format
         - regex
@@ -349,7 +349,7 @@ class Formatter(MetaFormatter):
             )
 
     @classmethod
-    def passer(
+    def from_value(
         cls,
         value: Any,
     ) -> Formatter:
@@ -795,10 +795,10 @@ class Formatter(MetaFormatter):
     def __add__(self, other: Any) -> Formatter:
         if not isinstance(other, self.__class__):
             try:
-                return self.__class__.passer(value=self.value + other)
+                return self.__class__.from_value(value=self.value + other)
             except FormatterValueError:
                 return NotImplemented
-        return self.__class__.passer(value=self.value + other.value)
+        return self.__class__.from_value(value=self.value + other.value)
 
     def __radd__(self, other: Any) -> Formatter:
         return self.__add__(other)
@@ -806,8 +806,8 @@ class Formatter(MetaFormatter):
     def __sub__(self, other: Any) -> Formatter:
         try:
             if not isinstance(other, self.__class__):
-                return self.__class__.passer(value=(self.value - other))
-            return self.__class__.passer(value=(self.value - other.value))
+                return self.__class__.from_value(value=(self.value - other))
+            return self.__class__.from_value(value=(self.value - other.value))
         except FormatterValueError:
             return NotImplemented
 
@@ -1513,7 +1513,7 @@ class Datetime(Formatter, level=10):
 
     def __add__(self, other: Any) -> Formatter:
         if isinstance(other, (relativedelta, timedelta)):
-            return self.__class__.passer(self.value + other)
+            return self.__class__.from_value(self.value + other)
         return NotImplemented
 
     def __sub__(  # type: ignore[override]
@@ -1521,7 +1521,7 @@ class Datetime(Formatter, level=10):
         other: Any,
     ) -> Union[Formatter, timedelta]:
         if isinstance(other, (relativedelta, timedelta)):
-            return self.__class__.passer(self.value - other)
+            return self.__class__.from_value(self.value - other)
         elif isinstance(other, self.__class__):
             return self.value - other.value
         return NotImplemented
@@ -2536,7 +2536,7 @@ class BaseConstant(Formatter):
     __slots__: Tuple[str, ...] = ("_constant",)
 
     @classmethod
-    def passer(cls, value: Any) -> NoReturn:
+    def from_value(cls, value: Any) -> NoReturn:
         raise NotImplementedError(
             "The Constant class does not support for passing value to this "
             "class initialization."
@@ -3049,7 +3049,7 @@ class BaseFormatterGroup:
             return v
         elif isinstance(v, dict):
             return self.base_groups[group](v)
-        return self.base_groups[group].passer(v)
+        return self.base_groups[group].from_value(v)
 
     def __repr__(self) -> str:
         values: List[str] = []
