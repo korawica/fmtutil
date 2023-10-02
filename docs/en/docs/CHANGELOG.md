@@ -2,6 +2,35 @@
 
 ## Latest Changes
 
+## 0.3.0
+
+### Features
+
+- :dart: feat: add checker method on SlotLevel object and validate of Naming. (_2023-10-02_)
+- :dart: feat: add validate naming value for Naming formatter obj. (_2023-10-01_)
+- :dart: feat: add validate datetime property on Datetime formatter obj. (_2023-10-01_)
+- :dart: feat: add strct mode for check duplicat format value before initialize. (_2023-10-01_)
+- :dart: feat: update formatter string for EnvConst object. (_2023-09-19_)
+
+### Code Changes
+
+- :construction: refactored: change name of method passer to from_value that relate with FormatterGroup. (_2023-10-02_)
+- :construction: refactored: remove ddeutil deps and merge util funtions to local package. (_2023-10-02_)
+- :construction: refactor: 🚧 [pre-commit.ci] pre-commit autoupdate (_2023-09-26_)
+- :construction: refactor: 🚧 [pre-commit.ci] pre-commit autoupdate (_2023-09-19_)
+
+### Documents
+
+- :page_facing_up: docs: update use-case on README. (_2023-10-02_)
+- :page_facing_up: docs: edit example code style on README. (_2023-09-29_)
+- :page_facing_up: docs: update info in README and rename env const obj. (_2023-09-18_)
+- :page_facing_up: docs: update doc-string for formatter module. (_2023-09-18_)
+
+### Fix Bugs
+
+- :gear: fixed: add condition that raise if format string does not exists in regexes. (_2023-10-02_)
+- :gear: fixed: change condition of extract word for coverage. (_2023-10-02_)
+
 ## 0.2.3
 
 ### Code Changes
