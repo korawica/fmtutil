@@ -4,17 +4,17 @@
 # license information.
 # ------------------------------------------------------------------------------
 """
-Test the formatter object examples for Serial.
+Test the formatter object examples for Storage.
 """
 import unittest
 
 import fmtutil.formatter as fmt
 
 
-class SerialExampleTestCase(unittest.TestCase):
-    # FIXME: add validate to serial formatter object.
+class StorageExampleTestCase(unittest.TestCase):
+    # FIXME: add validate to storage formatter object.
     def test_parse_examples(self):
         self.assertEqual(
-            11,
-            fmt.Serial.parse("00001101 11", "%b %n").value,
+            150,
+            fmt.Storage.parse("150 100B", "%b %B").value,
         )
