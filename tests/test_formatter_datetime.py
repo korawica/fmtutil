@@ -209,6 +209,13 @@ class DatetimeTestCase(unittest.TestCase):
             "this locale should be PM." in str(context.exception)
         )
 
+        with self.assertRaises(fmt.FormatterArgumentError) as context:
+            fmt.Datetime.parse("20231212", "%y%m%d%s")
+        self.assertTrue(
+            "with 'fmt', The format string, '%s', does not exists in "
+            "``cls.regex``." in str(context.exception)
+        )
+
     def test_datetime_parser_strict(self):
         self.assertEqual(
             fmt.Datetime.parse("2023-09 5", "%Y-%m %-d"),

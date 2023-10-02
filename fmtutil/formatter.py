@@ -446,11 +446,18 @@ class Formatter(MetaFormatter):
         _cache: Dict[str, int] = defaultdict(lambda: 0)
         _prefix: str = prefix or ""
         _suffix: str = suffix or ""
+        regexes = cls.regex()
         for fmt_match in re.finditer(r"(%[-+!*]?[A-Za-z])", fmt):
             fmt_str: str = fmt_match.group()
-            # FIXME: KeyError raise when pass format that does not exists
-            #  Example: - `%s` on Datetime format object.
-            regex: str = cls.regex()[fmt_str]
+            if fmt_str not in regexes:
+                raise FormatterArgumentError(
+                    "fmt",
+                    (
+                        f"The format string, {fmt_str!r}, does not exists in "
+                        f"``cls.regex``."
+                    ),
+                )
+            regex: str = regexes[fmt_str]
             if _alias_match := re.search(
                 r"^\(\?P<(?P<alias_name>\w+)>(?P<fmt_regex>.+)?\)$",
                 regex,
