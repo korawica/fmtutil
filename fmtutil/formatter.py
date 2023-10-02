@@ -1,8 +1,8 @@
-# -------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Copyright (c) 2022 Korawich Anuttra. All rights reserved.
 # Licensed under the MIT License. See LICENSE in the project root for
 # license information.
-# --------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # mypy: disable-error-code="attr-defined"
 """
 This is the Main of the Formatter Objects that able to format every string
@@ -19,6 +19,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 from functools import lru_cache, partial, total_ordering
+from itertools import tee, zip_longest
 from typing import (
     Any,
     Callable,
@@ -112,13 +113,18 @@ class SlotLevel:
     Methods:
         update:
             ...
+        checker:
+            ...
 
     Static-methods:
         make_tuple:
             ...
     """
 
-    __slots__ = ("level", "slot")
+    __slots__ = (
+        "level",
+        "slot",
+    )
 
     def __init__(self, level: int) -> None:
         """Main initialize of the slot object that define a slot list
@@ -181,7 +187,7 @@ class SlotLevel:
         :return: Self that was updated level
         """
         _numbers: Union[int, Tuple[int, ...]] = numbers or (0,)
-        for num in SlotLevel.make_tuple(_numbers):
+        for num in self.make_tuple(_numbers):
             if num == 0:
                 continue
             elif 0 <= (_num := (num - 1)) <= (self.level - 1):
@@ -193,6 +199,27 @@ class SlotLevel:
                     f"in range of 0 and {self.level}."
                 )
         return self
+
+    def checker(
+        self,
+        numbers: Union[int, Tuple[int, ...]],
+    ) -> bool:
+        """Return True if boolean value in ``self.slot`` is all True.
+
+        :param numbers: An index number values that want to check in slot.
+        :type numbers: Union[int, Tuple[int, ...]]
+
+        :rtype: bool
+        :return: True if all of value in ``self.slot`` that match with
+            index numbers are True.
+        """
+        _numbers: Tuple[int, ...] = self.make_tuple(numbers)
+        return all(
+            self.slot[_n]
+            if (0 <= (_n := (n - 1)) <= (self.level - 1))
+            else False
+            for n in filter(lambda x: x != 0, _numbers)
+        )
 
     @staticmethod
     def make_tuple(value: Union[int, Tuple[int, ...]]) -> Tuple[int, ...]:
@@ -591,19 +618,14 @@ class Formatter(MetaFormatter):
                 # Update level by default it will update at first level
                 self.level.update(props.level)
 
-        # Run validate method.
+        # Run validate method before setting standard value.
         if not self.validate:
             raise FormatterValueError(
                 "Parsing value does not valid from validator"
             )
 
         # Set standard property by default is string value or `self.string`
-        if set_std_value:
-            setattr(
-                self,
-                self.__class__.__name__.lower(),
-                str(self.string),
-            )
+        self._start_std_value(flag=set_std_value)
 
     def __setattr__(self, name: str, value: Any) -> None:
         super().__setattr__(name, value)
@@ -626,6 +648,20 @@ class Formatter(MetaFormatter):
 
     def __lt__(self, other: Formatter) -> bool:
         return self.value.__lt__(other.value)  # type: ignore[no-any-return]
+
+    def _start_std_value(self, flag: bool = True) -> NoReturn:
+        """Setting standard value that have name like class name with lower
+        case.
+
+        :param flag: A boolean flag that want to set standard value or not.
+        :type flag: bool(=True)
+        """
+        if flag:
+            setattr(
+                self,
+                self.__class__.__name__.lower(),
+                str(self.string),
+            )
 
     @property
     @abstractmethod
@@ -1816,9 +1852,80 @@ class Naming(Formatter, level=5):
 
     @property
     def validate(self) -> bool:
-        print("strings:", self.strings)
-        print("shorts:", self.shorts)
+        # Validate flat and short-name
+        if self.level.checker((3, 2)):
+            if self.__validate_word_with_short(self.flats[0], self.shorts):
+                raise FormatterValueError(
+                    f"Flat and Shortname that were parsed are not equal, "
+                    f"{self.flats[0]} and {''.join(self.shorts)}."
+                )
+            elif not self.level.checker(5) and not self.strings:
+                self.__setattr__(
+                    "strings",
+                    self.__extract_from_word_with_short(
+                        self.flats[0], self.shorts
+                    ),
+                )
+
+        # Validate flat and vowel
+        if (
+            self.level.checker((1, 3))
+            and [re.sub(r"[aeiou]", "", self.flats[0])] != self.vowels
+        ):
+            raise FormatterValueError(
+                f"Flat and Vowel that were parsed are not equal, "
+                f"{self.flats[0]} and {self.vowels[0]}."
+            )
+
+        # Validate short and vowel
+        if self.level.checker((1, 2)) and self.__validate_word_with_short(
+            self.vowels[0],
+            list(filter(lambda x: x not in "aeiou", self.shorts)),
+        ):
+            raise FormatterValueError(
+                f"Shortname and Vowel that were parsed are not equal, "
+                f"{''.join(self.shorts)} and {self.vowels[0]}."
+            )
         return True
+
+    @staticmethod
+    def __validate_word_with_short(word: str, shorts: List[str]) -> bool:
+        """Validate word with list of shortname Private static-method.
+
+        :param word: A word string that want to validate.
+        :type word: str
+        :param shorts: A list of shortname.
+        :type shorts: List[str]
+        """
+        idx: int = 0
+        for s in shorts:
+            if s not in word[idx:]:
+                return True
+            idx += word[idx:].index(s) + 1
+        return False
+
+    @staticmethod
+    def __extract_from_word_with_short(
+        word: str,
+        shorts: List[str],
+    ) -> List[str]:
+        """Return list of name that was extracted from word by list of
+        shortnames.
+        """
+        idx: int = 0
+        rs: List[int] = []
+        for s in shorts:
+            if s not in word[idx:]:
+                raise ValueError(
+                    f"Word does not validate with this list of shortnames, "
+                    f"{word} and {shorts}."
+                )
+            idx += word[idx:].index(s) + 1
+            rs.append(idx - 1)
+        start, end = tee(rs, 2)
+        # Move index of end for split with correct end of word index.
+        next(end)
+        return [word[i:j] for i, j in zip_longest(start, end)]
 
     @property
     def priorities(
@@ -2115,7 +2222,7 @@ class Naming(Formatter, level=5):
         :rtype: str
         """
         v: List[str] = [value]
-        if self.level.slot[4] and (_s := ["".join(self.strings)]) != v:
+        if self.level.checker(5) and (_s := ["".join(self.strings)]) != v:
             raise FormatterValueError(
                 f"Parsing value does not valid with flat from "
                 f"strings: {_s} and flats: {v}."
@@ -2131,7 +2238,7 @@ class Naming(Formatter, level=5):
         :rtype: str
         """
         v: List[str] = list(value)
-        if self.level.slot[4] and (_s := [s[0] for s in self.strings]) != v:
+        if self.level.checker(5) and (_s := [s[0] for s in self.strings]) != v:
             raise FormatterValueError(
                 f"Parsing value does not valid with short from "
                 f"strings: {_s} and shorts: {v}."
@@ -2148,7 +2255,7 @@ class Naming(Formatter, level=5):
         """
         v: List[str] = [value]
         if (
-            self.level.slot[4]
+            self.level.checker(5)
             and (_s := [re.sub(r"[aeiou]", "", "".join(self.strings))]) != v
         ):
             raise FormatterValueError(
@@ -2165,7 +2272,7 @@ class Naming(Formatter, level=5):
 
     def _default_shorts(self) -> List[str]:
         """Return default of shorts value."""
-        if not self.level.slot[4]:
+        if self.level.slot[4]:
             return []
         return [s[0] for s in self.strings]
 
@@ -2453,6 +2560,7 @@ class BaseConstant(Formatter):
         *,
         set_strict_mode: bool = False,
     ) -> None:
+        # Raise if formatter does not set
         if not self.formatter():
             raise NotImplementedError(
                 "The Constant object should define the `cls.base_formatter` "
@@ -2470,11 +2578,7 @@ class BaseConstant(Formatter):
         ]
 
         # Set standard property by default is string value or `self.string`
-        setattr(
-            self,
-            self.__class__.__name__.lower(),
-            str(self.string),
-        )
+        self._start_std_value(flag=True)
 
     @property
     def value(self) -> List[str]:

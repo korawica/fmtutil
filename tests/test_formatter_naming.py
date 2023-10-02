@@ -189,7 +189,7 @@ class NamingTestCase(unittest.TestCase):
     def test_naming_parser(self):
         self.assertEqual(
             "data engineer",
-            fmt.Naming.parse("dataEngineer%|data engineer", "%c%\\|%n").string,
+            fmt.Naming.parse("dataEngineer%|data engineer", r"%c%\|%n").string,
         )
 
         with self.assertRaises(fmt.FormatterValueError) as context:
@@ -212,6 +212,27 @@ class NamingTestCase(unittest.TestCase):
         self.assertTrue(
             "Parsing value does not valid with flat from strings: "
             "['dataengineframework'] and flats: ['dataframework']."
+            in str(context.exception)
+        )
+
+        with self.assertRaises(fmt.FormatterValueError) as context:
+            fmt.Naming.parse("datadriven|dtdr", r"%f\|%v")
+        self.assertTrue(
+            "Flat and Vowel that were parsed are not equal, datadriven and "
+            "dtdr." in str(context.exception)
+        )
+
+        with self.assertRaises(fmt.FormatterValueError) as context:
+            fmt.Naming.parse("foobar ff", r"%f %a")
+        self.assertTrue(
+            "Flat and Shortname that were parsed are not equal, foobar and ff."
+            in str(context.exception)
+        )
+
+        with self.assertRaises(fmt.FormatterValueError) as context:
+            fmt.Naming.parse("fbr ff", r"%v %a")
+        self.assertTrue(
+            "Shortname and Vowel that were parsed are not equal, ff and fbr."
             in str(context.exception)
         )
 
