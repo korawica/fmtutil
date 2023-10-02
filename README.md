@@ -223,9 +223,9 @@ group_01.format('{name:%c}_{timestamp:%Y_%m_%d}')
 
 ## Usecase
 
-If you have multi-format filenames on data source directory, and you want to
-dynamic getting these filenames to your app, you can make a formatter group for
-this.
+If you have multi-format filenames on the data source directory, and you want to
+dynamic getting max datetime on these filenames to your app, you can use a
+formatter group.
 
 ```python
 from typing import List
@@ -261,9 +261,9 @@ repr(max(rs).groups['timestamp'])
 ```
 
 > **Note**: \
-> The above example will convert the name, Naming instance, to Constant
-> instance before passing to a formatter group because I do not want to dynamic
-> the naming format to find the filenames.
+> The above example will convert the `name`, Naming instance, to Constant
+> instance before passing to the formatter group because it does not want
+> to dynamic this naming format when find any filenames in target path.
 
 ## License
 
