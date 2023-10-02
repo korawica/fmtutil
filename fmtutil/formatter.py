@@ -1860,7 +1860,7 @@ class Naming(Formatter, level=5):
                     f"Flat and Shortname that were parsed are not equal, "
                     f"{self.flats[0]} and {''.join(self.shorts)}."
                 )
-            elif not self.level.checker(5) and not self.strings:
+            elif not self.level.checker(5):
                 self.__setattr__(
                     "strings",
                     self.__extract_from_word_with_short(
@@ -1916,13 +1916,8 @@ class Naming(Formatter, level=5):
         idx: int = 0
         rs: List[int] = []
         for s in shorts:
-            if s not in word[idx:]:
-                raise ValueError(
-                    f"Word does not validate with this list of shortnames, "
-                    f"{word} and {shorts}."
-                )
-            idx += word[idx:].index(s) + 1
-            rs.append(idx - 1)
+            idx += word[idx:].index(s)
+            rs.append(idx)
         start, end = tee(rs, 2)
         # Move index of end for split with correct end of word index.
         next(end)

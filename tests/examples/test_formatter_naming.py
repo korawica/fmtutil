@@ -39,3 +39,8 @@ class NamingExampleTestCase(unittest.TestCase):
             ["data", "engine"],
             fmt.Naming.parse("dataengine de", "%f %a").value,
         )
+
+        self.assertEqual(
+            ["data", "engine"],
+            fmt.Naming.parse("dataengine de dataEngine", "%f %a %c").value,
+        )
