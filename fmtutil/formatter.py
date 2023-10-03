@@ -2080,6 +2080,7 @@ class Naming(Formatter, level=5):
             %k  : Kebab case format
             %K  : Kebab upper case format
             %-K  : Kebab title case format
+        **  %t  : Train case format  # TODO: Word-Like-This
             %v  : normal name removed vowel
             %V  : normal name removed vowel with upper case
 
