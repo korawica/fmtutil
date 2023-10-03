@@ -880,7 +880,10 @@ class Serial(Formatter):
                 "value": lambda x: x.replace("_", ""),
                 "level": 1,
             },
-            "number_default": {"value": self.default("0"), "level": 0},
+            "number_default": {
+                "value": self.default("0"),
+                "level": 0,
+            },
         }
 
     @staticmethod

@@ -4,18 +4,18 @@
 # license information.
 # ------------------------------------------------------------------------------
 """
-Test the error object.
+Test the Exception object.
 """
 import unittest
 
 import fmtutil.exceptions as err
 
 
-class ErrorsTestCase(unittest.TestCase):
+class ExceptionsTestCase(unittest.TestCase):
     def setUp(self) -> None:
         ...
 
-    def test_err_config_str_arg(self):
+    def test_exception_config_str_arg(self):
         result = err.FormatterArgumentError(
             argument="timestamp",
             message=(
@@ -29,7 +29,7 @@ class ErrorsTestCase(unittest.TestCase):
         )
         self.assertEqual(str(result), respec)
 
-    def test_err_config_tuple_arg(self):
+    def test_exception_config_tuple_arg(self):
         result = err.FormatterArgumentError(
             argument=("timestamp", "serial"),
             message=(
