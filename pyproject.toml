@@ -33,7 +33,6 @@ classifiers = [
 ]
 dependencies = [
     "python-dateutil>=2.8.2,<3.0.0",
-    "packaging>=23.1,<24",
 ]
 dynamic = ["version"]
 
@@ -65,9 +64,11 @@ source = [
 omit = [
     "tests/perfs/",
     "scripts/",
-    "fmtutil/__main__.py",
-    "fmtutil/cli.py",
     "fmtutil/__about__.py",
+    "fmtutil/__main__.py",
+    "fmtutil/__type.py",
+    "fmtutil/__version.py",
+    "fmtutil/cli.py",
     "fmtutil/utils.py",
 ]
 relative_files = true

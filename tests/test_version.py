@@ -1,6 +1,6 @@
 import unittest
 
-import fmtutil.version as vs
+import fmtutil.__version as vs
 
 
 class BaseVersionTestCase(unittest.TestCase):
@@ -21,6 +21,10 @@ class BaseVersionTestCase(unittest.TestCase):
         self.assertEqual(15, version[2])
         self.assertTupleEqual((0, 1, 15), version[:5])
 
+    def test_base_ver_replace(self):
+        version = vs.BaseVersion(0, 0, 0)
+        self.assertEqual("0.1.15", str(version.replace(minor=1, patch=15)))
+
     def test_base_ver_validate(self):
         self.assertTrue(vs.BaseVersion.is_valid("0.0.1"))
         self.assertTrue(vs.BaseVersion.is_valid("2.10.1"))
@@ -40,4 +44,160 @@ class BaseVersionTestCase(unittest.TestCase):
         )
         self.assertTrue(
             vs.BaseVersion(1, 0, 0).is_compatible(vs.BaseVersion(1, 1, 0))
+        )
+
+    def test_base_ver_order(self):
+        self.assertTrue(vs.BaseVersion(1, 0, 0) >= vs.BaseVersion(1, 0, 0))
+        self.assertTrue(vs.BaseVersion(1, 0, 1) >= vs.BaseVersion(1, 0, 0))
+        self.assertFalse(vs.BaseVersion(1, 0, 0) >= vs.BaseVersion(1, 0, 1))
+        self.assertFalse(vs.BaseVersion(1, 0, 0) > vs.BaseVersion(1, 0, 1))
+        self.assertTrue(vs.BaseVersion(2, 10, 0) > vs.BaseVersion(1, 10, 99))
+        self.assertFalse(vs.BaseVersion(0, 0, 0) > vs.BaseVersion(0, 0, 0))
+        self.assertFalse(vs.BaseVersion(2, 10, 0) == vs.BaseVersion(1, 10, 99))
+        self.assertTrue(vs.BaseVersion(0, 0, 0) == vs.BaseVersion(0, 0, 0))
+        self.assertTrue(vs.BaseVersion(2, 10, 0) != vs.BaseVersion(1, 10, 99))
+        self.assertFalse(vs.BaseVersion(0, 0, 0) != vs.BaseVersion(0, 0, 0))
+        self.assertTrue(vs.BaseVersion(1, 0, 0) <= vs.BaseVersion(1, 0, 0))
+        self.assertFalse(vs.BaseVersion(1, 0, 1) <= vs.BaseVersion(1, 0, 0))
+        self.assertTrue(vs.BaseVersion(1, 0, 0) <= vs.BaseVersion(1, 0, 1))
+        self.assertTrue(vs.BaseVersion(1, 0, 0) < vs.BaseVersion(1, 0, 1))
+        self.assertFalse(vs.BaseVersion(2, 10, 0) < vs.BaseVersion(1, 10, 99))
+        self.assertFalse(vs.BaseVersion(0, 0, 0) < vs.BaseVersion(0, 0, 0))
+
+    def test_base_vs_order_special(self):
+        self.assertTrue(vs.BaseVersion(0, 0, 0) < (1, 0, 0))
+        self.assertTrue(vs.BaseVersion(0, 0, 0) == (0, 0, 0))
+        self.assertTrue(vs.BaseVersion(0, 15, 1) >= "0.0.20")
+
+
+class VersionSemverTestCase(unittest.TestCase):
+    def test_ver_semver_init(self):
+        version = vs.VersionSemver(0, 1, 15, "rc.1", "build.10")
+
+        self.assertEqual("0.1.15-rc.1+build.10", str(version))
+        self.assertEqual(
+            (
+                "VersionSemver(major=0, minor=1, patch=15, pre='rc.1', "
+                "build='build.10')"
+            ),
+            repr(version),
+        )
+        self.assertEqual(
+            vs.VersionSemver(0, 1, 15),
+            version.finalize_version(),
+        )
+
+    def test_ver_semver_bump(self):
+        self.assertEqual(
+            vs.VersionSemver(0, 1, 1, "rc", None),
+            vs.VersionSemver(0, 1, 1, "rc", None).bump_pre(),
+        )
+        self.assertEqual(
+            vs.VersionSemver(0, 1, 1, "rc.1", None),
+            vs.VersionSemver(0, 1, 1, None, None).bump_pre(),
+        )
+        self.assertEqual(
+            vs.VersionSemver(0, 1, 1, "rc.1", None),
+            vs.VersionSemver(0, 1, 1, None, None).bump_pre(None),
+        )
+        self.assertEqual(
+            vs.VersionSemver(0, 1, 1, "1", None),
+            vs.VersionSemver(0, 1, 1, None, None).bump_pre(""),
+        )
+        self.assertEqual(
+            vs.VersionSemver(0, 1, 1, "rc.2", None),
+            vs.VersionSemver(0, 1, 1, "rc.1", None).bump_pre(),
+        )
+        self.assertEqual(
+            vs.VersionSemver(0, 1, 1, "rc.1", "build.10"),
+            vs.VersionSemver(0, 1, 1, "rc.1", "build.9").bump_build(),
+        )
+
+    def test_ver_semver_match(self):
+        self.assertTrue(vs.VersionSemver.parse("2.0.0").match(">=1.0.0"))
+        self.assertFalse(vs.VersionSemver.parse("1.0.0").match(">1.0.0"))
+        self.assertTrue(vs.VersionSemver.parse("4.0.4").match("4.0.4"))
+        self.assertTrue(vs.VersionSemver.parse("4.0.4").match("^4.0.4"))
+        self.assertTrue(vs.VersionSemver.parse("0.24.25-rc1").match("^0.24.1"))
+
+        self.assertTrue(vs.VersionSemver.parse("1.24.25-rc1").match("~=1.0.0"))
+        self.assertTrue(vs.VersionSemver.parse("1.0.1-rc1").match("~=1.0.0"))
+        self.assertTrue(vs.VersionSemver.parse("2.4.25-rc1").match("~=2.2.0"))
+        self.assertTrue(vs.VersionSemver.parse("3.0.0-rc1").match("~=2.2.0"))
+
+        self.assertFalse(vs.VersionSemver.parse("1.24.25-rc1").match("^0.24.1"))
+        self.assertFalse(vs.VersionSemver.parse("0.24.0-rc1").match("^0.24.1"))
+        self.assertFalse(vs.VersionSemver.parse("0.25.1-rc1").match("^0.24.1"))
+
+        self.assertFalse(vs.VersionSemver.parse("2.0.1").match("~=1.0.0"))
+        self.assertFalse(vs.VersionSemver.parse("2.1.9").match("~=2.2.0"))
+        self.assertFalse(vs.VersionSemver.parse("2.2.0-rc").match("~=2.2.0"))
+        self.assertFalse(vs.VersionSemver.parse("3.0.0").match("~=2.2.0"))
+
+    def test_ver_semver_compatible(self):
+        self.assertFalse(
+            vs.VersionSemver(1, 1, 0).is_compatible(vs.VersionSemver(1, 0, 0))
+        )
+        self.assertTrue(
+            vs.VersionSemver(1, 0, 0).is_compatible(vs.VersionSemver(1, 1, 0))
+        )
+        self.assertTrue(
+            vs.VersionSemver(1, 0, 0).is_compatible(vs.VersionSemver(1, 1, 2))
+        )
+
+    def test_ver_semver_order(self):
+        self.assertTrue(
+            vs.VersionSemver.parse("0.15.0-rc1")
+            > vs.VersionSemver.parse("0.0.16-rc"),
+        )
+        self.assertTrue(
+            vs.VersionSemver.parse("1.15.0-rc1")
+            > vs.VersionSemver.parse("1.0.16-rc"),
+        )
+        self.assertTrue(
+            vs.VersionSemver.parse("1.15.0-rc2")
+            >= vs.VersionSemver.parse("1.15.0-rc1"),
+        )
+        self.assertTrue(
+            vs.VersionSemver.parse("1.15.0")
+            > vs.VersionSemver.parse("1.15.0-rc1"),
+        )
+
+
+class VersionPackageTestCase(unittest.TestCase):
+    def test_ver_package_init(self):
+        version = vs.VersionPackage(1, 0, 1, 15, "-a2", "-post2")
+        self.assertEqual("1!0.1.15-a2-post2", str(version))
+        self.assertEqual(
+            (
+                "VersionPackage(epoch=1, major=0, minor=1, patch=15, "
+                "pre='-a2', post='-post2', dev=None, local=None)"
+            ),
+            repr(version),
+        )
+
+    def test_ver_package_parse(self):
+        self.assertEqual(
+            "0.0.1.rc1.post2",
+            str(vs.VersionPackage.parse("0.0.1.rc1.post2")),
+        )
+        self.assertEqual(
+            "1!1.2.3+abc.dev1",
+            str(vs.VersionPackage.parse("1!1.2.3+abc.dev1")),
+        )
+
+    def test_ver_package_bump(self):
+        self.assertEqual(
+            vs.VersionPackage(0, 0, 1, 1, "rc", None),
+            vs.VersionPackage(0, 0, 1, 1, "rc", None).bump_pre(),
+        )
+
+    def test_ver_package_order(self):
+        self.assertTrue(
+            vs.VersionPackage.parse("0.15.rc1")
+            > vs.VersionPackage.parse("0.0.16.rc"),
+        )
+        self.assertTrue(
+            vs.VersionPackage.parse("1.15.rc1")
+            > vs.VersionPackage.parse("1.0.16.rc"),
         )

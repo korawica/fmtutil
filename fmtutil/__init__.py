@@ -41,8 +41,6 @@ from .formatter import (
 )
 
 __all__ = (
-    # ---
-    # Formatter
     "Formatter",
     "FormatterType",
     "Serial",
@@ -55,11 +53,9 @@ __all__ = (
     "EnvConst",
     "dict2const",
     "make_const",
-    # Formatter Group
     "FormatterGroup",
     "FormatterGroupType",
     "make_group",
-    # ---
     "FormatterArgumentError",
     "FormatterError",
     "FormatterKeyError",
@@ -68,7 +64,6 @@ __all__ = (
     "FormatterValueError",
     "FormatterGroupArgumentError",
     "FormatterGroupValueError",
-    # ---
     "__version__",
     "__version_tuple__",
 )

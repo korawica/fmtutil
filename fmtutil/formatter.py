@@ -35,11 +35,11 @@ from typing import (
     final,  # docs: https://github.com/python/mypy/issues/9953
 )
 
-# TODO: Review ``semver`` package instead ``packaging``.
-#  docs: https://pypi.org/project/semver/
-import packaging.version as pck_version
 from dateutil.relativedelta import relativedelta
 
+from .__version import (
+    VersionPackage as _VersionPackage,
+)
 from .exceptions import (
     FormatterArgumentError,
     FormatterGroupArgumentError,
@@ -1611,8 +1611,8 @@ class Version(Formatter, level=4):
         return f"<{self.__class__.__name__}.parse('{self.string}', '{_fmt}')>"
 
     @property
-    def value(self) -> pck_version.Version:
-        return pck_version.parse(self.string)
+    def value(self) -> _VersionPackage:
+        return _VersionPackage.parse(self.string)
 
     @property
     def string(self) -> str:
@@ -1712,7 +1712,7 @@ class Version(Formatter, level=4):
 
     @staticmethod
     def formatter(
-        version: Optional[pck_version.Version] = None,
+        version: Optional[_VersionPackage] = None,
     ) -> ReturnFormattersType:
         """Generate formatter that support mapping formatter,
             %f  : full version format with `%m_%n_%c`
@@ -1734,17 +1734,17 @@ class Version(Formatter, level=4):
         :rtype: Dict[str, Dict[str, Union[Callable, str]]]
         :return: the generated mapping values of all format strings
         """
-        _version: pck_version.Version = Version.prepare_value(version)
+        _version: _VersionPackage = Version.prepare_value(version)
         return {
             "%f": {
                 "value": lambda: (
-                    f"{_version.major}_{_version.minor}_{_version.micro}"
+                    f"{_version.major}_{_version.minor}_{_version.patch}"
                 ),
                 "cregex": "%m_%n_%c",
             },
             "%-f": {
                 "value": lambda: (
-                    f"{_version.major}_{_version.minor}_{_version.micro}"
+                    f"{_version.major}_{_version.minor}_{_version.patch}"
                 ),
                 "cregex": "%m-%n-%c",
             },
@@ -1757,7 +1757,7 @@ class Version(Formatter, level=4):
                 "regex": r"(?P<minor>\d{1,3})",
             },
             "%c": {
-                "value": partial(str, _version.micro),
+                "value": partial(str, _version.patch),
                 "regex": r"(?P<micro>\d{1,3})",
             },
             "%e": {
@@ -1770,24 +1770,24 @@ class Version(Formatter, level=4):
             },
             "%q": {
                 "value": lambda: (
-                    concat(map(str, _pre)) if (_pre := _version.pre) else ""
+                    concat(map(str, _pre)) if (_pre := _version.v_pre) else ""
                 ),
                 "regex": (
                     r"(?P<pre>(a|b|c|rc|alpha|beta|pre|preview)[-_\.]?[0-9]+)"
                 ),
             },
             "%p": {
-                "value": lambda: str(_version.post or ""),
+                "value": lambda: str(_version.v_post or ""),
                 "regex": (
                     r"(?P<post>(?:(post|rev|r)[-_\.]?[0-9]+)|(?:-[0-9]+))"
                 ),
             },
             "%-p": {
-                "value": lambda: str(_version.post or ""),
+                "value": lambda: str(_version.v_post or ""),
                 "regex": r"(?P<post_num>[0-9]+)",
             },
             "%d": {
-                "value": lambda: str(_version.dev or ""),
+                "value": lambda: str(_version.v_dev or ""),
                 "regex": r"(?P<dev>dev[-_\.]?[0-9]+)",
             },
             "%l": {
@@ -1802,11 +1802,11 @@ class Version(Formatter, level=4):
 
     @staticmethod
     def prepare_value(
-        value: Optional[pck_version.Version],
-    ) -> pck_version.Version:
+        value: Optional[_VersionPackage],
+    ) -> _VersionPackage:
         if value is None:
-            return pck_version.parse("0.0.1")
-        if not isinstance(value, pck_version.Version):
+            return _VersionPackage.parse("0.0.1")
+        if not isinstance(value, _VersionPackage):
             raise FormatterValueError(
                 f"Version formatter does not support for value, {value!r}."
             )

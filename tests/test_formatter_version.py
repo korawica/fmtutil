@@ -8,9 +8,8 @@ Test the Version formatter object.
 """
 import unittest
 
-from packaging.version import Version
-
 import fmtutil.formatter as fmt
+from fmtutil.__version import VersionPackage as Version
 from fmtutil.exceptions import FormatterValueError
 
 
@@ -84,7 +83,7 @@ class VersionTestCase(unittest.TestCase):
         )
 
     def test_version_formatter(self):
-        formatter = fmt.Version.formatter(version=Version(version="0.5.6"))
+        formatter = fmt.Version.formatter(version=Version.parse("0.5.6"))
         regex = fmt.Version.regex()
         self.assertDictEqual(
             {
@@ -173,7 +172,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual("v0.0.0+asdf_asdf.sadf", self.vs_p2.string)
 
         # Test `cls.value` property
-        self.assertEqual(Version(version="v8.1.0post2+local1.0"), self.vs.value)
+        self.assertEqual(Version.parse("v8.1.0post2+local1.0"), self.vs.value)
 
     def test_version_format(self):
         self.assertEqual("8_1_0", self.vs.format("%f"))
