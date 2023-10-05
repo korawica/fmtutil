@@ -1834,12 +1834,23 @@ class Version(Formatter, level=4):
             f"Convert prefix dose not valid for value `{value}`"
         )
 
-    def __add__(self, other):  # type: ignore # no cov
-        # TODO: Implement add property for Version instance.
+    def __add__(  # type: ignore
+        self,
+        other: Union[Tuple[int, int, int], Any],
+    ):  # no cov
+        if isinstance(other, tuple) and len(other) == 3:
+            old = self.value
+            old = old.replace(
+                **{
+                    part: getattr(old, part) + value
+                    for part, value in zip(("major", "minor", "patch"), other)
+                    if isinstance(value, int) and value > 0
+                }
+            )
+            return self.__class__.from_value(old)
         return NotImplemented
 
     def __sub__(self, other):  # type: ignore # no cov
-        # TODO: Implement sub property for Version instance.
         return NotImplemented
 
     def __rsub__(self, other):  # type: ignore # no cov

@@ -184,3 +184,24 @@ class VersionTestCase(unittest.TestCase):
 
     def test_version_order(self):
         self.assertTrue(self.vs <= self.vs2)
+
+    def test_naming_operation(self):
+        vs = fmt.Version.parse("1.2.3", "%m.%n.%c")
+        vs2 = fmt.Version.parse("0.0.0beta4", "%m.%n.%c%q")
+
+        self.assertEqual(
+            "v1.2.4",
+            str(vs + (0, 0, 1)),
+        )
+        self.assertEqual(
+            "v2.2.4",
+            str(vs + (1, 0, 1)),
+        )
+        self.assertEqual(
+            "v1.12.3",
+            str(vs + (0, 10, 0)),
+        )
+        self.assertEqual(
+            "v0.10.0",
+            str(vs2 + (0, 10, 0)),
+        )

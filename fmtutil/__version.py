@@ -471,7 +471,7 @@ class BaseVersion:
             raise TypeError(f"not expecting type '{type(version)}'")
 
         if (match := cls.regex.match(version)) is None:
-            raise ValueError(f"{version} is not valid SemVer string")
+            raise ValueError(f"{version} is not valid {cls.__name__} string")
 
         return cls(**match.groupdict())
 
@@ -479,7 +479,7 @@ class BaseVersion:
         """Replace one or more parts of a version and return a new instance.
 
         :param parts: the parts to be updated. Valid keys are:
-            ``major``, ``minor``, ``patch``, ``prerelease``, or ``build``
+            ``major``, ``minor``, ``patch``, ``pre``, or ``build``
 
         :raises TypeError: if ``parts`` contain invalid keys
 
@@ -488,12 +488,12 @@ class BaseVersion:
         version = self.to_dict()
         version.update(parts)
         try:
-            return type(self)(**version)  # type: ignore
+            return self.__class__(**version)
         except TypeError as err:
             unknown = set(parts) - set(self.to_dict())
-            error = "replace() got %d unexpected keyword argument(s): %s" % (
-                len(unknown),
-                ", ".join(unknown),
+            error = (
+                f"replace() got {len(unknown)} unexpected keyword "
+                f"argument(s): {', '.join(unknown)}"
             )
             raise TypeError(error) from err
 
@@ -512,18 +512,7 @@ class BaseVersion:
             return False
 
     def is_compatible(self, other: BaseVersion) -> bool:
-        """
-        Check if current version is compatible with other version.
-
-        The result is True, if either of the following is true:
-
-        * both versions are equal, or
-        * both majors are equal and higher than 0. Same for both minors.
-            Both pre-releases are equal, or
-        * both majors are equal and higher than 0. The minor of b's
-            minor version is higher than a's. Both pre-releases are equal.
-
-        The algorithm does *not* check patches.
+        """Check if current version is compatible with other version.
 
         :param other: the version to check for compatibility
         :return: True, if ``other`` is compatible with the old version,
@@ -654,12 +643,23 @@ class VersionPackage(BaseVersion):
             pre = (str(token) + ".0") if token else "rc.0"
 
         pre = increment(pre)
-        return cls(self.epoch, self.major, self.minor, self.patch, pre)
+        return cls(
+            self.epoch,
+            self.major,
+            self.minor,
+            self.patch,
+            pre,
+        )
 
     def bump_post(self) -> VersionPackage:
         post: str = increment(self.post or "post0")
         return self.__class__(
-            self.epoch, self.major, self.minor, self.patch, self.pre, post
+            self.epoch,
+            self.major,
+            self.minor,
+            self.patch,
+            self.pre,
+            post,
         )
 
     def bump_dev(self) -> VersionPackage:
@@ -758,8 +758,7 @@ class VersionPackage(BaseVersion):
             (self.major == other.major)
             and (other.minor >= self.minor)
             and (self.pre == other.pre)
-            and (self.post == other.post)
-            and (self.dev == other.dev)
+            and (self.post <= other.post)
         )
 
 
@@ -898,7 +897,7 @@ class VersionSemver(BaseVersion):
         else:
             match = cls.regex.match(version)
         if match is None:
-            raise ValueError(f"{version} is not valid SemVer string")
+            raise ValueError(f"{version} is not valid {cls.__name__} string")
 
         matched_version_parts: Dict[str, Any] = match.groupdict()
         if not matched_version_parts["minor"]:
@@ -935,6 +934,16 @@ class VersionSemver(BaseVersion):
         return cmp(self.__extract_tuple(), other.__extract_tuple())
 
     def is_compatible(self, other: VersionSemver) -> bool:
+        """The result is True, if either of the following is true:
+
+        * both versions are equal, or
+        * both majors are equal and higher than 0. Same for both minors.
+            Both pre-releases are equal, or
+        * both majors are equal and higher than 0. The minor of b's
+            minor version is higher than a's. Both pre-releases are equal.
+
+        The algorithm does *not* check patches.
+        """
         if not isinstance(other, VersionSemver):
             raise TypeError(f"Expected a Version type but got {type(other)}")
 

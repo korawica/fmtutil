@@ -8,6 +8,15 @@ from .__about__ import (
     __version__,
     __version_tuple__,
 )
+from .__version import (
+    BaseVersion as Ver,
+)
+from .__version import (
+    VersionPackage as VerPackage,
+)
+from .__version import (
+    VersionSemver as VerSemver,
+)
 from .exceptions import (
     FormatterArgumentError,
     FormatterError,
@@ -64,6 +73,9 @@ __all__ = (
     "FormatterValueError",
     "FormatterGroupArgumentError",
     "FormatterGroupValueError",
+    "Ver",
+    "VerPackage",
+    "VerSemver",
     "__version__",
     "__version_tuple__",
 )
