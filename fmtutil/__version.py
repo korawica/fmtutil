@@ -16,6 +16,7 @@ from typing import (
     Collection,
     Dict,
     Iterable,
+    NoReturn,
     Optional,
     Pattern,
     SupportsInt,
@@ -42,8 +43,8 @@ class RegVersion:
             (?:
                 \.
                 (?P<patch>0|[1-9]\d*)
-            )
-        )
+            ){opt_patch}
+        ){opt_minor}
         $
     """
 
@@ -81,8 +82,8 @@ class RegVersion:
                 (?:
                     \.
                     (?P<patch>0|[1-9]\d*)
-                )?
-            )?
+                ){opt_patch}
+            ){opt_minor}
             (?P<pre>
                 [-_\.]?
                 (?:a|b|c|rc|alpha|beta|pre|preview)
@@ -171,10 +172,9 @@ def necessary_release(release: Tuple[int, int, int]) -> Tuple[int, ...]:
 class BaseVersion:
     """A Base Version class.
 
-    :param major: version when you make incompatible API changes.
-    :param minor: version when you add functionality in a backwards-compatible
-        manner.
-    :param patch: version when you make backwards-compatible bug fixes.
+    :param major:
+    :param minor:
+    :param patch:
     """
 
     __slots__ = (
@@ -183,7 +183,10 @@ class BaseVersion:
         "patch",
     )
 
-    regex: ClassVar[Pattern[str]] = re.compile(RegVersion.version, re.VERBOSE)
+    regex: ClassVar[Pattern[str]] = re.compile(
+        RegVersion.version.format(opt_patch="", opt_minor=""),
+        re.VERBOSE,
+    )
 
     def __init__(
         self,
@@ -207,7 +210,7 @@ class BaseVersion:
         self.minor: int = version_parts["minor"]
         self.patch: int = version_parts["patch"]
 
-    def __setattr__(self, attr, value):
+    def __setattr__(self, attr, value) -> NoReturn:
         if hasattr(self, attr) and attr in self.__class__.__slots__:
             raise AttributeError(f"attribute {attr!r} is readonly")
         super().__setattr__(attr, value)
@@ -370,25 +373,47 @@ class BaseVersion:
     def __hash__(self) -> int:
         return hash(self.to_tuple())
 
+    # TODO: Implement wildcard pattern for version.
     @staticmethod
-    def __validate_expr_match(expr: str):
-        prefix = expr[:2]
-        if prefix in (">=", "<=", "==", "!=", "~="):
-            match_version = expr[2:]
-        elif prefix and prefix[0] in (">", "<", "^"):
+    def _wildcard(expr: str):
+        """
+        2.1.*   --> >=2.1.0, < 2.2.0
+        2.*     --> >=2.0.0, <3.0.0
+        *       --> >=0.0.0
+        """
+        if expr == "*":
+            return "0.0.0"
+
+    @staticmethod
+    def __validate_expr_match(expr: str) -> Tuple[str, str]:
+        prefix: str = expr[:2]
+        match: str
+        if prefix in (
+            ">=",
+            "<=",
+            "==",
+            "!=",
+            "~=",
+        ):
+            match = expr[2:]
+        elif prefix and prefix[0] in (
+            ">",
+            "<",
+            "^",
+            "~",
+        ):
             prefix = prefix[0]
-            match_version = expr[1:]
+            match = expr[1:]
         elif expr and expr[0] in "0123456789":
             prefix = "=="
-            match_version = expr
+            match = expr
         else:
             raise ValueError(
-                f"expr parameter should be in format <op><ver>, "
-                f"where <op> is one of "
-                f"['<', '>', '==', '<=', '>=', '!=', '~=', '^']. "
-                f"You provided: {expr!r}"
+                f"Expr matching operator format should be one of "
+                f"['<', '>', '==', '<=', '>=', '!=', '~=', '~', '^'], "
+                f"but got: {expr!r}."
             )
-        return prefix, match_version
+        return prefix, match
 
     def match(self, expr: str) -> bool:
         """Compare self to match a match expression.
@@ -404,12 +429,13 @@ class BaseVersion:
                     ~= 2.2      --> >= 2.2.0, < 3.0.0
                     ~= 1.4.5    --> >= 1.4.5, < 1.5.0
                     ~= 1.4.5a4  --> >= 1.4.5a4, < 1.5.0
+            ``~``   ``~=``
             ``^``   ^2.1.7      --> >=2.1.7, <3.0.0
                     ^0.24.1     --> >=0.24.1, <0.25.0
 
         :return: True if the expression matches the version, otherwise False
         """
-        prefix, match_version = self.__validate_expr_match(expr)
+        prefix, match = self.__validate_expr_match(expr)
         possibilities = {
             ">": (1,),
             "<": (-1,),
@@ -418,19 +444,23 @@ class BaseVersion:
             ">=": (0, 1),
             "<=": (-1, 0),
             "~=": (0, 1),
+            "~": (0, 1),
             "^": (0, 1),
         }
 
         possibility = possibilities[prefix]
-        cmp_res = self.compare(match_version)
+        cmp_res = self.compare(match)
 
         pair_version = {
             "major": 0,
             "minor": 0,
             "patch": 0,
         }
-        version = self.__class__.parse(match_version)
-        if prefix == "~=":
+        version = self.__class__.parse(match)
+        if prefix in (
+            "~=",
+            "~",
+        ):
             if version.patch == 0 and version.minor == 0:
                 pair_version["major"] = version.major + 1
             elif version.patch == 0 and version.minor > 0:
@@ -548,7 +578,9 @@ class BaseVersion:
 
 
 class VersionPackage(BaseVersion):
-    """This Version class follow [PEP 440](https://peps.python.org/pep-0440/)"""
+    """This Version class follow properties from
+    [PEP 440](https://peps.python.org/pep-0440/)
+    """
 
     __slots__ = (
         "epoch",
@@ -562,7 +594,7 @@ class VersionPackage(BaseVersion):
     )
 
     regex: ClassVar[Pattern[str]] = re.compile(
-        RegVersion.version_package,
+        RegVersion.version_package.format(opt_patch="?", opt_minor="?"),
         re.VERBOSE,
     )
 
@@ -584,9 +616,9 @@ class VersionPackage(BaseVersion):
             )
 
         self.epoch: int = ep
-        self.pre = None if pre is None else str(pre)
-        self.post = None if post is None else str(post)
-        self.dev = None if dev is None else str(dev)
+        self.pre: Optional[str] = None if pre is None else str(pre)
+        self.post: Optional[str] = None if post is None else str(post)
+        self.dev: Optional[str] = None if dev is None else str(dev)
         self.local = local
 
     def __extract_tuple(self):
@@ -634,6 +666,10 @@ class VersionPackage(BaseVersion):
         return self._extract_letter(self.dev)[1] if self.dev else None
 
     def bump_pre(self, token: Optional[str] = "rc") -> VersionPackage:
+        """Raise the pre part of the packaging version, return a new object.
+
+        :return: new object with the raised pre part
+        """
         cls = type(self)
         if self.pre is not None:
             pre = self.pre
@@ -652,6 +688,10 @@ class VersionPackage(BaseVersion):
         )
 
     def bump_post(self) -> VersionPackage:
+        """Raise the post part of the packaging version, return a new object.
+
+        :return: new object with the raised post part
+        """
         post: str = increment(self.post or "post0")
         return self.__class__(
             self.epoch,
@@ -663,6 +703,10 @@ class VersionPackage(BaseVersion):
         )
 
     def bump_dev(self) -> VersionPackage:
+        """Raise the dev part of the packaging version, return a new object.
+
+        :return: new object with the raised dev part
+        """
         dev: str = increment(self.dev or "dev0")
         return self.__class__(
             self.epoch,
@@ -675,6 +719,10 @@ class VersionPackage(BaseVersion):
         )
 
     def bump_local(self) -> VersionPackage:
+        """Raise the local part of the packaging version, return a new object.
+
+        :return: new object with the raised local part
+        """
         local: str = increment(self.local or "local0")
         return self.__class__(
             self.epoch,
@@ -686,6 +734,24 @@ class VersionPackage(BaseVersion):
             self.dev,
             local,
         )
+
+    def next_version(self, part: str, pre_token: str = "a") -> VersionPackage:
+        cls = type(self)
+        valid_parts = cls.__slots__[:-1]
+        if part not in valid_parts:
+            raise ValueError(
+                f"Invalid part. Expected one of {valid_parts}, but got {part!r}"
+            )
+        version = self
+        if (version.pre or version.post or version.dev or version.local) and (
+            part == "patch"
+            or (part == "minor" and version.patch == 0)
+            or (part == "major" and version.minor == version.patch == 0)
+        ):
+            return version.replace(pre=None, post=None, dev=None, local=None)
+        if part == "pre":
+            return version.bump_pre(pre_token)
+        return getattr(version, "bump_" + part)
 
     def __str__(self) -> str:
         version: str = f"{self.major}.{self.minor}.{self.patch}"
@@ -702,9 +768,9 @@ class VersionPackage(BaseVersion):
         return version
 
     def __hash__(self) -> int:
-        return hash(self.to_tuple()[:6])
+        return hash(self.to_tuple()[:7])
 
-    def public_version(self) -> str:
+    def public(self) -> str:
         return str(self).split("+", maxsplit=1)[0]
 
     @classmethod
@@ -789,8 +855,8 @@ class VersionSemver(BaseVersion):
         build: Optional[Union[String, int]] = None,
     ):
         super().__init__(major, minor, patch)
-        self.pre = None if pre is None else str(pre)
-        self.build = None if build is None else str(build)
+        self.pre: Optional[str] = None if pre is None else str(pre)
+        self.build: Optional[str] = None if build is None else str(build)
 
     def bump_pre(self, token: Optional[str] = "rc") -> VersionSemver:
         """Raise the pre part of the version, return a new object but leave

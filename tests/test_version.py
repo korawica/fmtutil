@@ -146,21 +146,28 @@ class VersionSemverTestCase(unittest.TestCase):
         )
 
     def test_ver_semver_order(self):
+        semver_parse = vs.VersionSemver.parse
         self.assertTrue(
-            vs.VersionSemver.parse("0.15.0-rc1")
-            > vs.VersionSemver.parse("0.0.16-rc"),
+            semver_parse("0.0.0-pre10+build99") == semver_parse("0.0.0-pre10")
+        )
+        self.assertTrue(semver_parse("0.0.1") == semver_parse("0.0.1"))
+        self.assertTrue(semver_parse("0.0.1") == semver_parse("0.0.1+build.21"))
+        self.assertFalse(semver_parse("0.0.1") != semver_parse("0.0.1"))
+        self.assertTrue(semver_parse("0.0.1") <= semver_parse("0.0.1"))
+        self.assertTrue(semver_parse("1.0.0") <= semver_parse("4.2.1"))
+        self.assertFalse(semver_parse("1.0.0") > semver_parse("4.2.1"))
+        self.assertTrue(semver_parse("1.0.0") > semver_parse("1.0.0-pre.1"))
+        self.assertTrue(
+            semver_parse("0.15.0-rc1") > semver_parse("0.0.16-rc"),
         )
         self.assertTrue(
-            vs.VersionSemver.parse("1.15.0-rc1")
-            > vs.VersionSemver.parse("1.0.16-rc"),
+            semver_parse("1.15.0-rc1") > semver_parse("1.0.16-rc"),
         )
         self.assertTrue(
-            vs.VersionSemver.parse("1.15.0-rc2")
-            >= vs.VersionSemver.parse("1.15.0-rc1"),
+            semver_parse("1.15.0-rc2") >= semver_parse("1.15.0-rc1"),
         )
         self.assertTrue(
-            vs.VersionSemver.parse("1.15.0")
-            > vs.VersionSemver.parse("1.15.0-rc1"),
+            semver_parse("1.15.0") > semver_parse("1.15.0-rc1"),
         )
 
 
