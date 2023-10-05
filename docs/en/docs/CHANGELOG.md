@@ -2,6 +2,30 @@
 
 ## Latest Changes
 
+## 0.4.0
+
+### Features
+
+- :dart: feat: add __add__ operation for version formatter obj. (_2023-10-05_)
+- :dart: feat: add VersionPackage that will instead packaging.version. (_2023-10-04_)
+- :dart: feat: initial version object for Version formatter obj. (_2023-10-03_)
+- :dart: feat: add %c and %u format for Serial formatter object. (_2023-10-02_)
+
+### Code Changes
+
+- :construction: refactor: 🚧 [pre-commit.ci] pre-commit autoupdate (_2023-10-03_)
+- :test_tube: test: add test-case that compare between the value and datetime with same format string. (_2023-10-02_)
+- :test_tube: test: add storage examples test-case. (_2023-10-02_)
+
+### Documents
+
+- :page_facing_up: docs: update 'train' naming format in doc-string. (_2023-10-03_)
+- :page_facing_up: docs: update length of license comment. (_2023-10-02_)
+
+### Build & Workflow
+
+- :toolbox: build: add /tests/ on exclude list for build to sdist. (_2023-10-02_)
+
 ## 0.3.0
 
 ### Features
