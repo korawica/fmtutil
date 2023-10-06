@@ -18,7 +18,7 @@ from abc import ABCMeta, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
-from functools import lru_cache, partial, total_ordering
+from functools import lru_cache, partial, total_ordering, wraps
 from itertools import tee, zip_longest
 from typing import (
     Any,
@@ -37,6 +37,11 @@ from typing import (
 
 from dateutil.relativedelta import relativedelta
 
+from .__type import (
+    DictStr,
+    String,
+    TupleInt,
+)
 from .__version import (
     VersionPackage as _VersionPackage,
 )
@@ -48,6 +53,7 @@ from .exceptions import (
     FormatterValueError,
 )
 from .utils import (
+    bytes2str,
     caller,
     can_int,
     concat,
@@ -68,7 +74,7 @@ class PriorityValue(TypedDict):
     """Type Dictionary for value of mapping of ``cls.priorities``"""
 
     value: PriorityCallable
-    level: Optional[Union[int, Tuple[int, ...]]]
+    level: Optional[Union[int, TupleInt]]
 
 
 @final
@@ -171,13 +177,13 @@ class SlotLevel:
 
     def update(
         self,
-        numbers: Optional[Union[int, Tuple[int, ...]]] = None,
+        numbers: Optional[Union[int, TupleInt]] = None,
         strict: bool = True,
     ) -> SlotLevel:
         """Update boolean value in ``self.slot`` from False to True.
 
         :param numbers: updated numbers of this SlotLevel object.
-        :type numbers: Union[int, Tuple[int, ...]]
+        :type numbers: Union[int, TupleInt]
         :param strict: a strict flag for raise error when pass out of
             range numbers.
         :type strict: bool(=True)
@@ -187,7 +193,7 @@ class SlotLevel:
         :rtype: SlotLevel
         :return: Self that was updated level
         """
-        _numbers: Union[int, Tuple[int, ...]] = numbers or (0,)
+        _numbers: Union[int, TupleInt] = numbers or (0,)
         for num in self.make_tuple(_numbers):
             if num == 0:
                 continue
@@ -203,18 +209,18 @@ class SlotLevel:
 
     def checker(
         self,
-        numbers: Union[int, Tuple[int, ...]],
+        numbers: Union[int, TupleInt],
     ) -> bool:
         """Return True if boolean value in ``self.slot`` is all True.
 
         :param numbers: An index number values that want to check in slot.
-        :type numbers: Union[int, Tuple[int, ...]]
+        :type numbers: Union[int, TupleInt]
 
         :rtype: bool
         :return: True if all of value in ``self.slot`` that match with
             index numbers are True.
         """
-        _numbers: Tuple[int, ...] = self.make_tuple(numbers)
+        _numbers: TupleInt = self.make_tuple(numbers)
         return all(
             self.slot[_n]
             if (0 <= (_n := (n - 1)) <= (self.level - 1))
@@ -223,14 +229,14 @@ class SlotLevel:
         )
 
     @staticmethod
-    def make_tuple(value: Union[int, Tuple[int, ...]]) -> Tuple[int, ...]:
+    def make_tuple(value: Union[int, TupleInt]) -> TupleInt:
         """Return tuple of integer value that was created from input value
         parameter if it is not tuple.
 
         :param value: a tuple of integers or any integer
-        :type value: Union[int, Tuple[int, ...]]
+        :type value: Union[int, TupleInt]
 
-        :rtype: Tuple[int, ...]
+        :rtype: TupleInt
         :return: Return tuple of integer value that was created from input
         """
         return (value,) if isinstance(value, int) else value
@@ -243,11 +249,11 @@ class PriorityData:
     .. dataclass attributes::
 
         - value: PriorityCallable
-        - level: Optional[Union[int, Tuple[int, ...]]]
+        - level: Optional[Union[int, TupleInt]]
     """
 
     value: PriorityCallable = field(default=itself, repr=False)
-    level: Optional[Union[int, Tuple[int, ...]]] = field(default=(0,))
+    level: Optional[Union[int, TupleInt]] = field(default=(0,))
 
 
 class MetaFormatter(metaclass=ABCMeta):
@@ -373,7 +379,7 @@ class Formatter(MetaFormatter):
     @classmethod
     def parse(
         cls,
-        value: str,
+        value: String,
         fmt: Optional[str] = None,
         *,
         strict: bool = False,
@@ -382,8 +388,8 @@ class Formatter(MetaFormatter):
         This method generates the value for itself data that can be formatted
         to another format string values.
 
-        :param value: A string value that match with fmt.
-        :type value: str
+        :param value: A bytes or string value that match with fmt.
+        :type value: String
         :param fmt: a format value will use `cls.base_fmt` if it does not pass
             from input argument.
         :type fmt: Optional[str](=None)
@@ -400,6 +406,7 @@ class Formatter(MetaFormatter):
             format string.
         """
         _fmt: str = fmt or cls.base_fmt
+        _value: str = bytes2str(value)
 
         if not _fmt:
             raise NotImplementedError(
@@ -408,11 +415,11 @@ class Formatter(MetaFormatter):
             )
 
         _fmt = cls.gen_format(_fmt)
-        if _search := re.search(rf"^{_fmt}$", value):
+        if _search := re.search(rf"^{_fmt}$", _value):
             return cls(_search.groupdict(), set_strict_mode=strict)
 
         raise FormatterValueError(
-            f"value {value!r} does not match with format {_fmt!r}"
+            f"value {_value!r} does not match with format {_fmt!r}"
         )
 
     @classmethod
@@ -482,14 +489,14 @@ class Formatter(MetaFormatter):
 
     @classmethod
     @lru_cache(maxsize=None)
-    def regex(cls) -> Dict[str, str]:
+    def regex(cls) -> DictStr:
         """Return mapping of formats and regular expression values of
         `cls.formatter`.
 
         :raises FormatterValueError: if any key of value in formatter mapping
             does not contain `regex` nor `cregex`.
 
-        :rtype: Dict[str, str]
+        :rtype: DictStr
         :return: a mapping of format, and it's regular expression string.
             example of return result;
                 {
@@ -497,8 +504,8 @@ class Formatter(MetaFormatter):
                     ...
                 }
         """
-        results: Dict[str, str] = {}
-        pre_results: Dict[str, str] = {}
+        results: DictStr = {}
+        pre_results: DictStr = {}
         for f, props in cls.formatter().items():
             if "regex" in props:
                 results[f] = props["regex"]
@@ -526,10 +533,10 @@ class Formatter(MetaFormatter):
             results[f] = cr.replace("[ESCAPE]", "%%")
         return results
 
-    def values(self, value: Optional[Any] = None) -> Dict[str, str]:
+    def values(self, value: Optional[Any] = None) -> DictStr:
         """Return mapping of formats and formatter values of `cls.formatter`
 
-        :rtype: Dict[str, str]
+        :rtype: DictStr
         :return: A mapping of formats and formatter values.
             example of return result;
                 {
@@ -957,7 +964,7 @@ class Serial(Formatter):
         )
 
 
-MONTHS: Dict[str, str] = {
+MONTHS: DictStr = {
     "Jan": "01",
     "Feb": "02",
     "Mar": "03",
@@ -972,7 +979,7 @@ MONTHS: Dict[str, str] = {
     "Dec": "12",
 }
 
-WEEKS: Dict[str, str] = {
+WEEKS: DictStr = {
     "Sun": "0",
     "Mon": "1",
     "Thu": "2",
@@ -982,7 +989,7 @@ WEEKS: Dict[str, str] = {
     "Sat": "6",
 }
 
-WEEKS_FULL: Dict[str, str] = {
+WEEKS_FULL: DictStr = {
     "0": "Sunday",
     "1": "Monday",
     "2": "Thursday",
@@ -2578,7 +2585,7 @@ class BaseConstant(Formatter):
     @classmethod
     def parse(
         cls,
-        value: str,
+        value: String,
         fmt: Optional[str] = None,
         *,
         strict: bool = False,
@@ -2655,7 +2662,7 @@ class BaseConstant(Formatter):
 
 
 def dict2const(
-    fmt: Dict[str, str],
+    fmt: DictStr,
     name: str,
     *,
     base_fmt: Optional[str] = None,
@@ -2665,7 +2672,7 @@ def dict2const(
 
     :param fmt: A mapping of format string and value of its format that want
         to make constant object.
-    :type fmt: Dict[str, str]
+    :type fmt: DictStr
     :param name:
     :param base_fmt:
 
@@ -2712,7 +2719,7 @@ def dict2const(
                 for f in fmt
             }
 
-        def values(self, value: Optional[Any] = None) -> Dict[str, str]:
+        def values(self, value: Optional[Any] = None) -> DictStr:
             """Return the constant values"""
             _ = self.prepare_value(value)
             return fmt
@@ -2747,7 +2754,7 @@ def dict2const(
 
 def make_const(
     name: Optional[str] = None,
-    formatter: Optional[Union[Dict[str, str], Formatter]] = None,
+    formatter: Optional[Union[DictStr, Formatter]] = None,
     *,
     fmt: Optional[FormatterType] = None,
     value: Optional[Any] = None,
@@ -2762,7 +2769,7 @@ def make_const(
     :rtype: ConstantType
     """
     base_fmt: Optional[str] = None
-    _fmt: Dict[str, str]
+    _fmt: DictStr
     if formatter is None:
         if fmt is None or not inspect.isclass(fmt):
             raise FormatterArgumentError(
@@ -2821,18 +2828,22 @@ class GenFormatValue(TypedDict):
 
 
 @final
-class PVParseValue(TypedDict):
+class ParseValue(TypedDict):
     fmt: str
     value: str
-    props: Dict[str, str]
+    props: DictStr
 
 
 ReturnGroupGenFormatType = Dict[str, GenFormatValue]
-ReturnPVParseType = Dict[str, PVParseValue]
+ReturnParseType = Dict[str, ParseValue]
 
 
 FormatterGroup = TypeVar("FormatterGroup", bound="BaseFormatterGroup")
-GroupValue = Dict[str, FormatterType]
+BaseGroupsType = Dict[str, FormatterType]
+GroupsType = Dict[str, Formatter]
+FormatsGroupType = Union[Dict[str, DictStr], GroupsType, Dict[str, Any]]
+
+Comparator = Callable[[FormatterGroup, FormatterGroup], bool]
 
 
 class BaseFormatterGroup:
@@ -2844,7 +2855,7 @@ class BaseFormatterGroup:
 
     .. class-attributes::
 
-        - base_groups: GroupValue
+        - base_groups: BaseGroupsType
 
     .. class-method::
         - parse
@@ -2865,7 +2876,7 @@ class BaseFormatterGroup:
     """
 
     # This value must reassign from child class
-    base_groups: GroupValue = {}
+    base_groups: BaseGroupsType = {}
 
     def __init_subclass__(cls: FormatterGroupType, **kwargs: Any) -> None:
         super().__init_subclass__(**kwargs)
@@ -2879,7 +2890,7 @@ class BaseFormatterGroup:
     @classmethod
     def from_formatter(
         cls,
-        formats: Dict[str, Formatter],
+        formats: GroupsType,
     ) -> BaseFormatterGroup:  # no cove
         raise NotImplementedError(
             "This `from_formatter` method does not implement yet."
@@ -2897,13 +2908,13 @@ class BaseFormatterGroup:
     @classmethod
     def parse(
         cls,
-        value: str,
+        value: String,
         fmt: str,
     ) -> BaseFormatterGroup:
         """Parse formatter by generator values like timestamp, version,
         or serial.
 
-        :param value: A string value that match with fmt.
+        :param value: A btyes or string value that match with fmt.
         :type value: str
         :param fmt: a format string value that must have the formatter group
             pattern like `{group-name:fmt-str}`.
@@ -2911,8 +2922,9 @@ class BaseFormatterGroup:
 
         :rtype: BaseFormatterGroup
         """
-        parser_rs: ReturnPVParseType = cls.__parse(value, fmt)
-        rs: Dict[str, Dict[str, str]] = defaultdict(dict)
+        _value: str = bytes2str(value)
+        parser_rs: ReturnParseType = cls.__parse(_value, fmt)
+        rs: Dict[str, DictStr] = defaultdict(dict)
         for group in parser_rs:
             group_origin: str = group.split("__")[0]
             rs[group_origin] = {**parser_rs[group]["props"], **rs[group_origin]}
@@ -2923,7 +2935,7 @@ class BaseFormatterGroup:
         cls,
         value: str,
         fmt: str,
-    ) -> ReturnPVParseType:
+    ) -> ReturnParseType:
         """Private Parse that return the mapping of necessary value for main
         parsing method.
 
@@ -2933,7 +2945,7 @@ class BaseFormatterGroup:
             pattern like `{group-name:fmt-str}`.
         :type fmt: str
 
-        :rtype: ReturnPVParseType
+        :rtype: ReturnParseType
         :return: Return a mapping of fmt, value, and props keys that passing
             from searching step with `re` module.
         """
@@ -2944,8 +2956,8 @@ class BaseFormatterGroup:
                 f"{value!r} does not match with the format: '^{_fmt}$'",
             )
 
-        _search_dict: Dict[str, str] = _search.groupdict()
-        rs: ReturnPVParseType = {}
+        _search_dict: DictStr = _search.groupdict()
+        rs: ReturnParseType = {}
         for name in iter(_fmt_getter.copy()):
             rs[name] = {
                 "fmt": _fmt_getter[name]["fmt"],
@@ -2984,7 +2996,7 @@ class BaseFormatterGroup:
             ):
                 # Format Dict Example:
                 # {'name': '{timestamp:%Y_%m_%d}', 'format': '%Y_%m_%d'}
-                fmt_dict: Dict[str, str] = fmt_match.groupdict()
+                fmt_dict: DictStr = fmt_match.groupdict()
                 fmt_str: str
                 if not (fmt_str := fmt_dict["format"]):
                     fmt_str = formatter.base_fmt
@@ -3022,7 +3034,7 @@ class BaseFormatterGroup:
             #   'group': 'timestamp',
             #   'format': '%Y_%m_%d'
             # }
-            fmt_dict: Dict[str, str] = fmt_match.groupdict()
+            fmt_dict: DictStr = fmt_match.groupdict()
             if (group := fmt_dict["group"]) not in self.base_groups:
                 raise FormatterGroupValueError(
                     f"This group, {group!r}, does not set on `cls.base_groups`."
@@ -3046,18 +3058,14 @@ class BaseFormatterGroup:
 
     def __init__(
         self,
-        formats: Union[
-            Dict[str, Dict[str, str]],
-            Dict[str, Formatter],
-            Dict[str, Any],
-        ],
+        formats: FormatsGroupType,
     ) -> None:
         """Main initialization get the formatter value, a mapping of name
         and formatter from input argument and generate the necessary
         attributes for define the value of this formatter group object.
         """
         # Make default formatter instance from `cls.base_groups` mapping.
-        self.groups: Dict[str, Formatter] = {
+        self.groups: GroupsType = {
             group: fmt() for group, fmt in self.base_groups.items()
         }
         for k, v in formats.items():
@@ -3071,7 +3079,7 @@ class BaseFormatterGroup:
     def __construct_groups(
         self,
         group: str,
-        v: Union[Dict[str, str], Formatter, Any],
+        v: Union[DictStr, Formatter, Any],
     ) -> Formatter:
         """Group attribute constructor function that receive any value that
         able to pass with Formatter object.
@@ -3118,17 +3126,17 @@ class BaseFormatterGroup:
                 f"Key of values, {', '.join(_keys)}, does not support for this "
                 f"{self.__class__}."
             )
-        _groups: Dict[str, Formatter] = {
+        _groups: GroupsType = {
             k: (fmt + values[k]) if k in values else fmt
             for k, fmt in self.groups.items()
         }
         return self.__class__(_groups)
 
 
-def make_group(group: GroupValue) -> FormatterGroupType:
+def make_group(group: BaseGroupsType) -> FormatterGroupType:
     """Formatter Group function constructor.
     :param group:
-    :type group: GroupValue
+    :type group: BaseGroupsType
     """
     # Validate argument group that should contain ``FormatterType``
     for _ in group.values():
@@ -3150,49 +3158,49 @@ def make_group(group: GroupValue) -> FormatterGroupType:
 
     name: str = f'{"".join(_.__name__ for _ in group.values())}Group'
 
+    def comparison(operator: Comparator) -> Comparator:
+        @wraps(operator)
+        def wrapper(self: CustomGroup, other) -> bool:
+            if not (
+                issubclass(other.__class__, BaseFormatterGroup)
+                and (self.__class__.__name__ == other.__class__.__name__)
+            ):
+                return NotImplemented
+            return operator(self, other)
+
+        return wrapper
+
     @total_ordering
     class CustomGroup(BaseFormatterGroup):
-        base_groups: GroupValue = group
+        base_groups: BaseGroupsType = group
 
         __qualname__ = name
 
         def __hash__(self) -> int:
             return hash(self.__str__())
 
-        def __eq__(self, other: Union[CustomGroup, Any]) -> bool:
-            return self.__cmp(other) and all(
+        @comparison
+        def __eq__(self, other: FormatterGroup) -> bool:
+            return all(
                 self.groups[g] == other.groups[g] for g in self.base_groups
             )
 
-        def __gt__(self, other: Union[CustomGroup, Any]) -> bool:
-            if self.__cmp(other):
-                return any(
-                    self.groups[g].__gt__(other.groups[g])
-                    for g in self.base_groups
-                ) and all(
-                    not self.groups[g].__lt__(other.groups[g])
-                    for g in self.base_groups
-                )
-            return NotImplemented
+        @comparison
+        def __gt__(self, other: FormatterGroup) -> bool:
+            return any(
+                self.groups[g].__gt__(other.groups[g]) for g in self.base_groups
+            ) and all(
+                not self.groups[g].__lt__(other.groups[g])
+                for g in self.base_groups
+            )
 
-        def __lt__(self, other: Union[CustomGroup, Any]) -> bool:
-            if self.__cmp(other):
-                return any(
-                    self.groups[g].__lt__(other.groups[g])
-                    for g in self.base_groups
-                ) and all(
-                    not self.groups[g].__gt__(other.groups[g])
-                    for g in self.base_groups
-                )
-            return NotImplemented
-
-        def __cmp(self, other: Union[CustomGroup, Any]) -> bool:
-            """Private Compare method that use for compare between two
-            instances that different unique identity, but it has that same
-            constructor property.
-            """
-            return issubclass(other.__class__, BaseFormatterGroup) and (
-                self.__class__.__name__ == other.__class__.__name__
+        @comparison
+        def __lt__(self, other: FormatterGroup) -> bool:
+            return any(
+                self.groups[g].__lt__(other.groups[g]) for g in self.base_groups
+            ) and all(
+                not self.groups[g].__gt__(other.groups[g])
+                for g in self.base_groups
             )
 
     CustomGroup.__name__ = name
@@ -3200,7 +3208,6 @@ def make_group(group: GroupValue) -> FormatterGroupType:
 
 
 __all__ = (
-    # Formatter
     "Formatter",
     "FormatterType",
     "ReturnPrioritiesType",
@@ -3215,7 +3222,6 @@ __all__ = (
     "EnvConst",
     "dict2const",
     "make_const",
-    # Formatter Group
     "FormatterGroup",
     "FormatterGroupType",
     "make_group",

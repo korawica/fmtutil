@@ -496,7 +496,7 @@ class BaseVersion:
         :return: a new :class:`Version` instance
         """
         if isinstance(version, bytes):
-            version = version.decode("UTF-8")
+            version = str(version, "utf-8", "strict")
         elif not isinstance(version, str):
             raise TypeError(f"not expecting type '{type(version)}'")
 
@@ -780,7 +780,7 @@ class VersionPackage(BaseVersion):
         optional_minor_and_patch: bool = False,
     ) -> VersionPackage:
         if isinstance(version, bytes):
-            version = version.decode("UTF-8")
+            version = str(version, "utf-8", "strict")
         elif not isinstance(version, get_args(String)):
             raise TypeError(f"not expecting type '{type(version)}'")
 
@@ -954,7 +954,7 @@ class VersionSemver(BaseVersion):
         optional_minor_and_patch: bool = False,
     ) -> VersionSemver:
         if isinstance(version, bytes):
-            version = version.decode("UTF-8")
+            version = str(version, "utf-8", "strict")
         elif not isinstance(version, get_args(String)):
             raise TypeError(f"not expecting type '{type(version)}'")
 

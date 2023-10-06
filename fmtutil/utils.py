@@ -8,7 +8,10 @@ from typing import (
     Iterable,
     List,
     Union,
+    get_args,
 )
+
+from .__type import String
 
 FMT_STR_MAP: Dict[str, str] = {
     "-": "minus",
@@ -123,3 +126,12 @@ def remove_pad(value: str) -> str:
         '123'
     """
     return _last_char if (_last_char := value[-1]) == "0" else value.lstrip("0")
+
+
+def bytes2str(value: String) -> str:
+    """Convert byte to string"""
+    if isinstance(value, bytes):
+        value = str(value, "utf-8", "strict")
+    elif not isinstance(value, get_args(String)):
+        raise TypeError(f"not expecting type '{type(value)}'")
+    return value

@@ -6,9 +6,11 @@
 # refs: https://github.com/pypa/packaging
 from __future__ import annotations
 
-from typing import Union
+from typing import Dict, Tuple, Union
 
 String = Union[str, bytes]
+DictStr = Dict[str, str]
+TupleInt = Tuple[int, ...]
 
 
 class Inf:
