@@ -2,7 +2,7 @@
 
 [![test](https://github.com/korawica/fmtutil/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/korawica/fmtutil/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/gh/korawica/fmtutil/branch/main/graph/badge.svg?token=J2MN63IFT0)](https://codecov.io/gh/korawica/fmtutil)
-[![python support version](https://img.shields.io/pypi/pyversions/fmtutil)](https://pypi.org/project/fmtutil/)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/fmtutil?logo=pypi)](https://pypi.org/project/fmtutil/)
 [![size](https://img.shields.io/github/languages/code-size/korawica/fmtutil)](https://github.com/korawica/fmtutil)
 
 **Table of Contents**:
