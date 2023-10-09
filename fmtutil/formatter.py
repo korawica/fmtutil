@@ -450,7 +450,7 @@ class Formatter(MetaFormatter):
         :return: a format string value that change format string to regular
             expression string for complied to the `re` module.
         """
-        _cache: Dict[str, int] = defaultdict(lambda: 0)
+        _cache: Dict[str, int] = defaultdict(int)
         _prefix: str = prefix or ""
         _suffix: str = suffix or ""
         regexes = cls.regex()
