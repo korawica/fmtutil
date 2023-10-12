@@ -125,6 +125,7 @@ class ConstantTestCase(unittest.TestCase):
                 "%s": "(?P<sierra>data_engineer)",
                 "%S": "(?P<sierraupper>DATA_ENGINEER)",
                 "%-S": "(?P<sierraupperminus>Data_Engineer)",
+                "%T": "(?P<tangoupper>Data-Engineer)",
                 "%v": "(?P<victor>dtngnr)",
                 "%V": "(?P<victorupper>DTNGNR)",
             },

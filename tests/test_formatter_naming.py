@@ -13,6 +13,7 @@ import fmtutil.formatter as fmt
 
 class NamingTestCase(unittest.TestCase):
     def setUp(self) -> None:
+        self.maxDiff = None
         self.nm: fmt.Naming = fmt.Naming.parse("data engineer", "%n")
         self.nm2: fmt.Naming = fmt.Naming(
             {
@@ -56,6 +57,7 @@ class NamingTestCase(unittest.TestCase):
                 "%s": "foo_bar",
                 "%S": "FOO_BAR",
                 "%-S": "Foo_Bar",
+                "%T": "Foo-Bar",
                 "%v": "fbr",
                 "%V": "FBR",
             },
@@ -82,6 +84,7 @@ class NamingTestCase(unittest.TestCase):
                 "%s": "foo_bar",
                 "%S": "FOO_BAR",
                 "%-S": "Foo_Bar",
+                "%T": "Foo-Bar",
                 "%v": "fbr",
                 "%V": "FBR",
             },
@@ -108,6 +111,7 @@ class NamingTestCase(unittest.TestCase):
                 "%s": "",
                 "%S": "",
                 "%-S": "",
+                "%T": "",
                 "%v": "",
                 "%V": "",
             },
@@ -135,8 +139,7 @@ class NamingTestCase(unittest.TestCase):
                 "%k": "(?P<strings_kebab>[a-z0-9]+(?:-[a-z0-9]+)*)",
                 "%K": "(?P<strings_kebab_upper>[A-Z0-9]+(?:-[A-Z0-9]+)*)",
                 "%-K": (
-                    "(?P<strings_kebab_title>[A-Z][a-z0-9]+"
-                    "(?:-[A-Z]+[a-z0-9]*)*)"
+                    "(?P<strings_train>[A-Z][a-z0-9]+" "(?:-[A-Z]+[a-z0-9]*)*)"
                 ),
                 "%f": "(?P<flats>[a-z0-9]+)",
                 "%F": "(?P<flats_upper>[A-Z0-9]+)",
@@ -145,6 +148,9 @@ class NamingTestCase(unittest.TestCase):
                 "%-S": (
                     "(?P<strings_snake_title>[A-Z][a-z0-9]+"
                     "(?:_[A-Z]+[a-z0-9]*)*)"
+                ),
+                "%T": (
+                    "(?P<strings_train>[A-Z][a-z0-9]+" "(?:-[A-Z]+[a-z0-9]*)*)"
                 ),
                 "%v": "(?P<vowels>[b-df-hj-np-tv-z]+)",
                 "%V": "(?P<vowels_upper>[B-DF-HJ-NP-TV-Z]+)",

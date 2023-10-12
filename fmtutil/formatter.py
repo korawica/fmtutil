@@ -450,7 +450,7 @@ class Formatter(MetaFormatter):
         :return: a format string value that change format string to regular
             expression string for complied to the `re` module.
         """
-        _cache: Dict[str, int] = defaultdict(lambda: 0)
+        _cache: Dict[str, int] = defaultdict(int)
         _prefix: str = prefix or ""
         _suffix: str = suffix or ""
         regexes = cls.regex()
@@ -1724,10 +1724,11 @@ class Version(Formatter, level=4):
         """Generate formatter that support mapping formatter,
             %f  : full version format with `%m_%n_%c`
             %-f : full version format with `%m-%n-%c`
+        **  %r  : release version format `%m.%n.%c`
+            %e  : epoch release
             %m  : major number
             %n  : minor number
             %c  : micro number
-            %e  : epoch release
             %q  : pre-release
             %p  : post release
             %-p : post release number
@@ -1809,6 +1810,7 @@ class Version(Formatter, level=4):
 
     @staticmethod
     def prepare_value(
+        # TODO: add value type for ``packaging.version.Version`` and ``semver``.
         value: Optional[_VersionPackage],
     ) -> _VersionPackage:
         if value is None:
@@ -2015,7 +2017,7 @@ class Naming(Formatter, level=5):
                 "value": lambda x: x.lower().split("-"),
                 "level": 5,
             },
-            "strings_kebab_title": {
+            "strings_train": {
                 "value": lambda x: x.lower().split("-"),
                 "level": 5,
             },
@@ -2094,11 +2096,11 @@ class Naming(Formatter, level=5):
             %p  : Pascal case format
             %s  : Snake case format
             %S  : Snake upper case format
-            %-S  : Snake title case format
+            %-S : Snake title case format
             %k  : Kebab case format
             %K  : Kebab upper case format
-            %-K  : Kebab title case format
-        **  %t  : Train case format  # TODO: Word-Like-This
+            %-K : Kebab title case format (Train Case)
+            %T  : Train case format
             %v  : normal name removed vowel
             %V  : normal name removed vowel with upper case
 
@@ -2196,10 +2198,7 @@ class Naming(Formatter, level=5):
                 "value": partial(
                     Naming.__join_with, "-", _value, lambda x: x.capitalize()
                 ),
-                "regex": (
-                    r"(?P<strings_kebab_title>"
-                    r"[A-Z][a-z0-9]+(?:-[A-Z]+[a-z0-9]*)*)"
-                ),
+                "cregex": "%T",
             },
             "%f": {
                 "value": partial(Naming.__join_with, "", _value),
@@ -2228,6 +2227,15 @@ class Naming(Formatter, level=5):
                 "regex": (
                     r"(?P<strings_snake_title>"
                     r"[A-Z][a-z0-9]+(?:_[A-Z]+[a-z0-9]*)*)"
+                ),
+            },
+            "%T": {
+                "value": partial(
+                    Naming.__join_with, "-", _value, lambda x: x.capitalize()
+                ),
+                "regex": (
+                    r"(?P<strings_train>"
+                    r"[A-Z][a-z0-9]+(?:-[A-Z]+[a-z0-9]*)*)"
                 ),
             },
             "%v": {
