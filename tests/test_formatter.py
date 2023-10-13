@@ -11,6 +11,7 @@ from abc import ABC
 from typing import Any, Dict, Optional, Type
 
 import fmtutil.formatter as fmt
+from fmtutil.utils import default
 
 
 class SlotLevelTestCase(unittest.TestCase):
@@ -133,7 +134,6 @@ class FormatterTestCase(unittest.TestCase):
                 }
 
         class ValidateFormatter(fmt.Naming):
-            @property
             def validate(self) -> bool:
                 return False
 
@@ -177,7 +177,7 @@ class FormatterTestCase(unittest.TestCase):
             fmt.Formatter.parse("dummy", "%Z")
         self.assertTrue(
             (
-                "Please implement formatter static method "
+                "Please implement ``formatter`` static method "
                 "for this sub-formatter class"
             )
             in str(context.exception)
@@ -188,7 +188,7 @@ class FormatterTestCase(unittest.TestCase):
             fmt.Formatter.prepare_value("Demo")
         self.assertTrue(
             (
-                "Please implement prepare_value static method for this "
+                "Please implement ``prepare_value`` static method for this "
                 "sub-formatter class."
             )
             in str(context.exception)
@@ -249,8 +249,8 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
                     "value": lambda x: (int(x.replace("B", "")) * 8),
                     "level": 1,
                 },
-                "bit_default": {"value": _s.default(0)},
-                "byte_default": {"value": _s.default(0)},
+                "bit_default": {"value": default(0)},
+                "byte_default": {"value": default(0)},
             }
 
         def formatter(v: Optional[Any] = None):  # no cov
@@ -311,7 +311,7 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
                 "base_fmt": "%b",
                 "string": property(string),
                 "value": property(value),
-                "validate": property(validate),
+                "validate": validate,
                 "priorities": property(priorities),
                 "formatter": staticmethod(formatter),
                 "prepare_value": staticmethod(prepare_value),
@@ -332,7 +332,7 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
             {
                 "string": property(string),
                 "value": property(value),
-                "validate": property(validate),
+                "validate": validate,
                 "priorities": property(priorities),
                 "formatter": staticmethod(formatter),
                 "prepare_value": staticmethod(prepare_value),
@@ -345,7 +345,7 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
             {
                 "string": property(string),
                 "value": property(value),
-                "validate": property(validate),
+                "validate": validate,
                 "priorities": property(priorities),
                 "formatter": staticmethod(formatter_raise),
                 "prepare_value": staticmethod(prepare_value),
@@ -358,7 +358,7 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
             {
                 "string": property(string),
                 "value": property(value),
-                "validate": property(validate),
+                "validate": validate,
                 "priorities": property(priorities),
                 "formatter": staticmethod(formatter_raise02),
                 "prepare_value": staticmethod(prepare_value),

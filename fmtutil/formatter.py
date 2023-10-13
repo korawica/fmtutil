@@ -14,7 +14,7 @@ from __future__ import annotations
 import inspect
 import math
 import re
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
@@ -58,6 +58,7 @@ from .utils import (
     can_int,
     concat,
     convert_fmt_str,
+    default,
     itself,
     remove_pad,
 )
@@ -108,24 +109,25 @@ class SlotLevel:
     :type level: int
 
     Attributes:
-        level:
+        * level: int
             A number of level that represent n-layer of this instance.
-        slot:
+        * slot: List[bool]
             A list of boolean that have index equal the level attribute.
-        count:
-            ...
-        value:
-            ...
+        * count: int
+            A counting number of True value in the slot.
+        * value: int
+            A sum of weighted value from a True value in any slot position.
 
     Methods:
-        update:
-            ...
-        checker:
-            ...
+        * update: [Optional[Union[int, TupleInt]]] -> SlotLevel
+            Self that was updated level
+        * checker: [Union[int, TupleInt]] -> bool
+            A True if all values in ``self.slot`` that match with index numbers
+            are True.
 
     Static-methods:
-        make_tuple:
-            ...
+        * make_tuple: [Union[int, TupleInt]] -> TupleInt
+            A tuple of integer value that was created from input.
     """
 
     __slots__ = (
@@ -157,10 +159,10 @@ class SlotLevel:
 
     @property
     def count(self) -> int:
-        """Return the counting number of True value in the slot.
+        """Return a counting number of True value in the slot.
 
         :rtype: int
-        :return: the counting number of True value in the slot.
+        :return: A counting number of True value in the slot.
         """
         return len(list(filter(lambda x: x is True, self.slot)))
 
@@ -217,7 +219,7 @@ class SlotLevel:
         :type numbers: Union[int, TupleInt]
 
         :rtype: bool
-        :return: True if all of value in ``self.slot`` that match with
+        :return: A True if all values in ``self.slot`` that match with
             index numbers are True.
         """
         _numbers: TupleInt = self.make_tuple(numbers)
@@ -237,7 +239,7 @@ class SlotLevel:
         :type value: Union[int, TupleInt]
 
         :rtype: TupleInt
-        :return: Return tuple of integer value that was created from input
+        :return: A tuple of integer value that was created from input.
         """
         return (value,) if isinstance(value, int) else value
 
@@ -256,19 +258,20 @@ class PriorityData:
     level: Optional[Union[int, TupleInt]] = field(default=(0,))
 
 
-class MetaFormatter(metaclass=ABCMeta):
-    """Metaclass Formatter object that implement `__slots__` attribute for any
+class BaseFormatter(ABC):
+    """Base-class Formatter object that implement `__slots__` attribute for any
     instance classes.
 
     .. metaclass attributes::
-        - __slots__: Tuple[str, ...]
+        * __slots__: Tuple[str, ...]
+            A tuple of necessary attribute for any subclass of Formatter class.
     """
 
     __slots__: Tuple[str, ...] = ()
 
 
 @total_ordering
-class Formatter(MetaFormatter):
+class Formatter(BaseFormatter):
     """Formatter object for inherit to any formatter subclass that define
     format and parse method. The base class will implement necessary
     properties and method for subclass that should implement or enhance such
@@ -283,33 +286,65 @@ class Formatter(MetaFormatter):
     :type set_std_value: bool(=True)
 
     .. class attributes::
-        - base_fmt: str : the base default format string value for this object.
-        - base_level: int : the maximum level of slot level of this instance.
-        - Config: object : Configuration object that use for keep any config.
+        * base_fmt: str
+            The base default format string value for this object.
+        * base_level: int
+            The maximum level of slot level of this instance.
+        * Config: object
+            A Configuration object that use for group and keep any config for
+            this sub-formatter object.
 
     .. class-methods::
-        - from_value
-        - parse
-        - gen_format
-        - regex
+        * from_value: Formatter
+            An instance of formatter that was use ``cls.parse`` method from any
+            correct string value with the ``cls.base_fmt`` value.
+        * parse: Formatter
+            An instance of formatter that parse from a bytes or string value by
+            a format string or base format string if it None.
+        * gen_format: str
+            A format string value that was changed to the regular expression
+            string value for comply with the `re` module to any string value.
+        * regex: DictStr
+            A dict of format string, and it's regular expression string
+            value that was generated from values of ``cls.formatter``.
 
     .. attributes::
-        - value
-        - string
-        - validate
-        - level
-        - priorities
-        - __priorities
+        * value: Any
+            A value that define by property of this formatter object.
+        * string: str
+            A standard string value that define by property of this formatter
+            object.
+        * level: SlotLevel
+            A SlotLevel instance that have level with ``cls.base_level``.
+        * priorities: ReturnPrioritiesType
+            A priorities value that define by property of this formatter object.
 
     .. methods::
-        - valid
-        - default
-        - to_const
+        * _setter_std_value: [bool] -> NoReturn
+            Setting standard value that have an argument name be the class name
+            with lower case if input flag is True.
+        * values: [Optional[Any]] -> DictStr
+            A dict of format string, and it's string value that was passed an
+            input value to `cls.formatter` method.
+        * format: [str] -> str
+            A string value that was formatted from format string pattern.
+        * validate: [] -> bool
+            A Validate method that will call after setup all attributes in
+            initialize layer.
+        * valid: [] -> Any
+            A True value if the value from ``cls.parse`` of a string value,
+            and a format string pattern is valid with ``self.value``.
+        * to_const: [] -> ConstantType
+            A ConstantType class that have class name with
+            ``f'{self.__class__.__name__}Const'`` with ``self.values()``.
 
     .. static-methods::
-        - __validate_format
-        - formatter
-        - prepare_value
+        * __validate_format: [Optional[Dict[str, Any]]] -> Dict[str, Any]
+            A formats value that validate with duplicate format string values.
+        * formatter: [Optional[Any]] -> ReturnFormattersType
+            A formatter value that define by property of this formatter object.
+        * prepare_value: [Any] -> Any
+            A prepared value with defined logic.
 
     .. seealso::
 
@@ -325,7 +360,9 @@ class Formatter(MetaFormatter):
     base_level: int = 1
 
     class Config:
-        """Base Configuration for any subclass of formatter"""
+        """A Configuration object that use for group and keep any config for
+        this sub-formatter object.
+        """
 
         base_config_value: Optional[Any] = None
 
@@ -359,14 +396,16 @@ class Formatter(MetaFormatter):
         cls,
         value: Any,
     ) -> Formatter:
-        """Passer the value of this formatter subclass data.
+        """Passer the value to this formatter that will pass this value to
+        ``cls.formatter`` method and map with the base format string value
+        before parse by ``cls.parse``.
 
         :param value: An any value that able to pass to `cls.formatter` method.
         :type value: Any
 
         :rtype: Formatter
-        :return: an instance that was use ``cls.parse`` from any correct value
-            and ``cls.base_fmt``.
+        :return: An instance of formatter that was use ``cls.parse`` method
+            from any correct string value with the ``cls.base_fmt`` value.
         """
         fmt_filter = [
             (k, caller(v["value"]))
@@ -384,7 +423,7 @@ class Formatter(MetaFormatter):
         *,
         strict: bool = False,
     ) -> Formatter:
-        """Parse string value with its format to subclass of formatter object.
+        """Parse bytes or string value with its format to this formatter object.
         This method generates the value for itself data that can be formatted
         to another format string values.
 
@@ -402,8 +441,8 @@ class Formatter(MetaFormatter):
             format string.
 
         :rtype: Formatter
-        :return: an instance of Formatter that parse from string value by
-            format string.
+        :return: An instance of formatter that parse from a bytes or string
+            value by a format string or base format string if it None.
         """
         _fmt: str = fmt or cls.base_fmt
         _value: str = bytes2str(value)
@@ -447,8 +486,9 @@ class Formatter(MetaFormatter):
         :type alias: bool
 
         :rtype: str
-        :return: a format string value that change format string to regular
-            expression string for complied to the `re` module.
+        :return: A format string value that was changed to the regular
+            expression string value for comply with the `re` module to any
+            string value.
         """
         _cache: Dict[str, int] = defaultdict(int)
         _prefix: str = prefix or ""
@@ -490,17 +530,23 @@ class Formatter(MetaFormatter):
     @classmethod
     @lru_cache(maxsize=None)
     def regex(cls) -> DictStr:
-        """Return mapping of formats and regular expression values of
-        `cls.formatter`.
+        """Return a dict of format string, and it's regular expression value
+        that was generated from values of ``cls.formatter``. This class-method
+        was wrapped with ``lru_cache`` function for more frequency getting this
+        ``cls.regex()`` value because the value does not change depend on the
+        formatter class.
 
         :raises FormatterValueError: if any key of value in formatter mapping
             does not contain `regex` nor `cregex`.
 
         :rtype: DictStr
-        :return: a mapping of format, and it's regular expression string.
-            example of return result;
+        :return: A dict of format string, and it's regular expression string
+            value that was generated from values of ``cls.formatter``.
+
+            Example:
                 {
                     "%n": "(?P<normal>...)",
+                    "%N": "(?P<normal_upper>...)",
                     ...
                 }
         """
@@ -534,13 +580,17 @@ class Formatter(MetaFormatter):
         return results
 
     def values(self, value: Optional[Any] = None) -> DictStr:
-        """Return mapping of formats and formatter values of `cls.formatter`
+        """Return a dict of format string, and it's string value that was passed
+        an input value to `cls.formatter` method.
 
         :rtype: DictStr
-        :return: A mapping of formats and formatter values.
-            example of return result;
+        :return: A dict of format string, and it's string value that was passed
+            an input value to `cls.formatter` method.
+
+            Example:
                 {
                     "%n": "normal-value",
+                    "%N": "NORMAL-UPPER-VALUE",
                     ...
                 }
         """
@@ -550,8 +600,8 @@ class Formatter(MetaFormatter):
         }
 
     def format(self, fmt: str) -> str:
-        """Return string value that was filled by the input format pattern
-        argument.
+        """Return a string value that was formatted and filled by an input
+        format string pattern.
 
         :param fmt: a format string value for mapping with formatter.
         :type fmt: str
@@ -560,7 +610,7 @@ class Formatter(MetaFormatter):
             `cls.formatter`.
 
         :rtype: str
-        :return: A formatted string value
+        :return: A string value that was formatted from format string pattern.
         """
         _fmts: ReturnFormattersType = self.formatter(self.value)
         fmt = fmt.replace("%%", "[ESCAPE]")
@@ -600,10 +650,13 @@ class Formatter(MetaFormatter):
             if attr != (self.__class__.__name__.lower()):
                 setattr(self, attr, None)
 
-        for name, props in self.__priorities.items():
+        for name, values in self.priorities.items():
             # Split name of key of priorities property value.
             # From: <prefix>_<body> -> TO: [<prefix>, <body>]
             attr = name.split("_", maxsplit=1)[0]
+
+            # Prepare values from priorities to PriorityData object.
+            props = PriorityData(**values)
 
             # Set attr condition
             if getter := getattr(self, attr):
@@ -634,13 +687,13 @@ class Formatter(MetaFormatter):
                 self.level.update(props.level)
 
         # Run validate method before setting standard value.
-        if not self.validate:
+        if not self.validate():
             raise FormatterValueError(
                 "Parsing value does not valid from validator"
             )
 
         # Set standard property by default is string value or `self.string`
-        self._start_std_value(flag=set_std_value)
+        self._setter_std_value(flag=set_std_value)
 
     def __setattr__(self, name: str, value: Any) -> None:
         super().__setattr__(name, value)
@@ -664,9 +717,9 @@ class Formatter(MetaFormatter):
     def __lt__(self, other: Formatter) -> bool:
         return self.value.__lt__(other.value)  # type: ignore[no-any-return]
 
-    def _start_std_value(self, flag: bool = True) -> NoReturn:
-        """Setting standard value that have name like class name with lower
-        case.
+    def _setter_std_value(self, flag: bool = True) -> NoReturn:
+        """Setting standard value that have an argument name be the class name
+        with lower case if input flag is True.
 
         :param flag: A boolean flag that want to set standard value or not.
         :type flag: bool(=True)
@@ -681,30 +734,43 @@ class Formatter(MetaFormatter):
     @property
     @abstractmethod
     def value(self) -> Any:  # pragma: no cover
-        """Return the value object that define by any subclass."""
+        """Return a value that define by property of this formatter object.
+
+        :rtype: Any
+        """
         raise NotImplementedError(
-            "Please implement value property for this sub-formatter class"
+            "Please implement ``value`` property for this sub-formatter class"
         )
 
     @property
     @abstractmethod
     def string(self) -> str:  # pragma: no cover
-        """Return standard string value that define by any subclass."""
+        """Return a standard string value that define by property of this
+        formatter object.
+
+        :rtype: str
+        """
         raise NotImplementedError(
-            "Please implement string property for this sub-formatter class"
+            "Please implement ``string`` property for this sub-formatter class"
         )
 
-    @property
     def validate(self) -> bool:
-        """Validate method that will run after setup all attributes"""
+        """Validate method that will call after setup all attributes in
+        initialize layer. This method should return with True. If it has some
+        rule of validation fail, it will raise the ``FormatterValueError``.
+
+        :rtype: bool
+        """
         return True
 
     def valid(self, value: str, fmt: str) -> bool:
-        """Return true if the value attribute from parser of string and
-        fmt is valid with self.value.
+        """Return a True value if the value from ``cls.parse`` of a string
+        value, and a format string pattern is valid with ``self.value``.
 
-        :param value:
-        :param fmt:
+        :param value: A string value that want to parse with a format string.
+        :type value: str
+        :param fmt: A format string pattern.
+        :type fmt: str
         """
         return self.value.__eq__(  # type: ignore[no-any-return]
             self.__class__.parse(value, fmt).value,
@@ -714,8 +780,18 @@ class Formatter(MetaFormatter):
         """Return True if validate condition does not raise the Error.
 
         :param level: A level number that check for slot exists.
+        :type level: int
         :param checker: A validate result.
+        :type checker: bool
         :param error: An error statement that raise from FormatterValueError
+        :type error: str
+
+        :raises FormatterValueError: If a slot of ``self.level`` with an input
+            level and checker condition are Ture together.
+
+        :rtype: bool
+        :return: A boolean value from slot of ``self.level`` with an input level
+            integer.
         """
         if (sl := self.level.slot[(level - 1)]) and checker:
             raise FormatterValueError(
@@ -723,26 +799,20 @@ class Formatter(MetaFormatter):
             )
         return not sl
 
-    @property
-    def __priorities(self) -> Dict[str, PriorityData]:
-        """Return private property of extracted mapping from
-        `self.priorities` value.
-
-        :rtype: Dict[str, PriorityData]
-        :return: A mapping of string and PriorityData.
-        """
-        return {k: PriorityData(**v) for k, v in self.priorities.items()}
-
     @staticmethod
     def __validate_format(
         formats: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
-        """Raise error if any duplication format name do not all equal.
+        """Return a formats value that validate with duplicate format string
+        values, and it will raise error if any duplication format name do not
+        all equal.
 
         :param formats:
         :type formats: Optional[Dict[str, Any]]
 
         :rtype: Dict[str, Any]
+        :return: A formats value that validate with duplicate format string
+            values.
         """
         results: Dict[str, Any] = {}
         _formats: Dict[str, Any] = formats or {}
@@ -761,27 +831,40 @@ class Formatter(MetaFormatter):
     @property
     @abstractmethod
     def priorities(self) -> ReturnPrioritiesType:
-        """Return priorities"""
+        """Return a priorities value that define by property of this formatter
+        object.
+
+        :rtype: ReturnPrioritiesType
+        """
         raise NotImplementedError(
-            "Please implement priorities property for this sub-formatter class"
+            "Please implement ``priorities`` property for this sub-formatter "
+            "class"
         )
 
     @staticmethod
     @abstractmethod
     def formatter(value: Optional[Any] = None) -> ReturnFormattersType:
-        """Return formatter"""
+        """Return a formatter value that define by property of this formatter
+        object.
+
+        :param value: An any value that want to generate with formatter.
+        :type value: Optional[Any](=None)
+
+        :rtype: ReturnFormattersType
+        """
         raise NotImplementedError(
-            "Please implement formatter static method for this "
+            "Please implement ``formatter`` static method for this "
             "sub-formatter class"
         )
 
-    @staticmethod
-    def default(value: str) -> Callable[[], str]:
-        """Return wrapper function of value"""
-        return lambda: value
-
     def to_const(self) -> ConstantType:
-        """Convert this Sub-formatter instance to Constant."""
+        """Convert this formatter instance to Constant class that have class
+        name with ``f'{self.__class__.__name__}Const'`` with ``self.values()``.
+
+        :rtype: ConstantType
+        :return: A ConstantType class that have class name with
+            ``f'{self.__class__.__name__}Const'`` with ``self.values()``.
+        """
         return dict2const(
             self.values(),
             name=f"{self.__class__.__name__}Const",
@@ -792,10 +875,16 @@ class Formatter(MetaFormatter):
     @abstractmethod
     def prepare_value(value: Any) -> Any:
         """Prepare value before passing to convert logic in the formatter
-        method.
+        method that define by property of this formatter object.
+
+        :param value: A value that want to prepare before passing to formatter.
+        :type value: Any
+
+        :rtype: Any
+        :return: A prepared value with defined logic.
         """
         raise NotImplementedError(
-            "Please implement prepare_value static method for this "
+            "Please implement ``prepare_value`` static method for this "
             "sub-formatter class."
         )
 
@@ -826,15 +915,13 @@ class Formatter(MetaFormatter):
 
 
 class Serial(Formatter):
-    """Serial object for register process that implement formatter and
-    parser.
+    """Serial formatter object that parse and format any serial (positive
+    integer) value.
     """
 
     base_fmt: str = "%n"
 
     class Config(Formatter.Config):
-        """Configuration of Serial object"""
-
         serial_max_padding: int = 3
         serial_max_binary: int = 8
 
@@ -888,7 +975,7 @@ class Serial(Formatter):
                 "level": 1,
             },
             "number_default": {
-                "value": self.default("0"),
+                "value": default("0"),
                 "level": 0,
             },
         }
@@ -1047,7 +1134,6 @@ class Datetime(Formatter, level=10):
             f"{self.year}-{self.month}-{self.day}", "%Y-%m-%d"
         )
 
-    @property
     def validate(self) -> bool:
         if self.week != (w := self.value.strftime("%w")):
             raise FormatterValueError(
@@ -1103,7 +1189,7 @@ class Datetime(Formatter, level=10):
                 "level": 10,
             },
             "year_default": {
-                "value": self.default("1900"),
+                "value": default("1900"),
                 "level": 0,
             },
             "month": {
@@ -1123,7 +1209,7 @@ class Datetime(Formatter, level=10):
                 "level": 9,
             },
             "month_default": {
-                "value": self.default("01"),
+                "value": default("01"),
                 "level": 0,
             },
             "day": {
@@ -1149,7 +1235,7 @@ class Datetime(Formatter, level=10):
                 ),
             },
             "day_default": {
-                "value": self.default("01"),
+                "value": default("01"),
                 "level": 0,
             },
             "week": {
@@ -1203,7 +1289,7 @@ class Datetime(Formatter, level=10):
                 "level": 5,
             },
             "hour_default": {
-                "value": self.default("00"),
+                "value": default("00"),
                 "level": 0,
             },
             "locale_default": {
@@ -1219,7 +1305,7 @@ class Datetime(Formatter, level=10):
                 "level": 4,
             },
             "minute_default": {
-                "value": self.default("00"),
+                "value": default("00"),
                 "level": 0,
             },
             "second": {
@@ -1231,7 +1317,7 @@ class Datetime(Formatter, level=10):
                 "level": 3,
             },
             "second_default": {
-                "value": self.default("00"),
+                "value": default("00"),
                 "level": 0,
             },
             "microsecond_pad": {
@@ -1239,7 +1325,7 @@ class Datetime(Formatter, level=10):
                 "level": 2,
             },
             "microsecond_default": {
-                "value": self.default("000000"),
+                "value": default("000000"),
                 "level": 0,
             },
         }
@@ -1664,7 +1750,7 @@ class Version(Formatter, level=4):
                 "level": 4,
             },
             "epoch_default": {
-                "value": self.default("0"),
+                "value": default("0"),
                 "level": 0,
             },
             "major": {
@@ -1672,7 +1758,7 @@ class Version(Formatter, level=4):
                 "level": 3,
             },
             "major_default": {
-                "value": self.default("0"),
+                "value": default("0"),
                 "level": 0,
             },
             "minor": {
@@ -1680,7 +1766,7 @@ class Version(Formatter, level=4):
                 "level": 2,
             },
             "minor_default": {
-                "value": self.default("0"),
+                "value": default("0"),
                 "level": 0,
             },
             "micro": {
@@ -1688,7 +1774,7 @@ class Version(Formatter, level=4):
                 "level": 1,
             },
             "micro_default": {
-                "value": self.default("0"),
+                "value": default("0"),
                 "level": 0,
             },
             "pre": {
@@ -1899,7 +1985,6 @@ class Naming(Formatter, level=5):
             return self.vowels[0]  # type: ignore[no-any-return]
         return ""
 
-    @property
     def validate(self) -> bool:
         # Validate flat and short-name
         if self.level.checker((3, 2)):
@@ -2034,7 +2119,7 @@ class Naming(Formatter, level=5):
                 "level": 5,
             },
             "strings_default": {
-                "value": self.default([]),
+                "value": default([]),
                 "level": 0,
             },
             "flats": {
@@ -2629,7 +2714,7 @@ class BaseConstant(Formatter):
         ]
 
         # Set standard property by default is string value or `self.string`
-        self._start_std_value(flag=True)
+        self._setter_std_value(flag=True)
 
     @property
     def value(self) -> List[str]:

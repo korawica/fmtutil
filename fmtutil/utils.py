@@ -57,6 +57,11 @@ def itself(x: Any = None) -> Any:
     return x
 
 
+def default(value: str) -> Callable[[], str]:
+    """Return wrapper function of value"""
+    return lambda: value
+
+
 def caller(func: Union[Callable[[], Any], Any]) -> Any:
     """Call function if it was callable
 
@@ -104,11 +109,12 @@ def convert_fmt_str(fmt: str) -> str:
 
 def can_int(value: Any) -> bool:
     """Check value that able to integer
-    .. usage:
-        >>> can_int('0.0')
-        True
-        >>> can_int('-1.0')
-        True
+
+    Example:
+    >>> can_int('0.0')
+    True
+    >>> can_int('-1.0')
+    True
     """
     try:
         return float(str(value)).is_integer()
@@ -118,18 +124,27 @@ def can_int(value: Any) -> bool:
 
 def remove_pad(value: str) -> str:
     """Remove zero padding of string
-    :usage:
-        >>> remove_pad('000')
-        '0'
 
-        >>> remove_pad('0123')
-        '123'
+    Examples:
+
+    >>> remove_pad('000')
+    '0'
+    >>> remove_pad('0123')
+    '123'
     """
     return _last_char if (_last_char := value[-1]) == "0" else value.lstrip("0")
 
 
 def bytes2str(value: String) -> str:
-    """Convert byte to string"""
+    """Convert byte to string
+
+    Example:
+
+    >>> bytes2str(b'foo')
+    'foo'
+    >>> bytes2str('foo')
+    'foo'
+    """
     if isinstance(value, bytes):
         value = str(value, "utf-8", "strict")
     elif not isinstance(value, get_args(String)):

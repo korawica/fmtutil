@@ -2,6 +2,7 @@
 
 **Table of Contents**:
 
+- [SlotLevel Object](#slotlevel-object)
 - [Formatter Objects](#formatter-objects)
   - [Datetime](#datetime)
   - [Version](#version)
@@ -9,6 +10,39 @@
   - [Naming](#naming)
   - [Storage](#storage)
   - [EnvConst](#environment-constant)
+
+## SlotLevel Object
+
+```text
+Slot level object for order priority values. This was mean if
+you implement this slot level object to attribute on your class
+and update level to an instance when it has some action, it will
+be make the level more than another instance.
+
+:param level: a level number of this slot instance.
+:type level: int
+
+Attributes:
+    * level: int
+        A number of level that represent n-layer of this instance.
+    * slot: List[bool]
+        A list of boolean that have index equal the level attribute.
+    * count: int
+        A counting number of True value in the slot.
+    * value: int
+        A sum of weighted value from a True value in any slot position.
+
+Methods:
+    * update: [Optional[Union[int, TupleInt]]] -> SlotLevel
+        Self that was updated level
+    * checker: [Union[int, TupleInt]] -> bool
+        A True if all values in ``self.slot`` that match with index numbers
+        are True.
+
+Static-methods:
+    * make_tuple: [Union[int, TupleInt]] -> TupleInt
+        A tuple of integer value that was created from input.
+```
 
 ## Formatter Objects
 
@@ -18,6 +52,88 @@
 - [Naming](#naming)
 - [Storage](#storage)
 - [EnvConst](#environment-constant)
+
+```text
+Formatter object for inherit to any formatter subclass that define
+format and parse method. The base class will implement necessary
+properties and method for subclass that should implement or enhance such
+as `the cls.formatter()` method or the `cls.priorities` property.
+
+:param formats: A mapping value of priority attribute data.
+:type formats: Optional[dict](=None)
+:param set_strict_mode: A flag to allow checking duplicate attribute value.
+:type set_strict_mode: bool(=False)
+:param set_std_value: A flag to allow for set standard value form string,
+    `self.class-name.lower()` if it True.
+:type set_std_value: bool(=True)
+
+.. class attributes::
+    * base_fmt: str
+        The base default format string value for this object.
+    * base_level: int
+        The maximum level of slot level of this instance.
+    * Config: object
+        A Configuration object that use for group and keep any config for
+        this sub-formatter object.
+
+.. class-methods::
+    * from_value: Formatter
+        An instance of formatter that was use ``cls.parse`` method from any
+        correct string value with the ``cls.base_fmt`` value.
+    * parse: Formatter
+        An instance of formatter that parse from a bytes or string value by
+        a format string or base format string if it None.
+    * gen_format: str
+        A format string value that was changed to the regular expression
+        string value for comply with the `re` module to any string value.
+    * regex: DictStr
+        A dict of format string, and it's regular expression string
+        value that was generated from values of ``cls.formatter``.
+
+.. attributes::
+    * value: Any
+        A value that define by property of this formatter object.
+    * string: str
+        A standard string value that define by property of this formatter
+        object.
+    * level: SlotLevel
+        A SlotLevel instance that have level with ``cls.base_level``.
+    * priorities: ReturnPrioritiesType
+        A priorities value that define by property of this formatter object.
+
+.. methods::
+    * _setter_std_value: [bool] -> NoReturn
+        Setting standard value that have an argument name be the class name
+        with lower case if input flag is True.
+    * values: [Optional[Any]] -> DictStr
+        A dict of format string, and it's string value that was passed an
+        input value to `cls.formatter` method.
+    * format: [str] -> str
+        A string value that was formatted from format string pattern.
+    * validate: [] -> bool
+        A Validate method that will call after setup all attributes in
+        initialize layer.
+    * valid: [] -> Any
+        A True value if the value from ``cls.parse`` of a string value,
+        and a format string pattern is valid with ``self.value``.
+    * to_const: [] -> ConstantType
+        A ConstantType class that have class name with
+        ``f'{self.__class__.__name__}Const'`` with ``self.values()``.
+
+.. static-methods::
+    * __validate_format: [Optional[Dict[str, Any]]] -> Dict[str, Any]
+        A formats value that validate with duplicate format string values.
+    * formatter: [Optional[Any]] -> ReturnFormattersType
+        A formatter value that define by property of this formatter object.
+    * prepare_value: [Any] -> Any
+        A prepared value with defined logic.
+
+.. seealso::
+
+    This class is abstract class for any formatter class. It will raise
+`NotImplementedError` when the necessary attributes and methods does not
+implement from subclass.
+```
 
 ### Datetime
 
@@ -113,7 +229,8 @@
 %-S : Snake title case format
 %k  : Kebab case format
 %K  : Kebab upper case format
-%-K : Kebab title case format
+%-K : Kebab title case format (Train Case)
+%T  : Train case format
 %v  : normal name removed vowel
 %V  : normal name removed vowel with upper case
 ```
