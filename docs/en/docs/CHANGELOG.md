@@ -2,6 +2,29 @@
 
 ## Latest Changes
 
+## 0.4.1
+
+### Features
+
+- :dart: feat: add train format for Naming formatter object. (_2023-10-12_)
+
+### Code Changes
+
+- :construction: refactor: 🚧 [pre-commit.ci] auto fixes from pre-commit.com hooks (_2023-10-09_)
+- :construction: refactor: 🚧 [pre-commit.ci] pre-commit autoupdate (_2023-10-09_)
+- :construction: refactored: add type hint on formatter obj. (_2023-10-06_)
+- :construction: refactored: add next_version method to VersionPackage and test-cases. (_2023-10-05_)
+
+### Documents
+
+- :page_facing_up: docs: update doc-string on Datetime, Serial formatter objs. (_2023-10-13_)
+- :page_facing_up: docs: update doc-string for formatter object. (_2023-10-13_)
+- :page_facing_up: docs: update logo on python version support. (_2023-10-06_)
+
+### Build & Workflow
+
+- :toolbox: build: add deps version on pyproject file. (_2023-10-12_)
+
 ## 0.4.0
 
 ### Features
