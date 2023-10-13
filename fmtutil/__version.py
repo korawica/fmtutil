@@ -571,7 +571,7 @@ class BaseVersion:
                 convert = "b"
             elif convert in ["c", "pre", "preview"]:
                 convert = "rc"
-            elif convert in ["rev", "r"]:
+            elif convert in ["rev", "r", "post"]:
                 convert = "post"
             return convert, int(match["number"] or "0")
         return letter, 0

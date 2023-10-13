@@ -57,7 +57,7 @@ def itself(x: Any = None) -> Any:
     return x
 
 
-def default(value: str) -> Callable[[], str]:
+def default(value: Any) -> Callable[[], Any]:
     """Return wrapper function of value"""
     return lambda: value
 

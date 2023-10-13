@@ -34,12 +34,9 @@ class DatetimeTestCase(unittest.TestCase):
 
     def test_datetime_formatter_raise(self):
         with self.assertRaises(fmt.FormatterValueError) as context:
-            fmt.Datetime.formatter(date(2023, 1, 23))
+            fmt.Datetime.formatter(2023)
         self.assertTrue(
-            (
-                "Datetime formatter does not support for value, "
-                "datetime.date(2023, 1, 23)."
-            )
+            ("Datetime formatter does not support for value, 2023")
             in str(context.exception)
         )
 
@@ -300,6 +297,12 @@ class DatetimeTestCase(unittest.TestCase):
         )
         self.assertEqual("22", self.dt.format("%-y"))
         self.assertEqual("19000101", self.dt_default.format("%Y%m%d"))
+
+    def test_datetime_form_value(self):
+        self.assertEqual(
+            "2023-10-13 00:00:00.000000",
+            fmt.Datetime.from_value(date(2023, 1, 23)).string,
+        )
 
     def test_datetime_order(self):
         self.assertTrue(
