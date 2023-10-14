@@ -30,7 +30,6 @@ from typing import (
     Tuple,
     Type,
     TypedDict,
-    TypeVar,
     Union,
     final,  # docs: https://github.com/python/mypy/issues/9953
 )
@@ -64,8 +63,8 @@ from .utils import (
 )
 
 FormatterType = Type["Formatter"]
-FormatterGroupType = Type["BaseFormatterGroup"]
-ConstantType = Type["BaseConstant"]
+FormatterGroupType = Type["FormatterGroup"]
+ConstantType = Type["Constant"]
 
 PriorityCallable = Union[Callable[[Any], Any], Callable[[], Any], partial]
 FormatterCallable = Union[Callable[[], Any], partial]
@@ -278,7 +277,7 @@ class Formatter(BaseFormatter):
     as `the cls.formatter()` method or the `cls.priorities` property.
 
     :param formats: A mapping value of priority attribute data.
-    :type formats: Optional[dict](=None)
+    :type formats: Optional[Dict[str, Any]](=None)
     :param set_strict_mode: A flag to allow checking duplicate attribute value.
     :type set_strict_mode: bool(=False)
     :param set_std_value: A flag to allow for set standard value form string,
@@ -603,7 +602,7 @@ class Formatter(BaseFormatter):
         """Return a string value that was formatted and filled by an input
         format string pattern.
 
-        :param fmt: a format string value for mapping with formatter.
+        :param fmt: A format string value for mapping with formatter.
         :type fmt: str
 
         :raises KeyError: if it has any format pattern does not found in
@@ -893,26 +892,26 @@ class Formatter(BaseFormatter):
             "sub-formatter class."
         )
 
-    def __add__(self, other: Any) -> Formatter:
-        if not isinstance(other, self.__class__):
+    def __add__(self, other: Union[Formatter, Any]) -> Formatter:
+        if not isinstance(other, Formatter):
             try:
                 return self.__class__.from_value(value=self.value + other)
             except FormatterValueError:
                 return NotImplemented
         return self.__class__.from_value(value=self.value + other.value)
 
-    def __radd__(self, other: Any) -> Formatter:
+    def __radd__(self, other: Union[Formatter, Any]) -> Formatter:
         return self.__add__(other)
 
-    def __sub__(self, other: Any) -> Formatter:
+    def __sub__(self, other: Union[Formatter, Any]) -> Formatter:
         try:
-            if not isinstance(other, self.__class__):
+            if not isinstance(other, Formatter):
                 return self.__class__.from_value(value=(self.value - other))
             return self.__class__.from_value(value=(self.value - other.value))
         except FormatterValueError:
             return NotImplemented
 
-    def __rsub__(self, other: Any) -> Any:
+    def __rsub__(self, other: Union[Formatter, Any]) -> Any:
         try:
             return other - self.value
         except (TypeError, FormatterValueError):
@@ -1604,7 +1603,7 @@ class Datetime(Formatter, level=10):
         return (
             value
             if isinstance(value, datetime)
-            else datetime.fromordinal(value.today().toordinal())
+            else datetime(value.year, value.month, value.day)
         )
 
     def _from_day_year(self, value: str) -> str:
@@ -2908,12 +2907,32 @@ class Storage(Formatter):
         return f"{round(int(value.replace(order, '')) * p)}"
 
 
-Constant = TypeVar("Constant", bound="BaseConstant")
+ConstantComparator = Callable[["Constant", "Constant"], bool]
 
 
-class BaseConstant(Formatter):
-    """Base Constant object for create Constant class in the constructor
-    function.
+def const_comparison(operator: ConstantComparator) -> ConstantComparator:
+    @wraps(operator)
+    def wrapper(self: Constant, other) -> bool:
+        if not issubclass(other.__class__, Constant):
+            return NotImplemented
+        return operator(self, other)
+
+    return wrapper
+
+
+class Constant(Formatter):
+    """Constant object for create Constant class in the constructor function.
+
+    :param formats: A mapping value of priority attribute data.
+    :type formats: Optional[Dict[str, Any]](=None)
+    :param set_strict_mode: A flag to allow checking duplicate attribute value.
+    :type set_strict_mode: bool(=False)
+
+    .. seealso::
+
+        This class does not implement abstract properties because it does not
+    any senses to compare a constant instance such as ``__add__``, or
+    ``__sub__`` properties.
     """
 
     base_fmt: str = "%%"
@@ -2925,6 +2944,9 @@ class BaseConstant(Formatter):
         """Passer the value to this formatter that will pass this value to
         ``cls.formatter`` method and map with the base format string value
         before parse by ``cls.parse``.
+
+        :param value: An any value that able to pass to `cls.formatter` method.
+        :type value: Any
 
         :raises NotImplementedError: This class does not implement this class
             method.
@@ -2972,6 +2994,7 @@ class BaseConstant(Formatter):
         *,
         set_strict_mode: bool = False,
     ) -> None:
+        """"""
         # Raise if formatter does not set
         if not self.formatter():
             raise NotImplementedError(
@@ -2984,12 +3007,13 @@ class BaseConstant(Formatter):
             set_std_value=False,
         )
 
-        # Set constant property
+        # Set ``_constant`` property that contain all arguments from
+        # ``cls.__slots__``.
         self._constant: List[str] = [
             getter for v in self.__slots__ if (getter := getattr(self, v, None))
         ]
 
-        # Set standard property by default is string value or `self.string`
+        # Set standard property by default is string value or ``self.string``.
         self._setter_std_value(flag=True)
 
     @property
@@ -3025,9 +3049,7 @@ class BaseConstant(Formatter):
         )
 
     @staticmethod
-    def formatter(
-        value: Optional[str] = None,
-    ) -> ReturnFormattersType:
+    def formatter(value: Optional[str] = None) -> ReturnFormattersType:
         """Return a formatter value that define by property of this formatter
         object.
 
@@ -3056,14 +3078,29 @@ class BaseConstant(Formatter):
         """
         return value
 
-    def __add__(self, other):  # type: ignore # no cov
+    def __add__(self, other: Any):  # type: ignore # no cov
         return NotImplemented
 
-    def __sub__(self, other):  # type: ignore # no cov
+    def __sub__(self, other: Any):  # type: ignore # no cov
         return NotImplemented
 
-    def __rsub__(self, other):  # type: ignore # no cov
+    def __rsub__(self, other: Any):  # type: ignore # no cov
         return NotImplemented
+
+    def __hash__(self) -> int:
+        return hash(tuple(self.value))
+
+    @const_comparison
+    def __eq__(self, other: Constant) -> bool:
+        return self.value.__eq__(other.value)
+
+    @const_comparison
+    def __lt__(self, other: Constant) -> bool:
+        return self != other
+
+    @const_comparison
+    def __gt__(self, other: Constant) -> bool:
+        return self < other
 
 
 def dict2const(
@@ -3078,14 +3115,21 @@ def dict2const(
     :param fmt: A mapping of format string and value of its format that want
         to make constant object.
     :type fmt: DictStr
-    :param name:
-    :param base_fmt:
+    :param name: A custom class name that want to rename.
+    :type name: str
+    :param base_fmt: A base format string value.
+    :type base_fmt: Optional[str](=None)
 
     :rtype: ConstantType
+    :return: A constant object that construct from an input fmt and name values.
     """
     _base_fmt: str = base_fmt or "".join(fmt.keys())
 
-    class CustomConstant(BaseConstant):
+    class CustomConstant(Constant):
+        """Dynamic Custom Constant object that will change the class name to an
+        input name from constructor function.
+        """
+
         base_fmt: str = _base_fmt
 
         __qualname__ = name
@@ -3093,21 +3137,31 @@ def dict2const(
         __slots__: Tuple[str, ...] = (
             name.lower(),
             "_constant",
-            *[convert_fmt_str(f) for f in fmt],
+            *(convert_fmt_str(f) for f in fmt),
         )
 
         def __repr__(self) -> str:
-            _bf: str = "|".join(self.__search_fmt(c) for c in self._constant)
             return (
                 f"<{self.__class__.__name__}"
                 f".parse('{self.string}', "
-                f"'{_bf}')>"
+                f"{'|'.join(self.__search_fmt(c) for c in self._constant)!r})>"
             )
 
         @staticmethod
         def formatter(  # type: ignore[override]
             v: Optional[str] = None,
         ) -> ReturnFormattersType:
+            """Return a formatter value that define by property of this
+            formatter object. Generate formatter that support mapping formatter
+            with an input dict in fmt value.
+
+            :param v: A constant value that pass to generate all format.
+            :type v: Optional[int](=None)
+
+            :rtype: ReturnFormattersType
+            :return: A generated mapping values of all format string pattern of
+                this constant formatter object.
+            """
             _ = CustomConstant.prepare_value(v)
             return {
                 f: {
@@ -3119,6 +3173,17 @@ def dict2const(
 
         @property
         def priorities(self) -> ReturnPrioritiesType:
+            """Return a priorities value that define by property of this
+            formatter object.
+
+            Level Priority:
+                [
+                    1: all fmt keys
+                ]
+
+            :rtype: ReturnPrioritiesType
+            :returns: A properties of the constant formatter object.
+            """
             return {
                 convert_fmt_str(f): {"value": lambda x: x, "level": 1}
                 for f in fmt
@@ -3136,22 +3201,9 @@ def dict2const(
             :type value: str
 
             :rtype: str
+            :return: The first format that equal to an input string value.
             """
             return [k for k, v in iter(self.values().items()) if v == value][0]
-
-        def __hash__(self) -> int:
-            return hash(tuple(self.value))
-
-        def __eq__(self, other: BaseConstant) -> bool:
-            if issubclass(other.__class__, BaseConstant):
-                return self.value.__eq__(other.value)
-            return NotImplemented
-
-        def __lt__(self, other: BaseConstant) -> bool:
-            return not (self.__eq__(other))
-
-        def __gt__(self, other: BaseConstant) -> bool:
-            return self.__lt__(other)
 
     CustomConstant.__name__ = name
     return CustomConstant
@@ -3164,14 +3216,25 @@ def make_const(
     fmt: Optional[FormatterType] = None,
     value: Optional[Any] = None,
 ) -> ConstantType:
-    """Constant function constructor.
+    """Helper constant constructor function that will prepare all input values
+    before call ``dict2const`` constructor function.
 
-    :param name:
-    :param formatter:
-    :param fmt:
-    :param value:
+    :param name: A custom class name that want to rename.
+    :type name: Optional[str](=None)
+    :param formatter: ...
+    :type formatter: Optional[Union[DictStr, Formatter]]
+    :param fmt: A formatter object.
+    :type fmt: Optional[FormatterType](=None)
+    :param value: A value that want to passer to an input fmt value.
+    :type value: Optional[Any](=None)
+
+    :raises FormatterArgumentError: If an input formatter was passed together
+        with an input fmt value.
+    :raises FormatterArgumentError: If an input name does not set for construct
+        a constant object.
 
     :rtype: ConstantType
+    :return: A constant object that construct from an input fmt and name values.
     """
     base_fmt: Optional[str] = None
     _fmt: DictStr
@@ -3245,17 +3308,31 @@ ReturnGroupGenFormatType = Dict[str, GenFormatValue]
 ReturnParseType = Dict[str, ParseValue]
 
 
-FormatterGroup = TypeVar("FormatterGroup", bound="BaseFormatterGroup")
 BaseGroupsType = Dict[str, FormatterType]
 GroupsType = Dict[str, Formatter]
 FormatsGroupType = Union[Dict[str, DictStr], GroupsType, Dict[str, Any]]
 
-Comparator = Callable[[FormatterGroup, FormatterGroup], bool]
+Comparator = Callable[["FormatterGroup", "FormatterGroup"], bool]
 
 
-class BaseFormatterGroup:
-    """Base Group of Formatters with dynamic group naming like 'timestamp' for
-    Datetime, 'name' for Naming.
+def comparison(operator: Comparator) -> Comparator:
+    @wraps(operator)
+    def wrapper(self: FormatterGroup, other) -> bool:
+        if not (
+            issubclass(other.__class__, FormatterGroup)
+            and (self.__class__.__name__ == other.__class__.__name__)
+        ):
+            return NotImplemented
+        return operator(self, other)
+
+    return wrapper
+
+
+class FormatterGroup:
+    """Group of Formatters with dynamic group naming like 'timestamp' for
+    Datetime, 'name' for Naming. This class will use for ``make_group``
+    constructor function because of different and complicate group of formatter
+    instances.
 
     :param formats: A mapping value of priority attribute data.
     :type formats: Optional[dict](=None)
@@ -3268,12 +3345,16 @@ class BaseFormatterGroup:
         * __parse: ReturnParseType
             A mapping of fmt, value, and props keys that passing from searching
             step with `re` module.
-        * parse: BaseFormatterGroup
+        * parse: FormatterGroup
             An instance of formatter group that parse from a bytes or string
             value by a format string.
         * gen_format: Tuple[str, ReturnGroupGenFormatType]
             A tuple of group naming and format string value that change format
             string to regular expression string for complied to the `re` module.
+        * from_formatter:
+            NotImplementedError
+        * from_value:
+            NotImplementedError
 
     .. attributes::
         * groups: GroupsType
@@ -3283,16 +3364,16 @@ class BaseFormatterGroup:
         * __construct_groups: [str, Union[DictStr, Formatter, Any]] -> Formatter
             A Formatter instance.
         * format: [str] -> str
-            A string value that was filled and formatted by an input format
-            pattern
-        * adjust: [Dict[str, Any]] -> BaseFormatterGroup
+            A string value that was formatted and filled by an input format
+            string pattern.
+        * adjust: [Dict[str, Any]] -> FormatterGroup
             Adjust any formatter instance in ``self.groups`` of this formatter
             group.
 
     .. seealso::
 
         This class is an abstract class for any formatter group that override
-    the cls.base_groups value with mapping for group str name and Formatter
+    the ``cls.base_groups`` value with mapping for group naming and Formatter
     object.
     """
 
@@ -3313,7 +3394,8 @@ class BaseFormatterGroup:
     def from_formatter(
         cls,
         formats: GroupsType,
-    ) -> BaseFormatterGroup:  # no cove
+    ) -> FormatterGroup:  # no cove
+        # TODO: Implement ``cls.from_formatter``.
         raise NotImplementedError(
             "This `from_formatter` method does not implement yet."
         )
@@ -3322,7 +3404,8 @@ class BaseFormatterGroup:
     def from_value(
         cls,
         formats: Dict[str, Any],
-    ) -> BaseFormatterGroup:  # no cove
+    ) -> FormatterGroup:  # no cove
+        # TODO: Implement ``cls.from_value``.
         raise NotImplementedError(
             "This `from_value` method does not implement yet."
         )
@@ -3332,7 +3415,7 @@ class BaseFormatterGroup:
         cls,
         value: String,
         fmt: str,
-    ) -> BaseFormatterGroup:
+    ) -> FormatterGroup:
         """Parse bytes or string value with its format to this formatter object.
         This method generates the value for itself data that can be formatted
         to another format string values.
@@ -3343,7 +3426,7 @@ class BaseFormatterGroup:
             pattern like `{group-name:fmt-str}`.
         :type fmt: str
 
-        :rtype: BaseFormatterGroup
+        :rtype: FormatterGroup
         :return: An instance of formatter group that parse from a bytes or
             string value by a format string.
         """
@@ -3444,11 +3527,16 @@ class BaseFormatterGroup:
         return fmt, fmt_getter
 
     def format(self, fmt: str) -> str:
-        """Return a string value that was filled and formatted by an input
-        format pattern.
+        """Return a string value that was formatted and filled by an input
+        format string pattern.
 
-        :param fmt: A string format pattern.
+        :param fmt: A format string value for mapping with formatter group.
         :type fmt: str
+
+        :raises FormatterGroupValueError: If group naming on format string
+            pattern does not exist in ``self.base_groups``.
+        :raises FormatterGroupArgumentError: If any group of formatter raise
+            FormatterKeyError from ``format`` method.
 
         :rtype: str
         :return: A string value that was filled and formatted by an input
@@ -3489,9 +3577,10 @@ class BaseFormatterGroup:
         self,
         formats: FormatsGroupType,
     ) -> None:
-        """Main initialization that get the formatter value, a mapping of name
-        and formatter from input argument and generate the necessary
-        attributes for define the value of this formatter group object.
+        """Main initialization that get the formats value, a mapping of group
+        naming and formatter instance from an input argument and generate the
+        ``self.groups`` attributes for define the value of this formatter group
+        instance.
         """
         # Make default formatter instance from `cls.base_groups` mapping.
         self.groups: GroupsType = {
@@ -3505,6 +3594,29 @@ class BaseFormatterGroup:
                 )
             self.groups[k] = self.__construct_groups(k, v)
 
+    def __hash__(self) -> int:
+        return hash(self.__str__())
+
+    @comparison
+    def __eq__(self, other: FormatterGroup) -> bool:
+        return all(self.groups[g] == other.groups[g] for g in self.base_groups)
+
+    @comparison
+    def __gt__(self, other: FormatterGroup) -> bool:
+        return any(
+            self.groups[g].__gt__(other.groups[g]) for g in self.base_groups
+        ) and all(
+            not self.groups[g].__lt__(other.groups[g]) for g in self.base_groups
+        )
+
+    @comparison
+    def __lt__(self, other: FormatterGroup) -> bool:
+        return any(
+            self.groups[g].__lt__(other.groups[g]) for g in self.base_groups
+        ) and all(
+            not self.groups[g].__gt__(other.groups[g]) for g in self.base_groups
+        )
+
     def __construct_groups(
         self,
         group: str,
@@ -3513,9 +3625,9 @@ class BaseFormatterGroup:
         """Group attribute constructor function that receive any value that
         able to pass with Formatter object.
 
-        :param group:
+        :param group: A group naming value.
         :type group: str
-        :param v:
+        :param v: A value of this group naming that want to dynamic construct.
         :type v: Union[DictStr, Formatter, Any]
 
         :rtype: Formatter
@@ -3543,15 +3655,19 @@ class BaseFormatterGroup:
     def __str__(self) -> str:
         return ", ".join(v.string for v in self.groups.values())
 
-    def adjust(self, values: Dict[str, Any]) -> BaseFormatterGroup:  # no cov
-        """Adjust any formatter instance in ``self.groups`` of this
+    def adjust(self, values: Dict[str, Any]) -> FormatterGroup:  # no cov
+        """Adjust value to any formatter instance in ``self.groups`` of this
         formatter group.
 
         :param values: A mapping of group and its value that able to adding
             to origin value.
         :type values: Dict[str, Any]
 
-        :rtype: BaseFormatterGroup
+        :raises FormatterGroupValueError: If any key in an input value does not
+            exist in ``self.base_groups``.
+
+        :rtype: FormatterGroup
+        :return: Self that was adjusted the value.
         """
         _keys: List[str] = [
             f"{k!r}" for k in values if k not in self.base_groups
@@ -3577,6 +3693,8 @@ def make_group(group: BaseGroupsType) -> FormatterGroupType:
 
     :raises ValueError: If any value in an input group does not be subclassed of
         Formatter instance.
+    :raises FormatterGroupArgumentError: If any value in an input group does not
+        be objected that mean this value is any instance.
 
     :rtype: FormatterGroupType
     :return: A FormatterGroup class that construct from an input group value.
@@ -3601,52 +3719,15 @@ def make_group(group: BaseGroupsType) -> FormatterGroupType:
 
     name: str = f'{"".join(_.__name__ for _ in group.values())}Group'
 
-    def comparison(operator: Comparator) -> Comparator:
-        @wraps(operator)
-        def wrapper(self: CustomGroup, other) -> bool:
-            if not (
-                issubclass(other.__class__, BaseFormatterGroup)
-                and (self.__class__.__name__ == other.__class__.__name__)
-            ):
-                return NotImplemented
-            return operator(self, other)
-
-        return wrapper
-
     @total_ordering
-    class CustomGroup(BaseFormatterGroup):
-        """Dynamic Custom Group of Formatters."""
+    class CustomGroup(FormatterGroup):
+        """Dynamic Custom Group of Formatter objects that will change the class
+        name to an input name from constructor function.
+        """
 
         base_groups: BaseGroupsType = group
 
         __qualname__ = name
-
-        def __hash__(self) -> int:
-            return hash(self.__str__())
-
-        @comparison
-        def __eq__(self, other: FormatterGroup) -> bool:
-            return all(
-                self.groups[g] == other.groups[g] for g in self.base_groups
-            )
-
-        @comparison
-        def __gt__(self, other: FormatterGroup) -> bool:
-            return any(
-                self.groups[g].__gt__(other.groups[g]) for g in self.base_groups
-            ) and all(
-                not self.groups[g].__lt__(other.groups[g])
-                for g in self.base_groups
-            )
-
-        @comparison
-        def __lt__(self, other: FormatterGroup) -> bool:
-            return any(
-                self.groups[g].__lt__(other.groups[g]) for g in self.base_groups
-            ) and all(
-                not self.groups[g].__gt__(other.groups[g])
-                for g in self.base_groups
-            )
 
     CustomGroup.__name__ = name
     return CustomGroup

@@ -43,13 +43,17 @@ class FormatterArgumentError(FormatterError):
     >>> FormatterArgumentError(argument='demo', message='does not support')
     FormatterArgumentError("with 'demo', does not support")
 
-    :param argument: argument of this error that raise to client
+    :param argument: An argument of this error that raise to client
     :type argument: Union[str, tuple]
-    :param message: string message of this error
+    :param message: A string message of this error
     :type message: str
     """
 
-    def __init__(self, argument: Union[str, Tuple[str, ...]], message: str):
+    def __init__(
+        self,
+        argument: Union[str, Tuple[str, ...]],
+        message: str,
+    ) -> None:
         """Main Initialization that merge the argument and message input values
         with specific content message together like
 

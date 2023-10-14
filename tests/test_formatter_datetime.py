@@ -300,7 +300,7 @@ class DatetimeTestCase(unittest.TestCase):
 
     def test_datetime_form_value(self):
         self.assertEqual(
-            "2023-10-13 00:00:00.000000",
+            "2023-01-23 00:00:00.000000",
             fmt.Datetime.from_value(date(2023, 1, 23)).string,
         )
 

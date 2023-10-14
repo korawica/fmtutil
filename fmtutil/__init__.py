@@ -32,9 +32,7 @@ from .formatter import (
     ConstantType,
     Datetime,
     EnvConst,
-    # Formatter
     Formatter,
-    # Formatter Group
     FormatterGroup,
     FormatterGroupType,
     FormatterType,

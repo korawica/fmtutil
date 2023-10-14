@@ -2,8 +2,10 @@
 # This file license under the BSD-3 License of ``python-semver`` package and
 # BSD and Apache-2.0 License of ``packaging`` package.
 # ------------------------------------------------------------------------------
-# refs: https://github.com/python-semver/python-semver
-# refs: https://github.com/pypa/packaging
+# refs:
+# * https://github.com/python-semver/python-semver
+# * https://github.com/pypa/packaging
+# ------------------------------------------------------------------------------
 from __future__ import annotations
 
 import itertools
@@ -27,13 +29,31 @@ from typing import (
     get_args,
 )
 
-from .__type import Inf, NegInf, String
+from .__type import (
+    Inf,
+    NegInf,
+    String,
+)
 
 Comparable = Union["BaseVersion", Dict[str, int], Collection[int], str]
 Comparator = Callable[["BaseVersion", Comparable], bool]
 
 
 class RegVersion:
+    """Regular Expression for Any Version object.
+
+    .. class-attributes::
+        * version:
+            A normal version regular expression string for parsing version value
+            with major, minor, and patch values only.
+        * version_semantic:
+            A version regular expression string value for parsing version value
+            that able to sync with ``semver.Version`` object.
+        * version_package:
+            A version regular expression string value for parsing version value
+            that able to sync with ``packaging.version.Version`` object.
+    """
+
     version: str = r"""
         ^
         (?P<major>0|[1-9]\d*)
@@ -137,23 +157,29 @@ def comparison(operator: Comparator) -> Comparator:
     return wrapper
 
 
-def cmp(a: Any, b: Any) -> int:
+def cmp(self: Any, other: Any) -> int:
     """Return integer value from comparison logic
 
+    :param self: A self value that want to compare.
+    :param other: Another value that able to compare with self.
+
+    :rtype: int
     :return: An integer value from these scenarios:
-        - if a < b, then -1
-        - if a == b, then 0
-        - if a > b, then 1.
+        * if self < other, then -1
+        * if self == other, then 0
+        * if self > other, then 1.
     """
-    return (a > b) - (a < b)
+    return (self > other) - (self < other)
 
 
 def increment(s: str) -> str:
     """Look for the last sequence of number(s) in a string and increment.
 
-    :param s: the string to search for.
+    :param s: A string value to search for increase the last sequence number.
+    :type s: str
 
-    :return: the incremented string
+    :rtype: str
+    :return: An incremented string.
     """
     if m := re.compile(r"(?:\D*(\d+)\D*)+").search(s):
         next_value = str(int(m.group(1)) + 1)
@@ -163,7 +189,10 @@ def increment(s: str) -> str:
 
 
 def necessary_release(release: Tuple[int, int, int]) -> Tuple[int, ...]:
-    """Generate necessary release value for comparison process."""
+    """Generate a necessary release value for comparison process.
+
+    :rtype: Tuple[int, ...]
+    """
     return tuple(
         reversed(list(itertools.dropwhile(lambda x: x == 0, reversed(release))))
     )
@@ -266,7 +295,7 @@ class BaseVersion:
         :return: The return value is negative if ver1 < ver2,
             zero if ver1 == ver2 and strictly positive if ver1 > ver2
         """
-        cls = type(self)
+        cls: Type[BaseVersion] = type(self)
         if isinstance(other, get_args(String)):
             other = cls.parse(other)
         elif isinstance(other, dict):
@@ -290,8 +319,10 @@ class BaseVersion:
         """Determines next version, preserving natural order.
 
         :param part: One of "major", "minor", "patch"
+        :type part: str
 
-        :return: new object with the appropriate part raised
+        :rtype: BaseVersion
+        :return: A new object with the appropriate part raised
         """
         valid_parts: Tuple[str, ...] = self.__class__.__slots__
         if part not in self.__class__.__slots__:
@@ -333,10 +364,12 @@ class BaseVersion:
 
         Negative indices are not supported.
 
-        :raises IndexError: if index is beyond the range or a part is None
-
         :param index: a positive integer indicating the offset or a ``slice``
             object.
+        :type index: Union[int, slice]
+
+        :raises IndexError: if index is beyond the range or a part is None
+
         :return: the requested part of the version at position index
         """
         if isinstance(index, int):
@@ -433,6 +466,7 @@ class BaseVersion:
             ``^``   ^2.1.7      --> >=2.1.7, <3.0.0
                     ^0.24.1     --> >=0.24.1, <0.25.0
 
+        :rtype: bool
         :return: True if the expression matches the version, otherwise False
         """
         prefix, match = self.__validate_expr_match(expr)
@@ -532,6 +566,8 @@ class BaseVersion:
         """Check if the string is a valid base version.
 
         :param version: the version string to check
+
+        :rtype: bool
         :return: True if the version string is a valid base version, False
                 otherwise.
         """
@@ -559,6 +595,10 @@ class BaseVersion:
 
     @staticmethod
     def _extract_letter(letter: Optional[str]) -> Tuple[str, int]:
+        """Extract letter to standard word.
+
+        :rtype: Tuple[str, int]
+        """
         if m := re.match(
             r"[._-]?(?P<prefix>[a-zA-Z]+)[._-]?(?P<number>\d+)?$",
             letter,
@@ -580,6 +620,15 @@ class BaseVersion:
 class VersionPackage(BaseVersion):
     """This Version class follow properties from
     [PEP 440](https://peps.python.org/pep-0440/)
+
+    :param epoch:
+    :param major:
+    :param minor:
+    :param patch:
+    :param pre:
+    :param post:
+    :param dev:
+    :param local:
     """
 
     __slots__ = (
@@ -655,20 +704,24 @@ class VersionPackage(BaseVersion):
 
     @property
     def v_pre(self) -> Optional[int]:
+        """Return the version number of pre part if it was set."""
         return self._extract_letter(self.pre)[1] if self.pre else None
 
     @property
     def v_post(self) -> Optional[int]:
+        """Return the version number of post part if it was set."""
         return self._extract_letter(self.post)[1] if self.post else None
 
     @property
     def v_dev(self) -> Optional[int]:
+        """Return the version number of dev part if it was set."""
         return self._extract_letter(self.dev)[1] if self.dev else None
 
     def bump_pre(self, token: Optional[str] = "rc") -> VersionPackage:
         """Raise the pre part of the packaging version, return a new object.
 
-        :return: new object with the raised pre part
+        :rtype: VersionPackage
+        :return: A new object with the raised pre part.
         """
         cls = type(self)
         if self.pre is not None:
@@ -690,7 +743,8 @@ class VersionPackage(BaseVersion):
     def bump_post(self) -> VersionPackage:
         """Raise the post part of the packaging version, return a new object.
 
-        :return: new object with the raised post part
+        :rtype: VersionPackage
+        :return: A new object with the raised post part.
         """
         post: str = increment(self.post or "post0")
         return self.__class__(
@@ -705,7 +759,8 @@ class VersionPackage(BaseVersion):
     def bump_dev(self) -> VersionPackage:
         """Raise the dev part of the packaging version, return a new object.
 
-        :return: new object with the raised dev part
+        :rtype: VersionPackage
+        :return: A new object with the raised dev part.
         """
         dev: str = increment(self.dev or "dev0")
         return self.__class__(
@@ -721,7 +776,8 @@ class VersionPackage(BaseVersion):
     def bump_local(self) -> VersionPackage:
         """Raise the local part of the packaging version, return a new object.
 
-        :return: new object with the raised local part
+        :rtype: VersionPackage
+        :return: A new object with the raised local part.
         """
         local: str = increment(self.local or "local0")
         return self.__class__(
@@ -736,6 +792,10 @@ class VersionPackage(BaseVersion):
         )
 
     def next_version(self, part: str, pre_token: str = "a") -> VersionPackage:
+        """
+        :rtype: VersionPackage
+        :return: A new object with replace the new part of an input part value.
+        """
         cls = type(self)
         valid_parts = cls.__slots__[:-1]
         if part not in valid_parts:
@@ -771,6 +831,7 @@ class VersionPackage(BaseVersion):
         return hash(self.to_tuple()[:7])
 
     def public(self) -> str:
+        """Return a public version format string value."""
         return str(self).split("+", maxsplit=1)[0]
 
     @classmethod
@@ -829,6 +890,14 @@ class VersionPackage(BaseVersion):
 
 
 class VersionSemver(BaseVersion):
+    """
+    :param major:
+    :param minor:
+    :param patch:
+    :param pre:
+    :param build:
+    """
+
     __slots__ = (
         "major",
         "minor",
@@ -943,7 +1012,7 @@ class VersionSemver(BaseVersion):
     def finalize_version(self) -> VersionSemver:
         """Remove any pre-release and build metadata from the version.
 
-        :return: a new instance with the finalized version string
+        :return: a new instance with the finalized version string.
         """
         return self.__class__(self.major, self.minor, self.patch)
 
@@ -1000,7 +1069,7 @@ class VersionSemver(BaseVersion):
         return cmp(self.__extract_tuple(), other.__extract_tuple())
 
     def is_compatible(self, other: VersionSemver) -> bool:
-        """The result is True, if either of the following is true:
+        """Return the result is True, if either of the following is true:
 
         * both versions are equal, or
         * both majors are equal and higher than 0. Same for both minors.
@@ -1009,6 +1078,8 @@ class VersionSemver(BaseVersion):
             minor version is higher than a's. Both pre-releases are equal.
 
         The algorithm does *not* check patches.
+
+        :rtype: bool
         """
         if not isinstance(other, VersionSemver):
             raise TypeError(f"Expected a Version type but got {type(other)}")
