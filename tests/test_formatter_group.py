@@ -131,6 +131,23 @@ class FormatterGroupTestCase(unittest.TestCase):
                 }
             ).format("{timestamp:%Y%m%d}_{naming:%s}_{domain}"),
         )
+        self.assertEqual(
+            "20210101_data_engineer_demo",
+            ConstGroup.from_value(
+                {
+                    "timestamp": datetime.datetime(2021, 1, 1, 12),
+                }
+            ).format("{timestamp:%Y%m%d}_{naming:%s}_{domain}"),
+        )
+        self.assertEqual(
+            "20210101_data_engineer_demo",
+            ConstGroup.from_formats(
+                {
+                    "timestamp": {"year": "2021", "month": "01", "day": "01"},
+                }
+            ).format("{timestamp:%Y%m%d}_{naming:%s}_{domain}"),
+        )
+
         with self.assertRaises(NotImplementedError) as context:
             ConstGroup(
                 {
@@ -142,6 +159,31 @@ class FormatterGroupTestCase(unittest.TestCase):
             (
                 "The Constant class does not support for passing value to "
                 "this class initialization."
+            )
+            in str(context.exception)
+        )
+
+        with self.assertRaises(fmt.FormatterGroupValueError) as context:
+            ConstGroup.from_value(
+                {"timestamps": datetime.datetime(2021, 1, 1, 12)}
+            )
+        self.assertTrue(
+            (
+                "NamingConstNamingConstDatetimeGroup does not support for this "
+                "group name, 'timestamps'."
+            )
+            in str(context.exception)
+        )
+        with self.assertRaises(fmt.FormatterGroupValueError) as context:
+            ConstGroup.from_formats(
+                {
+                    "timestamps": {"year": "2021", "month": "01", "day": "01"},
+                }
+            )
+        self.assertTrue(
+            (
+                "NamingConstNamingConstDatetimeGroup does not support for this "
+                "group name, 'timestamps'."
             )
             in str(context.exception)
         )

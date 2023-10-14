@@ -3336,6 +3336,12 @@ class FormatterGroup:
 
     :param formats: A mapping value of priority attribute data.
     :type formats: Optional[dict](=None)
+    :param ignore_construct: A flag for ignore pass an input formats value to
+        validate and construct function.
+    :type ignore_construct: bool(=False)
+
+    :raises FormatterGroupValueError: If any group naming from an input formats
+        does not exist in ``cls.base_groups`` value.
 
     .. class-attributes::
         * base_groups: BaseGroupsType
@@ -3351,10 +3357,12 @@ class FormatterGroup:
         * gen_format: Tuple[str, ReturnGroupGenFormatType]
             A tuple of group naming and format string value that change format
             string to regular expression string for complied to the `re` module.
-        * from_formatter:
-            NotImplementedError
-        * from_value:
-            NotImplementedError
+        * from_formatter: FormatterGroup
+            An instance of formatter group that was pass formats value directly
+            to its formatter object.
+        * from_value: FormatterGroup
+            An instance of formatter group that was use ``cls.from_value``
+            method from any formatter object and its value.
 
     .. attributes::
         * groups: GroupsType
@@ -3391,24 +3399,62 @@ class FormatterGroup:
             )
 
     @classmethod
-    def from_formatter(
+    def from_formats(
         cls,
-        formats: GroupsType,
-    ) -> FormatterGroup:  # no cove
-        # TODO: Implement ``cls.from_formatter``.
-        raise NotImplementedError(
-            "This `from_formatter` method does not implement yet."
-        )
+        formats: Dict[str, DictStr],
+    ) -> FormatterGroup:
+        """Passer the formats to this formatter group directly to its formatter
+        object.
+
+        :param formats: A dict of group naming and formats of its group that
+            pass directly to formatter object.
+        :type formats: Dict[str, DictStr]
+
+        :raises FormatterGroupValueError: If any group naming from an input
+            formats does not exist in ``cls.base_groups`` value.
+
+        :rtype: FormatterGroup
+        :return: An instance of formatter group that was pass formats value
+            directly to its formatter object.
+        """
+        rs: GroupsType = {}
+        for k, v in formats.items():
+            if k not in cls.base_groups:
+                raise FormatterGroupValueError(
+                    f"{cls.__name__} does not support for this group name, "
+                    f"{k!r}."
+                )
+            rs[k] = cls.base_groups[k](v)
+        return cls(formats=rs, ignore_construct=True)
 
     @classmethod
     def from_value(
         cls,
-        formats: Dict[str, Any],
-    ) -> FormatterGroup:  # no cove
-        # TODO: Implement ``cls.from_value``.
-        raise NotImplementedError(
-            "This `from_value` method does not implement yet."
-        )
+        values: Dict[str, Any],
+    ) -> FormatterGroup:
+        """Passer the value to this formatter group that will pass this value to
+        ``cls.from_value`` method of its formatter.
+
+        :param values: A dict of group naming and value of its group that pass
+            to `cls.form_value` of formatter object.
+        :type values: Dict[str, Any]
+
+        :raises FormatterGroupValueError: If any group naming from an input
+            formats does not exist in ``cls.base_groups`` value.
+
+        :rtype: FormatterGroup
+        :return: An instance of formatter group that was use ``cls.from_value``
+            method from any formatter object and its value.
+        """
+        rs: GroupsType = {}
+        for k, v in values.items():
+            if k not in cls.base_groups:
+                raise FormatterGroupValueError(
+                    f"{cls.__name__} does not support for this group name, "
+                    f"{k!r}."
+                )
+            rs[k] = cls.base_groups[k].from_value(v)
+        return cls(formats=rs, ignore_construct=True)
 
     @classmethod
     def parse(
@@ -3576,6 +3622,8 @@ class FormatterGroup:
     def __init__(
         self,
         formats: FormatsGroupType,
+        *,
+        ignore_construct: bool = False,
     ) -> None:
         """Main initialization that get the formats value, a mapping of group
         naming and formatter instance from an input argument and generate the
@@ -3586,36 +3634,16 @@ class FormatterGroup:
         self.groups: GroupsType = {
             group: fmt() for group, fmt in self.base_groups.items()
         }
-        for k, v in formats.items():
-            if k not in self.base_groups:
-                raise FormatterGroupValueError(
-                    f"{self.__class__.__name__} does not support for this "
-                    f"group name, {k!r}."
-                )
-            self.groups[k] = self.__construct_groups(k, v)
-
-    def __hash__(self) -> int:
-        return hash(self.__str__())
-
-    @comparison
-    def __eq__(self, other: FormatterGroup) -> bool:
-        return all(self.groups[g] == other.groups[g] for g in self.base_groups)
-
-    @comparison
-    def __gt__(self, other: FormatterGroup) -> bool:
-        return any(
-            self.groups[g].__gt__(other.groups[g]) for g in self.base_groups
-        ) and all(
-            not self.groups[g].__lt__(other.groups[g]) for g in self.base_groups
-        )
-
-    @comparison
-    def __lt__(self, other: FormatterGroup) -> bool:
-        return any(
-            self.groups[g].__lt__(other.groups[g]) for g in self.base_groups
-        ) and all(
-            not self.groups[g].__gt__(other.groups[g]) for g in self.base_groups
-        )
+        if not ignore_construct:
+            for k, v in formats.items():
+                if k not in self.base_groups:
+                    raise FormatterGroupValueError(
+                        f"{self.__class__.__name__} does not support for this "
+                        f"group name, {k!r}."
+                    )
+                self.groups[k] = self.__construct_groups(k, v)
+        else:
+            self.groups.update(formats)
 
     def __construct_groups(
         self,
@@ -3639,6 +3667,9 @@ class FormatterGroup:
             return self.base_groups[group](v)
         return self.base_groups[group].from_value(v)
 
+    def __hash__(self) -> int:
+        return hash(self.__str__())
+
     def __repr__(self) -> str:
         values: List[str] = []
         fmts: List[str] = []
@@ -3654,6 +3685,26 @@ class FormatterGroup:
 
     def __str__(self) -> str:
         return ", ".join(v.string for v in self.groups.values())
+
+    @comparison
+    def __eq__(self, other: FormatterGroup) -> bool:
+        return all(self.groups[g] == other.groups[g] for g in self.base_groups)
+
+    @comparison
+    def __gt__(self, other: FormatterGroup) -> bool:
+        return any(
+            self.groups[g].__gt__(other.groups[g]) for g in self.base_groups
+        ) and all(
+            not self.groups[g].__lt__(other.groups[g]) for g in self.base_groups
+        )
+
+    @comparison
+    def __lt__(self, other: FormatterGroup) -> bool:
+        return any(
+            self.groups[g].__lt__(other.groups[g]) for g in self.base_groups
+        ) and all(
+            not self.groups[g].__gt__(other.groups[g]) for g in self.base_groups
+        )
 
     def adjust(self, values: Dict[str, Any]) -> FormatterGroup:  # no cov
         """Adjust value to any formatter instance in ``self.groups`` of this
