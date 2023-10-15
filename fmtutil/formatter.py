@@ -3458,7 +3458,7 @@ class FormatterGroup:
         * adjust: [Dict[str, Any]] -> FormatterGroup
             Adjust any formatter instance in ``self.groups`` of this formatter
             group.
-        * to_const: [] -> FormatterGroupType
+        * to_const: [Optional[List[str]]] -> FormatterGroupType
             A FormatterGroup object that create from constant of ``self.groups``
             values.
 
@@ -3818,14 +3818,31 @@ class FormatterGroup:
         }
         return self.__class__(formats=_groups)
 
-    def to_const(self) -> FormatterGroupType:  # no cov
+    def to_const(
+        self,
+        included: Optional[List[str]] = None,
+    ) -> FormatterGroupType:  # no cov
         """Convert this formatter group instance to constant group object.
 
         :rtype: FormatterGroupType
         :return: A FormatterGroup object that create from constant of
             ``self.groups`` values.
         """
-        return make_group(group={k: v.to_const() for k, v in self.groups})
+        _inc: List[str] = included or list(self.groups.keys())
+        if any(i not in self.base_groups for i in _inc):
+            raise FormatterGroupArgumentError(
+                "included",
+                (
+                    f"It must be existing group naming in this {self.__class__}"
+                    f" , the naming in {list(self.base_groups.keys())}."
+                ),
+            )
+        return make_group(
+            group={
+                k: v.to_const() if k in _inc else v.__class__
+                for k, v in self.groups.items()
+            }
+        )
 
 
 def make_group(group: BaseGroupsType) -> FormatterGroupType:

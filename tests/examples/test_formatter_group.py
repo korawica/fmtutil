@@ -47,6 +47,42 @@ class FormatterGroupExampleTestCase(unittest.TestCase):
         self.assertEqual("20230418", max(rs_parse).format("{timestamp:%Y%m%d}"))
         self.assertEqual("20230101", min(rs_parse).format("{timestamp:%Y%m%d}"))
 
+    def test_fmt_group_parse_examples_revise(self):
+        init_grouping: fmt.FormatterGroupType = fmt.make_group(
+            {
+                "naming": fmt.Naming,
+                "domain": fmt.Naming,
+                "timestamp": fmt.Datetime,
+            }
+        )
+        sample_filename: str = "dataEngineer_demo_19900101.json"
+        init_group_instance = init_grouping.parse(
+            sample_filename,
+            "{naming:%c}_{domain:%s}_{timestamp:%Y%m%d}.json",
+        )
+        grouping: fmt.FormatterGroupType = init_group_instance.to_const(
+            included=["naming", "domain"]
+        )
+        rs_parse: List[fmt.FormatterGroup] = []
+        for filename in (
+            "dataEngineer_demo_20230101.json",
+            "dataEngineer_demo_20230226.json",
+            "dataEngineer_demo_20230418.json",
+            "dataEngineer_demo_20230211_temp.json",
+            "dataEngineer_demo_20230101_bk.json",
+        ):
+            try:
+                rs_parse.append(
+                    grouping.parse(
+                        filename,
+                        "{naming:%c}_{domain:%s}_{timestamp:%Y%m%d}.json",
+                    )
+                )
+            except fmt.FormatterGroupArgumentError:
+                continue
+        self.assertEqual("20230418", max(rs_parse).format("{timestamp:%Y%m%d}"))
+        self.assertEqual("20230101", min(rs_parse).format("{timestamp:%Y%m%d}"))
+
     def test_fmt_group_parse_examples02(self):
         CompressConst: fmt.ConstantType = fmt.make_const(
             name="CompressConst",
