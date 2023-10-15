@@ -2,6 +2,19 @@
 
 ## Latest Changes
 
+## 0.4.2
+
+### Features
+
+- :dart: feat: add to_const use-case for the formatter group. (_2023-10-15_)
+- :dart: feat: add string value that able to pass to any formatter objs. (_2023-10-15_)
+- :dart: feat: add from_formats and from_value class-method for formatter group. (_2023-10-14_)
+
+### Documents
+
+- :page_facing_up: docs: update doc-string for Cosntant, FormatterGroup objs. (_2023-10-14_)
+- :page_facing_up: docs: update doc-string on Naming, Storage formatter objs. (_2023-10-13_)
+
 ## 0.4.1
 
 ### Features
