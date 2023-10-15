@@ -308,13 +308,14 @@ class DatetimeTestCase(unittest.TestCase):
             fmt.Datetime.from_value("2023-01-23").string,
         )
 
+        # NOTE: '20230123' is valid for python-version >= 3.11
         with self.assertRaises(ValueError) as context:
             self.assertEqual(
                 "2023-01-23 00:00:00.000000",
-                fmt.Datetime.from_value("20230123").string,
+                fmt.Datetime.from_value("2023012300").string,
             )
         self.assertEqual(
-            "Invalid isoformat string: '20230123'",
+            "Invalid isoformat string: '2023012300'",
             str(context.exception),
         )
 
