@@ -192,6 +192,15 @@ class NamingTestCase(unittest.TestCase):
         # Test `cls.value` property
         self.assertEqual(["data", "engineer"], self.nm.value)
 
+        # Test default `self.vowels`
+        self.assertEqual(["dtngnr"], self.nm.vowels)
+
+        # Test default `self.shorts`
+        self.assertEqual(["d", "e"], self.nm.shorts)
+
+        # Test default `self.flats`
+        self.assertEqual(["dataengineer"], self.nm.flats)
+
     def test_naming_parser(self):
         self.assertEqual(
             "data engineer",

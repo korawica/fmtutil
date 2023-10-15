@@ -594,8 +594,15 @@ class BaseVersion:
         return (self.major == other.major) and (other.minor >= self.minor)
 
     @staticmethod
-    def _extract_letter(letter: Optional[str]) -> Tuple[str, int]:
+    def _extract_letter(
+        letter: Optional[str],
+        force_raise: bool = False,
+    ) -> Tuple[str, int]:
         """Extract letter to standard word.
+
+        :param letter: A letter string that want to extract with prefix pattern.
+        :param force_raise: A flag for forcing raise error if an input letter
+            does not match with standard prefix.
 
         :rtype: Tuple[str, int]
         """
@@ -605,16 +612,42 @@ class BaseVersion:
         ):
             match: Dict[str, str] = m.groupdict()
             convert: str = match["prefix"].lower()
-            if convert == "alpha":
-                convert = "a"
-            elif convert == "beta":
-                convert = "b"
-            elif convert in ["c", "pre", "preview"]:
-                convert = "rc"
-            elif convert in ["rev", "r", "post"]:
-                convert = "post"
-            return convert, int(match["number"] or "0")
-        return letter, 0
+            for matches in (
+                ("alpha", "a"),
+                ("beta", "b"),
+                ("c", "pre", "preview", "rc"),
+                ("rev", "r", "post"),
+            ):
+                if convert in matches:
+                    convert = matches[-1]
+                    force_raise = False
+                    break
+        else:
+            convert = letter
+            match = {"number": "0"}
+        if force_raise:
+            raise ValueError(
+                "prefix of letter does not match with standard such as "
+                ", ".join(
+                    map(
+                        repr,
+                        (
+                            "alpha",
+                            "a",
+                            "beta",
+                            "b",
+                            "pre",
+                            "preview",
+                            "c",
+                            "rc",
+                            "rev",
+                            "r",
+                            "post",
+                        ),
+                    )
+                )
+            )
+        return convert, int(match["number"] or "0")
 
 
 class VersionPackage(BaseVersion):
@@ -846,7 +879,7 @@ class VersionPackage(BaseVersion):
             raise TypeError(f"not expecting type '{type(version)}'")
 
         if (match := cls.regex.match(version)) is None:
-            raise ValueError(f"{version} is not valid SemVer string")
+            raise ValueError(f"{version} is not valid Packaging Version string")
 
         matched_version_parts: Dict[str, Any] = match.groupdict()
         if not matched_version_parts["epoch"]:

@@ -303,6 +303,20 @@ class DatetimeTestCase(unittest.TestCase):
             "2023-01-23 00:00:00.000000",
             fmt.Datetime.from_value(date(2023, 1, 23)).string,
         )
+        self.assertEqual(
+            "2023-01-23 00:00:00.000000",
+            fmt.Datetime.from_value("2023-01-23").string,
+        )
+
+        with self.assertRaises(ValueError) as context:
+            self.assertEqual(
+                "2023-01-23 00:00:00.000000",
+                fmt.Datetime.from_value("20230123").string,
+            )
+        self.assertEqual(
+            "Invalid isoformat string: '20230123'",
+            str(context.exception),
+        )
 
     def test_datetime_order(self):
         self.assertTrue(

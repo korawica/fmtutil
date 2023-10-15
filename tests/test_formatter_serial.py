@@ -19,6 +19,11 @@ class SerialTestCase(unittest.TestCase):
         self.sr_p: fmt.Formatter = fmt.Serial.parse("009", "%p")
         self.sr_p2: fmt.Formatter = fmt.Serial.parse("00001101", "%b")
 
+    def test_serial_from_value(self):
+        self.assertEqual(52, fmt.Serial.from_value("52").value)
+        self.assertEqual(1, fmt.Serial.from_value("1.00").value)
+        self.assertEqual(43, fmt.Serial.from_value(43.00).value)
+
     def test_serial_regex(self):
         self.assertDictEqual(
             {
@@ -68,7 +73,12 @@ class SerialTestCase(unittest.TestCase):
             in str(context.exception)
         )
 
-        # fmt.Serial.formatter("a")
+        with self.assertRaises(fmt.FormatterValueError) as context:
+            fmt.Serial.formatter("a")
+        self.assertTrue(
+            "Serial formatter does not support for value, 'a'."
+            in str(context.exception)
+        )
 
     def test_serial_properties(self):
         self.assertEqual("<Serial.parse('781', '%n')>", self.sr.__repr__())

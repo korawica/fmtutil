@@ -55,7 +55,6 @@ from .utils import (
     bytes2str,
     caller,
     can_int,
-    concat,
     convert_fmt_str,
     default,
     itself,
@@ -334,8 +333,9 @@ class Formatter(BaseFormatter):
             A True value if the value from ``cls.parse`` of a string value,
             and a format string pattern is valid with ``self.value``.
         * to_const: [] -> ConstantType
-            A ConstantType class that have class name with
-            ``f'{self.__class__.__name__}Const'`` with ``self.values()``.
+            A Constant object that create from constant of ``self.values`` and
+            has class name with ``f'{self.__class__.__name__}Const'`` with
+            ``self.values()``.
 
     .. static-methods::
         * __validate_format: [Optional[Dict[str, Any]]] -> Dict[str, Any]
@@ -639,7 +639,6 @@ class Formatter(BaseFormatter):
             The setter of attribute does not do anything to __slot__ variable.
         """
         _formats: Dict[str, Any] = self.__validate_format(formats)
-
         # Set level of SlotLevel object that set from `base_level` and pass this
         # value to _level variable for update process in priorities loop.
         self.level = SlotLevel(level=self.base_level)
@@ -862,12 +861,13 @@ class Formatter(BaseFormatter):
         )
 
     def to_const(self) -> ConstantType:
-        """Convert this formatter instance to Constant class that have class
+        """Convert this formatter instance to Constant object that have class
         name with ``f'{self.__class__.__name__}Const'`` with ``self.values()``.
 
         :rtype: ConstantType
-        :return: A ConstantType class that have class name with
-            ``f'{self.__class__.__name__}Const'`` with ``self.values()``.
+        :return: A Constant object that create from constant of ``self.values``
+            and has class name with ``f'{self.__class__.__name__}Const'`` with
+            ``self.values()``.
         """
         return dict2const(
             self.values(),
@@ -989,7 +989,7 @@ class Serial(Formatter):
 
     @staticmethod
     def formatter(
-        serial: Optional[int] = None,
+        serial: Optional[Union[int, str, float]] = None,
     ) -> ReturnFormattersType:
         """Return a formatter value that define by property of this formatter
         object. Generate formatter that support mapping formatter,
@@ -1001,7 +1001,7 @@ class Serial(Formatter):
             %u  : Normal with underscore separate number
 
         :param serial: A serial value that pass to generate all format.
-        :type serial: Optional[int](=None)
+        :type serial: Optional[Union[int, str, float]](=None)
 
         :rtype: ReturnFormattersType
         :return: A generated mapping values of all format string pattern of this
@@ -1010,7 +1010,8 @@ class Serial(Formatter):
         _value: int = Serial.prepare_value(serial)
         return {
             "%n": {
-                "value": lambda: str(_value),
+                # "value": lambda: str(_value),
+                "value": partial(itself, str(_value)),
                 "regex": r"(?P<number>[0-9]*)",
             },
             "%p": {
@@ -1025,24 +1026,24 @@ class Serial(Formatter):
                 "regex": r"(?P<number_binary>[0-1]*)",
             },
             "%c": {
-                "value": lambda: f"{_value:,}",
+                "value": partial(itself, f"{_value:,}"),
                 "regex": r"(?P<number_comma>\d{1,3}(?:,\d{3})*)",
             },
             "%u": {
-                "value": lambda: f"{_value:_}",
+                "value": partial(itself, f"{_value:_}"),
                 "regex": r"(?P<number_underscore>\d{1,3}(?:_\d{3})*)",
             },
         }
 
     @staticmethod
-    def prepare_value(value: Optional[int]) -> int:
+    def prepare_value(value: Optional[Union[int, str, float]]) -> int:
         """Prepare value before passing to convert logic in the formatter
         method that define by property of this formatter object. Return 0 if an
         input value does not pass.
 
         :param value: A value that want to prepare before passing to this
             serial formatter.
-        :type value: Optional[int]
+        :type value: Optional[Union[int, str, float]]
 
         :raises FormatterValueError: If an input value does not able cast to
             integer, or it's value less than 0.
@@ -1052,11 +1053,11 @@ class Serial(Formatter):
         """
         if value is None:
             return 0
-        if not can_int(value) or (int(value) < 0):
+        if not can_int(value) or ((prepare := int(float(value))) < 0):
             raise FormatterValueError(
                 f"Serial formatter does not support for value, {value!r}."
             )
-        return int(value)
+        return prepare
 
     @staticmethod
     def to_padding(value: str) -> str:
@@ -1389,7 +1390,7 @@ class Datetime(Formatter, level=10):
 
     @staticmethod
     def formatter(
-        dt: Optional[Union[datetime, date]] = None,
+        dt: Optional[Union[str, datetime, date]] = None,
     ) -> ReturnFormattersType:
         """Return a formatter value that define by property of this formatter
         object. Generate formatter that support mapping formatter,
@@ -1435,7 +1436,7 @@ class Datetime(Formatter, level=10):
         **  %X  : Local version of time (%H:%M:%S)
 
         :param dt: A datetime value that pass to generate all format.
-        :type dt: Optional[Union[datetime, date]](=None)
+        :type dt: Optional[Union[str, datetime, date]](=None)
 
         :rtype: ReturnFormattersType
         :return: A generated mapping values of all format string pattern of this
@@ -1572,14 +1573,14 @@ class Datetime(Formatter, level=10):
         }
 
     @staticmethod
-    def prepare_value(value: Optional[Union[datetime, date]]) -> datetime:
+    def prepare_value(value: Optional[Union[str, datetime, date]]) -> datetime:
         """Prepare value before passing to convert logic in the formatter
         method that define by property of this formatter object. Return
         ``datetime.now()`` if an input value does not pass.
 
         :param value: A value that want to prepare before passing to this
             datetime formatter.
-        :type value: Optional[Union[datetime, date]]
+        :type value: Optional[Union[str, datetime, date]]
 
         :raises FormatterValueError: If an input value does be
             ``datetime.datetime`` or ``datetime.date``.
@@ -1593,6 +1594,7 @@ class Datetime(Formatter, level=10):
         if not isinstance(
             value,
             (
+                str,
                 datetime,
                 date,
             ),
@@ -1600,6 +1602,8 @@ class Datetime(Formatter, level=10):
             raise FormatterValueError(
                 f"Datetime formatter does not support for value, {value!r}."
             )
+        elif isinstance(value, str):
+            return datetime.fromisoformat(value)
         return (
             value
             if isinstance(value, datetime)
@@ -1939,7 +1943,7 @@ class Version(Formatter, level=4):
 
     @staticmethod
     def formatter(
-        version: Optional[_VersionPackage] = None,
+        version: Optional[Union[str, _VersionPackage]] = None,
     ) -> ReturnFormattersType:
         """Return a formatter value that define by property of this formatter
         object. Generate formatter that support mapping formatter,
@@ -1959,7 +1963,7 @@ class Version(Formatter, level=4):
             %-l : local release number
 
         :param version: A version value that pass to generate all format.
-        :type version: Optional[__version.VersionPackage](=None)
+        :type version: Optional[Union[str, __version.VersionPackage]](=None)
 
         :rtype: ReturnFormattersType
         :return: A generated mapping values of all format string pattern of this
@@ -1968,14 +1972,16 @@ class Version(Formatter, level=4):
         _version: _VersionPackage = Version.prepare_value(version)
         return {
             "%f": {
-                "value": lambda: (
-                    f"{_version.major}_{_version.minor}_{_version.patch}"
+                "value": partial(
+                    itself,
+                    f"{_version.major}_{_version.minor}_{_version.patch}",
                 ),
                 "cregex": "%m_%n_%c",
             },
             "%-f": {
-                "value": lambda: (
-                    f"{_version.major}_{_version.minor}_{_version.patch}"
+                "value": partial(
+                    itself,
+                    f"{_version.major}_{_version.minor}_{_version.patch}",
                 ),
                 "cregex": "%m-%n-%c",
             },
@@ -1992,41 +1998,39 @@ class Version(Formatter, level=4):
                 "regex": r"(?P<micro>\d{1,3})",
             },
             "%e": {
-                "value": lambda: f"{_version.epoch}!",
+                "value": partial(itself, f"{_version.epoch}!"),
                 "regex": r"(?P<epoch>[0-9]+!)",
             },
             "%-e": {
-                "value": lambda: str(_version.epoch),
+                "value": partial(itself, str(_version.epoch)),
                 "regex": r"(?P<epoch_num>[0-9]+)",
             },
             "%q": {
-                "value": lambda: (
-                    concat(map(str, _pre)) if (_pre := _version.v_pre) else ""
-                ),
+                "value": partial(itself, str(_version.v_pre or "")),
                 "regex": (
                     r"(?P<pre>(a|b|c|rc|alpha|beta|pre|preview)[-_\.]?[0-9]+)"
                 ),
             },
             "%p": {
-                "value": lambda: str(_version.v_post or ""),
+                "value": partial(itself, str(_version.v_post or "")),
                 "regex": (
                     r"(?P<post>(?:(post|rev|r)[-_\.]?[0-9]+)|(?:-[0-9]+))"
                 ),
             },
             "%-p": {
-                "value": lambda: str(_version.v_post or ""),
+                "value": partial(itself, str(_version.v_post or "")),
                 "regex": r"(?P<post_num>[0-9]+)",
             },
             "%d": {
-                "value": lambda: str(_version.v_dev or ""),
+                "value": partial(itself, str(_version.v_dev or "")),
                 "regex": r"(?P<dev>dev[-_\.]?[0-9]+)",
             },
             "%l": {
-                "value": lambda: _version.local,
+                "value": partial(itself, _version.local),
                 "regex": r"(?P<local>\+[a-z0-9]+(?:[-_\.][a-z0-9]+)*)",
             },
             "%-l": {
-                "value": lambda: f"+{_version.local}",
+                "value": partial(itself, f"+{_version.local}"),
                 "regex": r"(?P<local_str>[a-z0-9]+(?:[-_\.][a-z0-9]+)*)",
             },
         }
@@ -2034,7 +2038,7 @@ class Version(Formatter, level=4):
     @staticmethod
     def prepare_value(
         # TODO: add value type for ``packaging.version.Version`` and ``semver``.
-        value: Optional[_VersionPackage],
+        value: Optional[Union[str, _VersionPackage]],
     ) -> _VersionPackage:
         """Prepare value before passing to convert logic in the formatter
         method that define by property of this formatter object. Return
@@ -2043,7 +2047,7 @@ class Version(Formatter, level=4):
 
         :param value: A value that want to prepare before passing to this
             version formatter.
-        :type value: Optional[__version.VersionPackage]
+        :type value: Optional[Union[str, __version.VersionPackage]]
 
         :raises FormatterValueError: If an input value does be
             ``__version.VersionPackage``
@@ -2053,10 +2057,18 @@ class Version(Formatter, level=4):
         """
         if value is None:
             return _VersionPackage.parse("0.0.1")
-        if not isinstance(value, _VersionPackage):
+        if not isinstance(
+            value,
+            (
+                str,
+                _VersionPackage,
+            ),
+        ):
             raise FormatterValueError(
                 f"Version formatter does not support for value, {value!r}."
             )
+        elif isinstance(value, str):
+            return _VersionPackage.parse(value)
         return value
 
     @staticmethod
@@ -2104,10 +2116,10 @@ class Version(Formatter, level=4):
             for letter in matches:
                 if re.match(rf"{letter}[-_.]?[0-9]+", value):
                     return value.replace(letter, rep)
-                elif re.match(rf"{rep}[-_.]?[0-9]+", value):
-                    return value
+            if re.match(rf"{rep}[-_.]?[0-9]+", value):
+                return value
         raise FormatterValueError(
-            f"Convert prefix dose not valid for value `{value}`"
+            f"Convert prefix dose not valid for value `{value}`."
         )
 
     def __add__(  # type: ignore
@@ -2126,10 +2138,10 @@ class Version(Formatter, level=4):
             return self.__class__.from_value(old)
         return NotImplemented
 
-    def __sub__(self, other):  # type: ignore # no cov
+    def __sub__(self, other: Any):  # type: ignore # no cov
         return NotImplemented
 
-    def __rsub__(self, other):  # type: ignore # no cov
+    def __rsub__(self, other: Any):  # type: ignore # no cov
         return NotImplemented
 
 
@@ -2159,7 +2171,7 @@ class Naming(Formatter, level=5):
 
     @property
     def string(self) -> str:
-        r"""Return a string naming with \s sep if it is possible."""
+        """Return a string naming with \\s sep if it is possible."""
         if self.strings:
             return " ".join(self.strings)
         elif self.flats:
@@ -2341,7 +2353,7 @@ class Naming(Formatter, level=5):
                 "level": 3,
             },
             "flats_default": {
-                "value": self._default_flats,
+                "value": self.__default(lambda x: "".join(x)),
                 "level": 0,
             },
             "shorts": {
@@ -2353,7 +2365,7 @@ class Naming(Formatter, level=5):
                 "level": 2,
             },
             "shorts_default": {
-                "value": self._default_shorts,
+                "value": self.__default(lambda x: [i[0] for i in x]),
                 "level": 0,
             },
             "vowels": {
@@ -2365,7 +2377,9 @@ class Naming(Formatter, level=5):
                 "level": 1,
             },
             "vowels_default": {
-                "value": self._default_vowels,
+                "value": self.__default(
+                    lambda x: re.sub(r"[aeiou]", "", "".join(x))
+                ),
                 "level": 0,
             },
         }
@@ -2570,20 +2584,23 @@ class Naming(Formatter, level=5):
         if value is None:
             return [""]
         if isinstance(value, str):
-            return Naming.__prepare_value(value)
+            return Naming.__remove_special_char(value)
         elif not isinstance(value, list) or any(
             not isinstance(v, str) for v in value
         ):
             raise FormatterValueError(
                 f"Naming formatter does not support for value, {value!r}."
             )
-        return value
+        return [re.sub(r"[^\-.\w\s]+", "", v) for v in value]
 
     def _from_flats(self, value: str) -> List[str]:
         """Return a validated flats value.
 
         :param value: A format string value that pass from initialize.
         :type value: str
+
+        :raises FormatterValueError: If flat string from ``self.strings`` does
+            not equal with an input value.
 
         :rtype: List[str]
         :return: a validated flats value.
@@ -2602,6 +2619,9 @@ class Naming(Formatter, level=5):
         :param value: A format string value that pass from initialize.
         :type value: str
 
+        :raises FormatterValueError: If short string from ``self.strings`` does
+            not equal with an input value.
+
         :rtype: List[str]
         :return: a validated shorts value.
         """
@@ -2619,6 +2639,9 @@ class Naming(Formatter, level=5):
         :param value: A format string value that pass from initialize.
         :type value: str
 
+        :raises FormatterValueError: If vowel string from ``self.strings`` does
+            not equal with an input value.
+
         :rtype: List[str]
         :return: A validated vowels value.
         """
@@ -2633,28 +2656,41 @@ class Naming(Formatter, level=5):
             )
         return v
 
-    def _default_flats(self) -> List[str]:
-        """Return a default of shorts list of string value."""
-        if not self.level.slot[4]:
-            return []
-        return ["".join(self.strings)]
+    def __default(
+        self,
+        logic: Callable[[List[str]], str],
+    ) -> Callable[[], List[str]]:
+        """Return a default function that pass logic to ``self.strings`` if
+        it was set from initialization.
 
-    def _default_shorts(self) -> List[str]:
-        """Return a default of shorts list of string value."""
-        if self.level.slot[4]:
-            return []
-        return [s[0] for s in self.strings]
+        :param logic: A logic function receive a ``self.strings`` list.
+        :type logic: Callable[[List[str]], str]
 
-    def _default_vowels(self) -> List[str]:
-        """Return a default of vowels list of string value."""
-        if not self.level.slot[4]:
-            return []
-        return [re.sub(r"[aeiou]", "", "".join(self.strings))]
+        :rtype: Callable[[], List[str]]
+        :return: A default function that pass logic to ``self.strings`` if
+            it was set from initialization.
+        """
+
+        def sub_caller() -> List[str]:
+            if not self.level.slot[4]:
+                return []
+            return (
+                [*rs] if isinstance((rs := logic(self.strings)), list) else [rs]
+            )
+
+        return sub_caller
 
     @staticmethod
     def pascal_case(snake_case: str) -> str:
         """Return a string value with pascal case that reference by
         `inflection`.
+
+        :param snake_case: A word with the snake case string.
+        :type snake_case: str
+
+        :rtype: str
+        :return: A string value with pascal case that reference by
+            `inflection`.
         """
         return re.sub(r"(?:^|_)(.)", lambda m: m.group(1).upper(), snake_case)
 
@@ -2662,6 +2698,13 @@ class Naming(Formatter, level=5):
     def camel_case(snake_case: str) -> str:
         """Return a string value with camel case with lower case first
         letter.
+
+        :param snake_case: A word with the snake case string.
+        :type snake_case: str
+
+        :rtype: str
+        :return: A string value with camel case with lower case first
+            letter.
         """
         return (
             (snake_case[0].lower() + Naming.pascal_case(snake_case)[1:])
@@ -2675,28 +2718,57 @@ class Naming(Formatter, level=5):
         values: List[str],
         func: Optional[Callable[[str], str]] = None,
     ) -> str:
-        """Return string value that join with any separate string"""
+        """Return a string value that join with any separate string after
+        prepare with an input function if it set.
+
+        :param by: A seperator string that want to join.
+        :type by: str
+        :param values: A list of word that want to join with.
+        :type values: List[str]
+        :param func: A function that want to prepare before join.
+        :type func: Optional[Callable[[str], str]](=None)
+
+        :rtype: str
+        :return: A string value that join with any separate string after
+            prepare with an input function if it set.
+        """
         return by.join(map(func, values)) if func else by.join(values)
 
     @staticmethod
-    def __prepare_value(value: str) -> List[str]:
-        """Return list of word that split from input value string"""
+    def __remove_special_char(value: str) -> List[str]:
+        """Return a list of word that split from an input value string
+        before remove special character.
+
+        :param value: A string value that want to prepare.
+        :type value: str
+
+        :rtype: List[str]
+        :return: A list of word that split from an input value string
+            before remove special character.
+        """
         result: str = re.sub(r"[^\-.\w\s]+", "", value)
         return re.sub(r"[\-._\s]", " ", result).strip().split()
 
     @staticmethod
     def __split_pascal_case(value: str) -> List[str]:
-        """Return a list of word that prepare from the Pascal case."""
+        """Return a list of word that prepare from the Pascal case.
+
+        :param value: A pascal value string that want to prepare.
+        :type value: str
+
+        :rtype: str
+        :return: A list of word that prepare from the Pascal case.
+        """
         return (
             "".join([f" {c.lower()}" if c.isupper() else c for c in value])
             .strip()
             .split()
         )
 
-    def __sub__(self, other):  # type: ignore # no cov
+    def __sub__(self, other: Any):  # type: ignore # no cov
         return NotImplemented
 
-    def __rsub__(self, other):  # type: ignore # no cov
+    def __rsub__(self, other: Any):  # type: ignore # no cov
         return NotImplemented
 
 
@@ -2825,11 +2897,11 @@ class Storage(Formatter):
         size: int = Storage.prepare_value(storage)
         return {
             "%b": {
-                "value": lambda: str(size),
+                "value": partial(itself, str(size)),
                 "regex": r"(?P<bit>[0-9]*)",
             },
             "%B": {
-                "value": lambda: f"{round(size / 8)}B",
+                "value": partial(itself, f"{round(size / 8)}B"),
                 "regex": r"(?P<byte>[0-9]*B)",
             },
             "%K": {
@@ -2891,18 +2963,22 @@ class Storage(Formatter):
         return int(value)
 
     def _from_byte(self) -> str:
+        """"""
         return str(int(self.byte or "0") * 8)
 
     def _from_bit(self) -> str:
+        """"""
         return str(round(int(self.bit or "0") / 8))
 
     @staticmethod
     def bit2byte(value: int, order: str) -> str:
+        """"""
         p = math.pow(1024, SIZE.index(order))
         return f"{(round((value / 8) / p))}{order}"
 
     @staticmethod
     def to_byte(value: str, order: str) -> str:
+        """"""
         p = math.pow(1024, SIZE.index(order))
         return f"{round(int(value.replace(order, '')) * p)}"
 
@@ -2994,7 +3070,11 @@ class Constant(Formatter):
         *,
         set_strict_mode: bool = False,
     ) -> None:
-        """"""
+        """Main initialization get the format mapping from input argument
+        and generate the necessary attributes for define the value of this
+        base formatter object. This process will set the standard value after
+        set ``self._constant`` value.
+        """
         # Raise if formatter does not set
         if not self.formatter():
             raise NotImplementedError(
@@ -3074,7 +3154,7 @@ class Constant(Formatter):
         :type value: Any
 
         :rtype: Any
-        :return: An input value.
+        :return: An itself input value.
         """
         return value
 
@@ -3162,6 +3242,7 @@ def dict2const(
             :return: A generated mapping values of all format string pattern of
                 this constant formatter object.
             """
+            # It does not use an input value.
             _ = CustomConstant.prepare_value(v)
             return {
                 f: {
@@ -3377,6 +3458,9 @@ class FormatterGroup:
         * adjust: [Dict[str, Any]] -> FormatterGroup
             Adjust any formatter instance in ``self.groups`` of this formatter
             group.
+        * to_const: [] -> FormatterGroupType
+            A FormatterGroup object that create from constant of ``self.groups``
+            values.
 
     .. seealso::
 
@@ -3732,7 +3816,16 @@ class FormatterGroup:
             k: (fmt + values[k]) if k in values else fmt
             for k, fmt in self.groups.items()
         }
-        return self.__class__(_groups)
+        return self.__class__(formats=_groups)
+
+    def to_const(self) -> FormatterGroupType:  # no cov
+        """Convert this formatter group instance to constant group object.
+
+        :rtype: FormatterGroupType
+        :return: A FormatterGroup object that create from constant of
+            ``self.groups`` values.
+        """
+        return make_group(group={k: v.to_const() for k, v in self.groups})
 
 
 def make_group(group: BaseGroupsType) -> FormatterGroupType:

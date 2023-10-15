@@ -47,6 +47,9 @@ class VersionTestCase(unittest.TestCase):
         self.vs_p = fmt.Version.parse("1.2.3beta4", "%m.%n.%c%q")
         self.vs_p2 = fmt.Version.parse("asdf_asdf.sadf", "%-l")
 
+    def test_version_from_value(self):
+        self.assertEqual("v1.2.3", fmt.Version.from_value("1.2.3").string)
+
     def test_version_raise_for_pre_or_post_not_valid(self):
         with self.assertRaises(FormatterValueError) as context:
             fmt.Version(
@@ -140,10 +143,17 @@ class VersionTestCase(unittest.TestCase):
         )
 
     def test_version_formatter_raise(self):
-        with self.assertRaises(fmt.FormatterValueError) as context:
-            fmt.Version.formatter("2.0.0")
+        with self.assertRaises(ValueError) as context:
+            fmt.Version.formatter("2.0.0.1")
         self.assertTrue(
-            "Version formatter does not support for value, '2.0.0'."
+            "2.0.0.1 is not valid Packaging Version string"
+            in str(context.exception)
+        )
+
+        with self.assertRaises(FormatterValueError) as context:
+            fmt.Version.formatter((2, 0, 0))
+        self.assertTrue(
+            "Version formatter does not support for value, (2, 0, 0)."
             in str(context.exception)
         )
 
