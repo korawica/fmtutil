@@ -2,6 +2,17 @@
 
 ## Latest Changes
 
+## 0.4.3
+
+### Features
+
+- :dart: feat: create extract_wildcard class-method for BaseVersion object. (_2023-10-16_)
+
+### Code Changes
+
+- :construction: refactored: change object name of _VersionPackage to VerPackage for reusable. (_2023-10-16_)
+- :construction: refactored: change type of standard value of Storage formatter obj. (_2023-10-16_)
+
 ## 0.4.2
 
 ### Features

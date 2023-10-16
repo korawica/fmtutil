@@ -1699,7 +1699,7 @@ class Datetime(Formatter, level=10):
         """Return a validated hour string value that map with ``self.locale``
         attribute value.
 
-        :param value: A hour string value.
+        :param value: The hour string value.
         :type value: str
 
         :rtype: str
@@ -2039,7 +2039,6 @@ class Version(Formatter, level=4):
 
     @staticmethod
     def prepare_value(
-        # TODO: add value type for ``packaging.version.Version`` and ``semver``.
         value: Optional[Union[str, VerPackage]],
     ) -> VerPackage:
         """Prepare value before passing to convert logic in the formatter
