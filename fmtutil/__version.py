@@ -216,6 +216,10 @@ class BaseVersion:
         RegVersion.version.format(opt_patch="", opt_minor=""),
         re.VERBOSE,
     )
+    regex_optional_minor_and_patch: ClassVar[Pattern[str]] = re.compile(
+        RegVersion.version.format(opt_patch="?", opt_minor="?"),
+        re.VERBOSE,
+    )
 
     def __init__(
         self,
@@ -225,8 +229,8 @@ class BaseVersion:
     ):
         version_parts = {
             "major": int(major),
-            "minor": int(minor),
-            "patch": int(patch),
+            "minor": int(minor or "0"),
+            "patch": int(patch or "0"),
         }
 
         for name, value in version_parts.items():
@@ -406,19 +410,35 @@ class BaseVersion:
     def __hash__(self) -> int:
         return hash(self.to_tuple())
 
-    # TODO: Implement wildcard pattern for version.
-    @staticmethod
-    def _wildcard(expr: str):
-        """
-        2.1.*   --> >=2.1.0, < 2.2.0
-        2.*     --> >=2.0.0, <3.0.0
-        *       --> >=0.0.0
+    @classmethod
+    def extract_wildcard(cls, expr: str) -> Tuple[BaseVersion, BaseVersion]:
+        """Extract version instance from an input wildcard version value.
+
+        :param expr: An expression string value of version wildcard.
+            2.1.*   --> >=2.1.0, < 2.2.0
+            2.*     --> >=2.0.0, <3.0.0
+            *       --> >=0.0.0
+        :type expr: str
         """
         if expr == "*":
-            return "0.0.0"
+            return cls.parse("0.0.0"), Inf
+        try:
+            base_expr: BaseVersion = cls.parse(
+                expr.replace("*", "0"), optional_minor_and_patch=True
+            )
+            upper_expr: BaseVersion = cls.parse(
+                increment(expr.replace("*", "").rstrip(".")),
+                optional_minor_and_patch=True,
+            )
+            return base_expr, upper_expr
+        except ValueError as err:
+            raise ValueError(
+                f"Wildcard does not support for version expr format, {expr!r}"
+            ) from err
 
     @staticmethod
     def __validate_expr_match(expr: str) -> Tuple[str, str]:
+        """Validate expression string of version matching string value."""
         prefix: str = expr[:2]
         match: str
         if prefix in (
@@ -519,10 +539,14 @@ class BaseVersion:
     def parse(
         cls: Type[BaseVersion],
         version: String,
+        *,
+        optional_minor_and_patch: bool = False,
     ) -> BaseVersion:
         """Parse version string to a Version instance.
 
-        :param version: version string
+        :param version: A version string that want to parse.
+        :param optional_minor_and_patch: An optional flag for parsing with minor
+            and patch value if it exists.
 
         :raises ValueError: if version is invalid
         :raises TypeError: if version contains the wrong type
@@ -534,7 +558,11 @@ class BaseVersion:
         elif not isinstance(version, str):
             raise TypeError(f"not expecting type '{type(version)}'")
 
-        if (match := cls.regex.match(version)) is None:
+        if optional_minor_and_patch:
+            match = cls.regex_optional_minor_and_patch.match(version)
+        else:
+            match = cls.regex.match(version)
+        if match is None:
             raise ValueError(f"{version} is not valid {cls.__name__} string")
 
         return cls(**match.groupdict())
@@ -692,7 +720,7 @@ class VersionPackage(BaseVersion):
         local: Optional[String] = None,
     ):
         super().__init__(major, minor, patch)
-        if (ep := int(epoch)) < 0:
+        if (ep := int(epoch or "0")) < 0:
             raise ValueError(
                 f"{epoch!r} is negative. A epoch version can only be positive."
             )
@@ -1053,6 +1081,7 @@ class VersionSemver(BaseVersion):
     def parse(
         cls: Type[VersionSemver],
         version: String,
+        *,
         optional_minor_and_patch: bool = False,
     ) -> VersionSemver:
         if isinstance(version, bytes):

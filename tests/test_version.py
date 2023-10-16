@@ -1,5 +1,6 @@
 import unittest
 
+import fmtutil.__type as t
 import fmtutil.__version as vs
 
 
@@ -68,6 +69,16 @@ class BaseVersionTestCase(unittest.TestCase):
         self.assertTrue(vs.BaseVersion(0, 0, 0) < (1, 0, 0))
         self.assertTrue(vs.BaseVersion(0, 0, 0) == (0, 0, 0))
         self.assertTrue(vs.BaseVersion(0, 15, 1) >= "0.0.20")
+
+    def test_base_vs_wildcard(self):
+        self.assertTupleEqual(
+            (vs.BaseVersion(2, 1, 0), vs.BaseVersion(2, 2, 0)),
+            vs.BaseVersion.extract_wildcard("2.1.*"),
+        )
+        self.assertTupleEqual(
+            (vs.BaseVersion(0, 0, 0), t.Inf),
+            vs.BaseVersion.extract_wildcard("*"),
+        )
 
 
 class VersionSemverTestCase(unittest.TestCase):
