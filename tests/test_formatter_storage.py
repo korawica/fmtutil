@@ -6,6 +6,7 @@
 """
 Test the Serial formatter object.
 """
+import decimal
 import unittest
 
 import fmtutil.formatter as fmt
@@ -18,10 +19,24 @@ class StorageTestCase(unittest.TestCase):
         self.st_p: fmt.Formatter = fmt.Storage.parse("10353B", "%B")
         self.st_p2: fmt.Formatter = fmt.Storage.parse("135005", "%b")
 
+    def test_storage_from_value(self):
+        self.assertEqual(
+            decimal.Decimal("1000.1"), fmt.Storage.from_value(1000.1).value
+        )
+        self.assertEqual(
+            decimal.Decimal("10.01"), fmt.Storage.from_value(10.01).value
+        )
+        self.assertEqual(
+            decimal.Decimal("10.01"), fmt.Storage.from_value("10.01").value
+        )
+        self.assertEqual(
+            decimal.Decimal("10"), fmt.Storage.from_value("10").value
+        )
+
     def test_storage_regex(self):
         self.assertDictEqual(
             {
-                "%b": "(?P<bit>[0-9]*)",
+                "%b": "(?P<bit>[0-9]*.?[0-9]*)",
                 "%B": "(?P<byte>[0-9]*B)",
                 "%K": "(?P<byte_kilo>[0-9]*KB)",
                 "%M": "(?P<byte_mega>[0-9]*MB)",
@@ -40,7 +55,7 @@ class StorageTestCase(unittest.TestCase):
         regex = fmt.Storage.regex()
         self.assertDictEqual(
             {
-                "%b": {"regex": "(?P<bit>[0-9]*)", "value": "512"},
+                "%b": {"regex": "(?P<bit>[0-9]*.?[0-9]*)", "value": "512"},
                 "%B": {"regex": "(?P<byte>[0-9]*B)", "value": "64B"},
                 "%K": {"regex": "(?P<byte_kilo>[0-9]*KB)", "value": "0KB"},
                 "%M": {"regex": "(?P<byte_mega>[0-9]*MB)", "value": "0MB"},
@@ -62,9 +77,9 @@ class StorageTestCase(unittest.TestCase):
 
     def test_storage_formatter_raise(self):
         with self.assertRaises(fmt.FormatterValueError) as context:
-            fmt.Storage.formatter(1.23)
+            fmt.Storage.formatter("1.23a")
         self.assertTrue(
-            "Storage formatter does not support for value, 1.23."
+            "Storage formatter does not support for value, '1.23a'."
             in str(context.exception)
         )
 

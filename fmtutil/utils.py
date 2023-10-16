@@ -108,9 +108,10 @@ def convert_fmt_str(fmt: str) -> str:
 
 
 def can_int(value: Any) -> bool:
-    """Check value that able to integer
+    """Check value that able cast to integer.
 
     Example:
+
     >>> can_int('0.0')
     True
     >>> can_int('-1.0')
@@ -119,6 +120,25 @@ def can_int(value: Any) -> bool:
     try:
         return float(str(value)).is_integer()
     except (TypeError, ValueError):
+        return False
+
+
+def can_float(value: Any) -> bool:
+    """Check value that able cast to float.
+
+    Example:
+
+    >>> can_float('0.01')
+    True
+    >>> can_float('0.1a')
+    False
+    """
+    if value is None:
+        return False
+    try:
+        float(value)
+        return True
+    except ValueError:
         return False
 
 
