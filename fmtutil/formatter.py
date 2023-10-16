@@ -43,7 +43,7 @@ from .__type import (
     TupleInt,
 )
 from .__version import (
-    VersionPackage as _VersionPackage,
+    VersionPackage as VerPackage,
 )
 from .exceptions import (
     FormatterArgumentError,
@@ -1841,9 +1841,9 @@ class Version(Formatter, level=4):
         return f"<{self.__class__.__name__}.parse('{self.string}', '{_fmt}')>"
 
     @property
-    def value(self) -> _VersionPackage:
+    def value(self) -> VerPackage:
         """Return a ``__version.VersionPackage`` instance value."""
-        return _VersionPackage.parse(self.string)
+        return VerPackage.parse(self.string)
 
     @property
     def string(self) -> str:
@@ -1945,7 +1945,7 @@ class Version(Formatter, level=4):
 
     @staticmethod
     def formatter(
-        version: Optional[Union[str, _VersionPackage]] = None,
+        version: Optional[Union[str, VerPackage]] = None,
     ) -> ReturnFormattersType:
         """Return a formatter value that define by property of this formatter
         object. Generate formatter that support mapping formatter,
@@ -1971,7 +1971,7 @@ class Version(Formatter, level=4):
         :return: A generated mapping values of all format string pattern of this
             version formatter object.
         """
-        _version: _VersionPackage = Version.prepare_value(version)
+        _version: VerPackage = Version.prepare_value(version)
         return {
             "%f": {
                 "value": partial(
@@ -2040,8 +2040,8 @@ class Version(Formatter, level=4):
     @staticmethod
     def prepare_value(
         # TODO: add value type for ``packaging.version.Version`` and ``semver``.
-        value: Optional[Union[str, _VersionPackage]],
-    ) -> _VersionPackage:
+        value: Optional[Union[str, VerPackage]],
+    ) -> VerPackage:
         """Prepare value before passing to convert logic in the formatter
         method that define by property of this formatter object. Return
         ``__version.VersionPackage.parse("0.0.1")`` if an input value does not
@@ -2058,19 +2058,19 @@ class Version(Formatter, level=4):
         :return: A prepared version value.
         """
         if value is None:
-            return _VersionPackage.parse("0.0.1")
+            return VerPackage.parse("0.0.1")
         if not isinstance(
             value,
             (
                 str,
-                _VersionPackage,
+                VerPackage,
             ),
         ):
             raise FormatterValueError(
                 f"Version formatter does not support for value, {value!r}."
             )
         elif isinstance(value, str):
-            return _VersionPackage.parse(value)
+            return VerPackage.parse(value)
         return value
 
     @staticmethod
