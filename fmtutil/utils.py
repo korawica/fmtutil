@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from decimal import Decimal
 from typing import (
     Any,
     Callable,
@@ -170,3 +171,8 @@ def bytes2str(value: String) -> str:
     elif not isinstance(value, get_args(String)):
         raise TypeError(f"not expecting type '{type(value)}'")
     return value
+
+
+def float2decimal(value: float, precision: int = 15):
+    """Convert float to decimal with default precision value."""
+    return Decimal(value).quantize(Decimal(10) ** -precision)

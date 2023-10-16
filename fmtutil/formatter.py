@@ -3010,10 +3010,7 @@ class Storage(Formatter):
             an input order value.
         """
         p: Decimal = Decimal(math.pow(1024, SIZE.index(order)))
-        return (
-            f"{(round((value / 8) / p, Storage.Config.storage_rounding))}"
-            f"{order}"
-        )
+        return f"{(Storage.round_up((value / 8) / p))}{order}"
 
     @staticmethod
     def str2byte(value: str, order: str) -> Decimal:
