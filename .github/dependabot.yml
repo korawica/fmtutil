@@ -13,7 +13,7 @@ updates:
       interval: "monthly"
       day: "monday"
       time: "12:00"
-      timezone: "UTC"
+      timezone: "Etc/UTC"
     commit-message:
       prefix: ⬆
   # Python
@@ -23,6 +23,6 @@ updates:
       interval: "monthly"
       day: "monday"
       time: "12:00"
-      timezone: "UTC"
+      timezone: "Etc/UTC"
     commit-message:
       prefix: 📦
