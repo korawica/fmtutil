@@ -2,6 +2,30 @@
 
 ## Latest Changes
 
+## 0.4.4
+
+### Features
+
+- :dart: feat: add float2decimal util function for convert value in Storage formatter obj. (_2023-10-16_)
+
+### Code Changes
+
+- :construction: refactored: ⬆ bump actions/setup-python from 4 to 5 (_2024-01-01_)
+- :construction: refactored: ⬆ bump actions/download-artifact from 3 to 4 (_2024-01-01_)
+- :construction: refactored: ⬆ bump actions/upload-artifact from 3 to 4 (_2024-01-01_)
+- :construction: refactored: 📦 bump clishelf from 0.1.0 to 0.1.1 (_2024-01-01_)
+- :construction: refactored: ⬆ bump pypa/gh-action-pypi-publish from 1.8.10 to 1.8.11 (_2023-12-01_)
+- :construction: refactored: 📦 bump clishelf from 0.0.4 to 0.1.0 (_2023-11-01_)
+
+### Fix Bugs
+
+- :gear: fixed: change name of config data for clishelf on pyproject file. (_2024-01-04_)
+
+### Build & Workflow
+
+- :toolbox: build: change timezone from UTC to Etc/UTC. (_2023-11-22_)
+- :toolbox: build: change frequency of dependabot from weekly to monthly. (_2023-11-22_)
+
 ## 0.4.3
 
 ### Features
