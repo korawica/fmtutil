@@ -115,6 +115,9 @@ pretty = true
 strict = true
 warn_unreachable = true
 warn_unused_ignores = false
+exclude = [
+    '__version\.py$',
+]
 
 [tool.black]
 line-length = 80

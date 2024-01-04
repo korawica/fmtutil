@@ -173,6 +173,6 @@ def bytes2str(value: String) -> str:
     return value
 
 
-def float2decimal(value: float, precision: int = 15):
+def float2decimal(value: float, precision: int = 15) -> Decimal:
     """Convert float to decimal with default precision value."""
     return Decimal(value).quantize(Decimal(10) ** -precision)

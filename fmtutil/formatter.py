@@ -3,7 +3,7 @@
 # Licensed under the MIT License. See LICENSE in the project root for
 # license information.
 # ------------------------------------------------------------------------------
-# mypy: disable-error-code="attr-defined"
+# mypy: disable-error-code="attr-defined,unreachable,misc"
 """
 This is the Main of the Formatter Objects that able to format every string
 value that you want by less config and abstract override methods when inherit
@@ -67,8 +67,8 @@ FormatterType = Type["Formatter"]
 FormatterGroupType = Type["FormatterGroup"]
 ConstantType = Type["Constant"]
 
-PriorityCallable = Union[Callable[[Any], Any], Callable[[], Any], partial]
-FormatterCallable = Union[Callable[[], Any], partial]
+PriorityCallable = Union[Callable[[Any], Any], Callable[[], Any], partial[Any]]
+FormatterCallable = Union[Callable[[], Any], partial[Any]]
 
 
 class PriorityValue(TypedDict):
@@ -663,7 +663,9 @@ class Formatter(BaseFormatter):
                 if not set_strict_mode:
                     continue
                 elif (name in _formats) and getter != (
-                    p := props.value(_formats[name])
+                    p := props.value(
+                        _formats[name],  # type: ignore[call-arg]
+                    )
                 ):
                     raise FormatterValueError(
                         f"Parsing duplicate values do not equal, {getter} and "
@@ -717,7 +719,7 @@ class Formatter(BaseFormatter):
     def __lt__(self, other: Formatter) -> bool:
         return self.value.__lt__(other.value)  # type: ignore[no-any-return]
 
-    def _setter_std_value(self, flag: bool = True) -> NoReturn:
+    def _setter_std_value(self, flag: bool = True) -> None:
         """Setting standard value that have an argument name be the class name
         with lower case if input flag is True.
 
@@ -2950,7 +2952,7 @@ class Storage(Formatter):
 
     @staticmethod
     def prepare_value(
-        value: Optional[int, float, Decimal, str],
+        value: Union[int, float, Decimal, str, None],
     ) -> Decimal:
         """Prepare value before passing to convert logic in the formatter
         method that define by property of this formatter object. Return 0 if an
