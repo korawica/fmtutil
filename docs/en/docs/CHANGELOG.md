@@ -2,6 +2,12 @@
 
 ## Latest Changes
 
+## 1.0.0
+
+### Features
+
+- :dart: feat: migrate code from py3.8 to py3.9 (#42) (_2024-01-04_)
+
 ## 0.4.4
 
 ### Features
