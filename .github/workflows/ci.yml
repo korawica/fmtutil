@@ -52,7 +52,9 @@ jobs:
       - run: ls -al
 
       - name: Store coverage file
-        uses: actions/upload-artifact@v4
+        # FIXED: Revert version of upload-artifact from 4 to 3
+        # https://github.com/actions/upload-artifact/issues/478
+        uses: actions/upload-artifact@v3
         with:
           name: coverage
           path: coverage
@@ -122,14 +124,18 @@ jobs:
 #          COVERAGE_DATA_BRANCH: coverage
 
 #      - name: Store Pull Request comment to be posted
-#        uses: actions/upload-artifact@v4
+#        # FIXED: Revert version of upload-artifact from 4 to 3
+#        # https://github.com/actions/upload-artifact/issues/478
+#        uses: actions/upload-artifact@v3
 #        if: steps.coverage_comment.outputs.COMMENT_FILE_WRITTEN == 'true'
 #        with:
 #          name: coverage-comment-action
 #          path: coverage-comment-action.txt
 
       - name: Store coverage HTML
-        uses: actions/upload-artifact@v4
+        # FIXED: Revert version of upload-artifact from 4 to 3
+        # https://github.com/actions/upload-artifact/issues/478
+        uses: actions/upload-artifact@v3
         with:
           name: coverage-html
           path: htmlcov
