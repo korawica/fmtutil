@@ -144,12 +144,8 @@ class FormatterTestCase(unittest.TestCase):
     def test_base_formatter_properties(self):
         with self.assertRaises(TypeError) as context:
             fmt.Formatter()
-        print(str(context.exception))
         self.assertTrue(
-            (
-                "Can't instantiate abstract class Formatter with abstract "
-                "methods"
-            )
+            "Can't instantiate abstract class Formatter"
             in str(context.exception)
         )
         for value in (
@@ -164,12 +160,8 @@ class FormatterTestCase(unittest.TestCase):
     def test_base_formatter_init_with_fmt(self):
         with self.assertRaises(TypeError) as context:
             fmt.Formatter({"month": 1})
-        print(str(context.exception))
         self.assertTrue(
-            (
-                "Can't instantiate abstract class Formatter with abstract "
-                "methods"
-            )
+            "Can't instantiate abstract class Formatter"
             in str(context.exception)
         )
         for value in (
@@ -222,12 +214,13 @@ class FormatterTestCase(unittest.TestCase):
     def test_new_format_without_priorities(self):
         with self.assertRaises(TypeError) as context:
             self.not_imp_priority_cls()
-        print(str(context.exception))
+        # TODO: Migrate to python 3.12
+        #   Exception:
+        #       Can't instantiate abstract class NotImpPriority without an
+        #       implementation for abstract methods 'prepare_value',
+        #       'priorities'
         self.assertTrue(
-            (
-                "Can't instantiate abstract class NotImpPriority with abstract "
-                "methods"
-            )
+            "Can't instantiate abstract class NotImpPriority"
             in str(context.exception)
         )
         for value in ("prepare_value", "priorities"):
