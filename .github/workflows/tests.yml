@@ -33,10 +33,10 @@ jobs:
         os:
           - ubuntu-latest  # `windows-latest`
         python-version:
-          - "3.8"
           - "3.9"
           - "3.10"
           - "3.11"
+          - "3.12"
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -61,7 +61,7 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -e .
-          pip install "pytest>=7.4.2,<8.0.0"
+          pip install "pytest>=7.4.3,<8.0.0"
 
       - name: Check git is working
         run: |

@@ -175,7 +175,7 @@ class SlotLevel:
         :return: A sum of weighted value from a True value in any slot
             position.
         """
-        return sum(x[0] * int(x[1]) for x in enumerate(self.slot, start=1))
+        return sum(index * int(i) for index, i in enumerate(self.slot, start=1))
 
     def update(
         self,
@@ -1882,7 +1882,7 @@ class Version(Formatter, level=4):
         """
         return {
             "epoch": {
-                "value": lambda x: x.rstrip("!"),
+                "value": lambda x: x.removesuffix("!"),
                 "level": 4,
             },
             "epoch_num": {
@@ -1934,7 +1934,7 @@ class Version(Formatter, level=4):
                 "level": 0,
             },
             "local": {
-                "value": lambda x: x.lstrip("+"),
+                "value": lambda x: x.removeprefix("+"),
                 "level": 0,
             },
             "local_str": {
@@ -3610,7 +3610,7 @@ class FormatterGroup:
         rs: Dict[str, DictStr] = defaultdict(dict)
         for group in parser_rs:
             group_origin: str = group.split("__")[0]
-            rs[group_origin] = {**parser_rs[group]["props"], **rs[group_origin]}
+            rs[group_origin] |= parser_rs[group]["props"]
         return cls(formats=rs)
 
     @classmethod
