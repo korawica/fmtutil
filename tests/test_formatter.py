@@ -144,14 +144,21 @@ class FormatterTestCase(unittest.TestCase):
     def test_base_formatter_properties(self):
         with self.assertRaises(TypeError) as context:
             fmt.Formatter()
-        print(str(context.exception))
         self.assertTrue(
             (
                 "Can't instantiate abstract class Formatter with abstract "
-                "methods formatter, prepare_value, priorities, string, value"
+                "methods"
             )
             in str(context.exception)
         )
+        for value in (
+            "formatter",
+            "prepare_value",
+            "priorities",
+            "string",
+            "value",
+        ):
+            self.assertTrue(value in str(context.exception))
 
     def test_base_formatter_init_with_fmt(self):
         with self.assertRaises(TypeError) as context:
@@ -159,10 +166,18 @@ class FormatterTestCase(unittest.TestCase):
         self.assertTrue(
             (
                 "Can't instantiate abstract class Formatter with abstract "
-                "methods formatter, prepare_value, priorities, string, value"
+                "methods"
             )
             in str(context.exception)
         )
+        for value in (
+            "formatter",
+            "prepare_value",
+            "priorities",
+            "string",
+            "value",
+        ):
+            self.assertTrue(value in str(context.exception))
 
     def test_base_formatter_parse_without_fmt(self):
         with self.assertRaises(NotImplementedError) as context:
@@ -206,10 +221,14 @@ class FormatterTestCase(unittest.TestCase):
         with self.assertRaises(TypeError) as context:
             self.not_imp_priority_cls()
         self.assertTrue(
-            "Can't instantiate abstract class NotImpPriority "
-            "with abstract methods prepare_value, priorities"
+            (
+                "Can't instantiate abstract class NotImpPriority with abstract "
+                "methods"
+            )
             in str(context.exception)
         )
+        for value in ("prepare_value", "priorities"):
+            self.assertTrue(value in str(context.exception))
 
     def test_new_validate_error(self):
         with self.assertRaises(fmt.FormatterValueError) as context:
