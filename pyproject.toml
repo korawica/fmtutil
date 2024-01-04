@@ -49,7 +49,7 @@ dev = [
 [project.scripts]
 fmtutil = "fmtutil.__main__:main"
 
-[tool.utils.version]
+[tool.shelf.version]
 version = "./fmtutil/__about__.py"
 changelog = "./docs/en/docs/CHANGELOG.md"
 
