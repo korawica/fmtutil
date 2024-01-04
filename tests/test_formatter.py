@@ -205,13 +205,11 @@ class FormatterTestCase(unittest.TestCase):
     def test_new_format_without_priorities(self):
         with self.assertRaises(TypeError) as context:
             self.not_imp_priority_cls()
-        # TODO: Change merge asserts together when move to python39
-        #  (This is issue of python38, error statement have `s` after `method`)
         self.assertTrue(
             "Can't instantiate abstract class NotImpPriority "
-            "with abstract method" in str(context.exception)
+            "with abstract methods prepare_value, priorities"
+            in str(context.exception)
         )
-        self.assertTrue("priorities" in str(context.exception))
 
     def test_new_validate_error(self):
         with self.assertRaises(fmt.FormatterValueError) as context:
