@@ -729,7 +729,7 @@ class VersionPackage(BaseVersion):
         self.pre: Optional[str] = None if pre is None else str(pre)
         self.post: Optional[str] = None if post is None else str(post)
         self.dev: Optional[str] = None if dev is None else str(dev)
-        self.local = local
+        self.local = None if local is None else str(local)
 
     def __extract_tuple(self):
         release: Tuple[int, ...] = necessary_release(self.to_tuple()[1:4])

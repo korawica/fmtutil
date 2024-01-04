@@ -10,7 +10,7 @@ build-backend = "hatchling.build"
 name = "fmtutil"
 description = "The Utility Formatter Objects"
 readme = "README.md"
-requires-python = ">=3.8.10"
+requires-python = ">=3.9.0"
 license = "MIT"
 keywords = [
     'utility',
@@ -26,10 +26,10 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
     "python-dateutil>=2.8.2,<3.0.0",
@@ -44,6 +44,9 @@ Homepage = "https://github.com/korawica/fmtutil/"
 dev = [
     "clishelf==0.1.1",
     "types-python-dateutil==2.8.19.14",
+]
+perf = [
+    "memory-profiler==0.61.0",
 ]
 
 [project.scripts]
@@ -105,17 +108,20 @@ addopts = [
 ]
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.9"
 files = ["fmtutil"]
 show_error_codes = true
 pretty = true
 strict = true
 warn_unreachable = true
 warn_unused_ignores = false
+exclude = [
+    '__version\.py$',
+]
 
 [tool.black]
 line-length = 80
-target-version = ['py38']
+target-version = ['py39']
 exclude = """
 (
     /(

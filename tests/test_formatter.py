@@ -144,25 +144,34 @@ class FormatterTestCase(unittest.TestCase):
     def test_base_formatter_properties(self):
         with self.assertRaises(TypeError) as context:
             fmt.Formatter()
-        print(str(context.exception))
         self.assertTrue(
-            (
-                "Can't instantiate abstract class Formatter with abstract "
-                "methods formatter, prepare_value, priorities, string, value"
-            )
+            "Can't instantiate abstract class Formatter"
             in str(context.exception)
         )
+        for value in (
+            "formatter",
+            "prepare_value",
+            "priorities",
+            "string",
+            "value",
+        ):
+            self.assertTrue(value in str(context.exception))
 
     def test_base_formatter_init_with_fmt(self):
         with self.assertRaises(TypeError) as context:
             fmt.Formatter({"month": 1})
         self.assertTrue(
-            (
-                "Can't instantiate abstract class Formatter with abstract "
-                "methods formatter, prepare_value, priorities, string, value"
-            )
+            "Can't instantiate abstract class Formatter"
             in str(context.exception)
         )
+        for value in (
+            "formatter",
+            "prepare_value",
+            "priorities",
+            "string",
+            "value",
+        ):
+            self.assertTrue(value in str(context.exception))
 
     def test_base_formatter_parse_without_fmt(self):
         with self.assertRaises(NotImplementedError) as context:
@@ -205,13 +214,17 @@ class FormatterTestCase(unittest.TestCase):
     def test_new_format_without_priorities(self):
         with self.assertRaises(TypeError) as context:
             self.not_imp_priority_cls()
-        # TODO: Change merge asserts together when move to python39
-        #  (This is issue of python38, error statement have `s` after `method`)
+        # TODO: Migrate to python 3.12
+        #   Exception:
+        #       Can't instantiate abstract class NotImpPriority without an
+        #       implementation for abstract methods 'prepare_value',
+        #       'priorities'
         self.assertTrue(
-            "Can't instantiate abstract class NotImpPriority "
-            "with abstract method" in str(context.exception)
+            "Can't instantiate abstract class NotImpPriority"
+            in str(context.exception)
         )
-        self.assertTrue("priorities" in str(context.exception))
+        for value in ("prepare_value", "priorities"):
+            self.assertTrue(value in str(context.exception))
 
     def test_new_validate_error(self):
         with self.assertRaises(fmt.FormatterValueError) as context:

@@ -15,7 +15,7 @@ DictStr = Dict[str, str]
 TupleInt = Tuple[int, ...]
 
 
-class Inf:
+class InfObject:
     def __repr__(self) -> str:
         return "Infinity"
 
@@ -37,14 +37,14 @@ class Inf:
     def __ge__(self, other: object) -> bool:
         return True
 
-    def __neg__(self: object) -> NegInf:
+    def __neg__(self: object) -> NegInfObject:
         return NegInf
 
 
-Inf = Inf()
+Inf = InfObject()
 
 
-class NegInf:
+class NegInfObject:
     def __repr__(self) -> str:
         return "-Infinity"
 
@@ -66,8 +66,8 @@ class NegInf:
     def __ge__(self, other: object) -> bool:
         return False
 
-    def __neg__(self: object) -> Inf:
+    def __neg__(self: object) -> InfObject:
         return Inf
 
 
-NegInf = NegInf()
+NegInf = NegInfObject()
