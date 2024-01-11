@@ -82,18 +82,18 @@ class ConstantTestCase(unittest.TestCase):
     def test_const_init_raise(self):
         with self.assertRaises(fmt.FormatterArgumentError) as context:
             fmt.make_const(name="DemoConst")
-        self.assertTrue(
+        self.assertIn(
             (
                 "with 'formatter', The Constant constructor function must pass "
                 "formatter nor fmt arguments."
-            )
-            in str(context.exception)
+            ),
+            str(context.exception),
         )
         with self.assertRaises(fmt.FormatterArgumentError) as context:
             fmt.make_const(formatter={"%n": "normal"})
-        self.assertTrue(
-            "with 'name', The Constant want name arguments"
-            in str(context.exception)
+        self.assertIn(
+            "with 'name', The Constant want name arguments",
+            str(context.exception),
         )
 
     def test_const_regex(self):
@@ -151,12 +151,12 @@ class ConstantTestCase(unittest.TestCase):
     def test_const_parser_raise(self):
         with self.assertRaises(FormatterValueError) as context:
             self.const.parse("special_job", "%s_life")
-        self.assertTrue(
+        self.assertIn(
             (
                 "value 'special_job' does not match "
                 "with format '(?P<sierra__0>special)_life'"
-            )
-            in str(context.exception)
+            ),
+            str(context.exception),
         )
 
     def test_const_properties(self):
@@ -192,9 +192,9 @@ class ConstantTestCase(unittest.TestCase):
         self.assertEqual("normal normal special", self.ct.format("%n %n %s"))
 
     def test_const_order(self):
-        self.assertTrue(self.ct < self.ct02)
-        self.assertTrue(self.ct > self.ct02)
-        self.assertFalse(self.ct == "demo")
+        self.assertLess(self.ct, self.ct02)
+        self.assertGreater(self.ct, self.ct02)
+        self.assertNotEqual(self.ct, "demo")
 
     def test_const_from_formatter_method(self):
         name_const = fmt.Naming.parse("data engineer", fmt="%n").to_const()

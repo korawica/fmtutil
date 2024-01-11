@@ -68,16 +68,16 @@ class SerialTestCase(unittest.TestCase):
     def test_serial_formatter_raise(self):
         with self.assertRaises(fmt.FormatterValueError) as context:
             fmt.Serial.formatter(1.23)
-        self.assertTrue(
-            "Serial formatter does not support for value, 1.23."
-            in str(context.exception)
+        self.assertIn(
+            "Serial formatter does not support for value, 1.23.",
+            str(context.exception),
         )
 
         with self.assertRaises(fmt.FormatterValueError) as context:
             fmt.Serial.formatter("a")
-        self.assertTrue(
-            "Serial formatter does not support for value, 'a'."
-            in str(context.exception)
+        self.assertIn(
+            "Serial formatter does not support for value, 'a'.",
+            str(context.exception),
         )
 
     def test_serial_properties(self):
@@ -105,24 +105,24 @@ class SerialTestCase(unittest.TestCase):
 
         with self.assertRaises(FormatterKeyError) as context:
             self.sr_default.format("%Z")
-        self.assertTrue(
-            "the format: '%Z' does not support for 'Serial'"
-            in str(context.exception)
+        self.assertIn(
+            "the format: '%Z' does not support for 'Serial'",
+            str(context.exception),
         )
 
     def test_serial_order(self):
-        self.assertTrue(self.sr_p <= self.sr_p2)
-        self.assertTrue(self.sr_p < self.sr_p2)
-        self.assertFalse(self.sr_p == self.sr_p2)
+        self.assertLessEqual(self.sr_p, self.sr_p2)
+        self.assertLess(self.sr_p, self.sr_p2)
+        self.assertNotEqual(self.sr_p, self.sr_p2)
         self.assertFalse(self.sr_p >= self.sr_p2)
         self.assertFalse(self.sr_p > self.sr_p2)
 
     def test_level_compare(self):
         self.assertEqual(1, self.sr_p.level.value)
         self.assertEqual(0, self.sr_default.level.value)
-        self.assertTrue(self.sr_p.level == self.sr_p2.level)
-        self.assertFalse(self.sr_default.level == self.sr_p2.level)
-        self.assertTrue(self.sr_default.level < self.sr_p2.level)
+        self.assertEqual(self.sr_p.level, self.sr_p2.level)
+        self.assertNotEqual(self.sr_default.level, self.sr_p2.level)
+        self.assertLess(self.sr_default.level, self.sr_p2.level)
         self.assertListEqual([True], self.sr_p.level.slot)
         self.assertListEqual([False], self.sr_default.level.slot)
 

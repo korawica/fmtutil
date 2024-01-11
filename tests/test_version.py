@@ -48,8 +48,14 @@ class BaseVersionTestCase(unittest.TestCase):
         )
 
     def test_base_ver_order(self):
-        self.assertTrue(vs.BaseVersion(1, 0, 0) >= vs.BaseVersion(1, 0, 0))
-        self.assertTrue(vs.BaseVersion(1, 0, 1) >= vs.BaseVersion(1, 0, 0))
+        self.assertGreaterEqual(
+            vs.BaseVersion(1, 0, 0),
+            vs.BaseVersion(1, 0, 0),
+        )
+        self.assertGreaterEqual(
+            vs.BaseVersion(1, 0, 1),
+            vs.BaseVersion(1, 0, 0),
+        )
         self.assertFalse(vs.BaseVersion(1, 0, 0) >= vs.BaseVersion(1, 0, 1))
         self.assertFalse(vs.BaseVersion(1, 0, 0) > vs.BaseVersion(1, 0, 1))
         self.assertTrue(vs.BaseVersion(2, 10, 0) > vs.BaseVersion(1, 10, 99))
@@ -66,9 +72,9 @@ class BaseVersionTestCase(unittest.TestCase):
         self.assertFalse(vs.BaseVersion(0, 0, 0) < vs.BaseVersion(0, 0, 0))
 
     def test_base_vs_order_special(self):
-        self.assertTrue(vs.BaseVersion(0, 0, 0) < (1, 0, 0))
-        self.assertTrue(vs.BaseVersion(0, 0, 0) == (0, 0, 0))
-        self.assertTrue(vs.BaseVersion(0, 15, 1) >= "0.0.20")
+        self.assertLess(vs.BaseVersion(0, 0, 0), (1, 0, 0))
+        self.assertEqual(vs.BaseVersion(0, 0, 0), (0, 0, 0))
+        self.assertGreaterEqual(vs.BaseVersion(0, 15, 1), "0.0.20")
 
     def test_base_vs_wildcard(self):
         self.assertTupleEqual(
@@ -158,27 +164,32 @@ class VersionSemverTestCase(unittest.TestCase):
 
     def test_ver_semver_order(self):
         semver_parse = vs.VersionSemver.parse
-        self.assertTrue(
-            semver_parse("0.0.0-pre10+build99") == semver_parse("0.0.0-pre10")
+        self.assertEqual(
+            semver_parse("0.0.0-pre10+build99"),
+            semver_parse("0.0.0-pre10"),
         )
-        self.assertTrue(semver_parse("0.0.1") == semver_parse("0.0.1"))
-        self.assertTrue(semver_parse("0.0.1") == semver_parse("0.0.1+build.21"))
+        self.assertEqual(semver_parse("0.0.1"), semver_parse("0.0.1"))
+        self.assertEqual(semver_parse("0.0.1"), semver_parse("0.0.1+build.21"))
         self.assertFalse(semver_parse("0.0.1") != semver_parse("0.0.1"))
-        self.assertTrue(semver_parse("0.0.1") <= semver_parse("0.0.1"))
-        self.assertTrue(semver_parse("1.0.0") <= semver_parse("4.2.1"))
+        self.assertLessEqual(semver_parse("0.0.1"), semver_parse("0.0.1"))
+        self.assertLessEqual(semver_parse("1.0.0"), semver_parse("4.2.1"))
         self.assertFalse(semver_parse("1.0.0") > semver_parse("4.2.1"))
-        self.assertTrue(semver_parse("1.0.0") > semver_parse("1.0.0-pre.1"))
-        self.assertTrue(
-            semver_parse("0.15.0-rc1") > semver_parse("0.0.16-rc"),
+        self.assertGreater(semver_parse("1.0.0"), semver_parse("1.0.0-pre.1"))
+        self.assertGreater(
+            semver_parse("0.15.0-rc1"),
+            semver_parse("0.0.16-rc"),
         )
-        self.assertTrue(
-            semver_parse("1.15.0-rc1") > semver_parse("1.0.16-rc"),
+        self.assertGreater(
+            semver_parse("1.15.0-rc1"),
+            semver_parse("1.0.16-rc"),
         )
-        self.assertTrue(
-            semver_parse("1.15.0-rc2") >= semver_parse("1.15.0-rc1"),
+        self.assertGreaterEqual(
+            semver_parse("1.15.0-rc2"),
+            semver_parse("1.15.0-rc1"),
         )
-        self.assertTrue(
-            semver_parse("1.15.0") > semver_parse("1.15.0-rc1"),
+        self.assertGreater(
+            semver_parse("1.15.0"),
+            semver_parse("1.15.0-rc1"),
         )
 
 
@@ -211,11 +222,11 @@ class VersionPackageTestCase(unittest.TestCase):
         )
 
     def test_ver_package_order(self):
-        self.assertTrue(
-            vs.VersionPackage.parse("0.15.rc1")
-            > vs.VersionPackage.parse("0.0.16.rc"),
+        self.assertGreater(
+            vs.VersionPackage.parse("0.15.rc1"),
+            vs.VersionPackage.parse("0.0.16.rc"),
         )
-        self.assertTrue(
-            vs.VersionPackage.parse("1.15.rc1")
-            > vs.VersionPackage.parse("1.0.16.rc"),
+        self.assertGreater(
+            vs.VersionPackage.parse("1.15.rc1"),
+            vs.VersionPackage.parse("1.0.16.rc"),
         )

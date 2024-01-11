@@ -67,9 +67,12 @@ class FormatterGroupTestCase(unittest.TestCase):
                     "timestamp": fmt.Datetime(),
                 }
             )
-        self.assertTrue(
-            "VersionDatetimeGroup does not support for this group name, "
-            "'timestamp'." in str(context.exception)
+        self.assertIn(
+            (
+                "VersionDatetimeGroup does not support for this group name, "
+                "'timestamp'."
+            ),
+            str(context.exception),
         )
 
         with self.assertRaises(fmt.FormatterGroupArgumentError) as context:
@@ -81,10 +84,12 @@ class FormatterGroupTestCase(unittest.TestCase):
                     "timestamp": fmt.Naming.parse("demo", "%s"),
                 }
             )
-        self.assertTrue(
-            "with 'group', Make group constructor function want group with "
-            "type, Dict[str, FormatterType], not instance of 'Naming'."
-            in str(context.exception)
+        self.assertIn(
+            (
+                "with 'group', Make group constructor function want group with "
+                "type, Dict[str, FormatterType], not instance of 'Naming'."
+            ),
+            str(context.exception),
         )
 
         with self.assertRaises(ValueError) as context:
@@ -96,12 +101,12 @@ class FormatterGroupTestCase(unittest.TestCase):
                     "timestamp": datetime.datetime,
                 }
             )
-        self.assertTrue(
+        self.assertIn(
             (
                 "Make group constructor function want group with type, "
                 "Dict[str, FormatterType], not 'datetime'"
-            )
-            in str(context.exception)
+            ),
+            str(context.exception),
         )
 
     def test_fmt_group_const(self):
@@ -155,24 +160,24 @@ class FormatterGroupTestCase(unittest.TestCase):
                     "naming": ["data", "pipeline"],
                 }
             )
-        self.assertTrue(
+        self.assertIn(
             (
                 "The Constant class does not support for passing value to "
                 "this class initialization."
-            )
-            in str(context.exception)
+            ),
+            str(context.exception),
         )
 
         with self.assertRaises(fmt.FormatterGroupValueError) as context:
             ConstGroup.from_value(
                 {"timestamps": datetime.datetime(2021, 1, 1, 12)}
             )
-        self.assertTrue(
+        self.assertIn(
             (
                 "NamingConstNamingConstDatetimeGroup does not support for this "
                 "group name, 'timestamps'."
-            )
-            in str(context.exception)
+            ),
+            str(context.exception),
         )
         with self.assertRaises(fmt.FormatterGroupValueError) as context:
             ConstGroup.from_formats(
@@ -180,12 +185,12 @@ class FormatterGroupTestCase(unittest.TestCase):
                     "timestamps": {"year": "2021", "month": "01", "day": "01"},
                 }
             )
-        self.assertTrue(
+        self.assertIn(
             (
                 "NamingConstNamingConstDatetimeGroup does not support for this "
                 "group name, 'timestamps'."
-            )
-            in str(context.exception)
+            ),
+            str(context.exception),
         )
 
     def test_fmt_group_properties(self):
@@ -274,7 +279,7 @@ class FormatterGroupTestCase(unittest.TestCase):
                 "data_engineer_in_20220101_de",
                 fmt="{name:%s}_in_{datetime:%Y%m%d}_{name:%a}_extension",
             )
-        self.assertTrue(
+        self.assertIn(
             (
                 r"with 'format', 'data_engineer_in_20220101_de' does not "
                 r"match with the format: '^(?P<name__0>"
@@ -283,8 +288,8 @@ class FormatterGroupTestCase(unittest.TestCase):
                 r"(?P<datetime__0month_pad__00>01|02|03|04|05|06|07|08|09|10"
                 r"|11|12)(?P<datetime__0day_pad__00>[0-3][0-9]))_"
                 r"(?P<name__1>(?P<name__1shorts__01>[a-z0-9]+))_extension$'"
-            )
-            in str(context.exception)
+            ),
+            str(context.exception),
         )
 
     def test_fmt_group_format(self):
@@ -308,18 +313,18 @@ class FormatterGroupTestCase(unittest.TestCase):
     def test_fmt_group_format_raise(self):
         with self.assertRaises(fmt.FormatterGroupArgumentError) as context:
             self.gp2.format("{datetime:%Y_%m_%d_%H%M%S_%K}_v{version:%f}.csv")
-        self.assertTrue(
+        self.assertIn(
             (
                 "with 'format', the format: '%K' does not support for "
                 "'Datetime' in {datetime:%Y_%m_%d_%H%M%S_%K}"
-            )
-            in str(context.exception)
+            ),
+            str(context.exception),
         )
         with self.assertRaises(fmt.FormatterGroupValueError) as context:
             self.gp2.format("{timestamp:%Y_%m_%d_%H%M%S}")
-        self.assertTrue(
-            "This group, 'timestamp', does not set on `cls.base_groups`."
-            in str(context.exception)
+        self.assertIn(
+            "This group, 'timestamp', does not set on `cls.base_groups`.",
+            str(context.exception),
         )
 
     def test_fmt_group_order(self):
@@ -333,15 +338,15 @@ class FormatterGroupTestCase(unittest.TestCase):
                 fmt="{datetime:%Y%m%d}_{version}",
             )
         )
-        self.assertTrue(
+        self.assertLess(
             self.DateVersion.parse(
                 "20220105_0_9_1",
                 fmt="{datetime:%Y%m%d}_{version}",
-            )
-            < self.DateVersion.parse(
+            ),
+            self.DateVersion.parse(
                 "20220111_0_9_1",
                 fmt="{datetime:%Y%m%d}_{version}",
-            )
+            ),
         )
         # Datetime is greater but version is less that other
         self.assertFalse(
@@ -354,45 +359,47 @@ class FormatterGroupTestCase(unittest.TestCase):
                 fmt="{datetime:%Y%m%d}_{version}",
             )
         )
-        self.assertTrue(
-            self.DateVersion.parse(
-                "20220101_0_1_0",
-                fmt="{datetime:%Y%m%d}_{version}",
-            )
-            > self.DateVersion.parse(
-                "20220101_0_0_9",
-                fmt="{datetime:%Y%m%d}_{version}",
+        (
+            self.assertGreater(
+                self.DateVersion.parse(
+                    "20220101_0_1_0",
+                    fmt="{datetime:%Y%m%d}_{version}",
+                ),
+                self.DateVersion.parse(
+                    "20220101_0_0_9",
+                    fmt="{datetime:%Y%m%d}_{version}",
+                ),
             )
         )
-        self.assertTrue(
+        self.assertNotEqual(
             self.DateVersion.parse(
                 "20220101_1_0_0",
                 fmt="{datetime:%Y%m%d}_{version}",
-            )
-            != self.DateVersion.parse(
+            ),
+            self.DateVersion.parse(
                 "20220101_0_9_1",
                 fmt="{datetime:%Y%m%d}_{version}",
-            )
+            ),
         )
-        self.assertTrue(
+        self.assertGreaterEqual(
             self.DateVersion.parse(
                 "20220101_1_0_0",
                 fmt="{datetime:%Y%m%d}_{version}",
-            )
-            >= self.DateVersion.parse(
+            ),
+            self.DateVersion.parse(
                 "20220101_0_9_1",
                 fmt="{datetime:%Y%m%d}_{version}",
-            )
+            ),
         )
-        self.assertTrue(
+        self.assertLessEqual(
             self.DateVersion.parse(
                 "20220101_1_0_0",
                 fmt="{datetime:%Y%m%d}_{version}",
-            )
-            <= self.DateVersion.parse(
+            ),
+            self.DateVersion.parse(
                 "20220101_1_0_0",
                 fmt="{datetime:%Y%m%d}_{version}",
-            )
+            ),
         )
 
     def test_fmt_group_order_raise(self):
@@ -404,9 +411,12 @@ class FormatterGroupTestCase(unittest.TestCase):
                 "20220101_test",
                 fmt="{datetime:%Y%m%d}_{name}",
             )
-        self.assertTrue(
-            "'<' not supported between instances of 'VersionDatetimeGroup' and "
-            "'NamingDatetimeGroup'" in str(context.exception)
+        self.assertIn(
+            (
+                "'<' not supported between instances of 'VersionDatetimeGroup' "
+                "and 'NamingDatetimeGroup'"
+            ),
+            str(context.exception),
         )
         with self.assertRaises(TypeError) as context:
             _ = self.DateVersion.parse(

@@ -29,12 +29,12 @@ class SlotLevelTestCase(unittest.TestCase):
     def test_slot_level_update_failed(self):
         with self.assertRaises(fmt.FormatterValueError) as context:
             fmt.SlotLevel(level=5).update(numbers=(6,), strict=True)
-        self.assertTrue(
+        self.assertIn(
             (
                 "number for update the slot level object "
                 "does not in range of 0 and 5."
-            )
-            in str(context.exception)
+            ),
+            str(context.exception),
         )
         self.assertEqual(
             "<SlotLevel(level=5)>",
@@ -144,9 +144,9 @@ class FormatterTestCase(unittest.TestCase):
     def test_base_formatter_properties(self):
         with self.assertRaises(TypeError) as context:
             fmt.Formatter()
-        self.assertTrue(
-            "Can't instantiate abstract class Formatter"
-            in str(context.exception)
+        self.assertIn(
+            "Can't instantiate abstract class Formatter",
+            str(context.exception),
         )
         for value in (
             "formatter",
@@ -155,14 +155,14 @@ class FormatterTestCase(unittest.TestCase):
             "string",
             "value",
         ):
-            self.assertTrue(value in str(context.exception))
+            self.assertIn(value, str(context.exception))
 
     def test_base_formatter_init_with_fmt(self):
         with self.assertRaises(TypeError) as context:
             fmt.Formatter({"month": 1})
-        self.assertTrue(
-            "Can't instantiate abstract class Formatter"
-            in str(context.exception)
+        self.assertIn(
+            "Can't instantiate abstract class Formatter",
+            str(context.exception),
         )
         for value in (
             "formatter",
@@ -171,44 +171,44 @@ class FormatterTestCase(unittest.TestCase):
             "string",
             "value",
         ):
-            self.assertTrue(value in str(context.exception))
+            self.assertIn(value, str(context.exception))
 
     def test_base_formatter_parse_without_fmt(self):
         with self.assertRaises(NotImplementedError) as context:
             fmt.Formatter.parse("dummy")
-        self.assertTrue(
-            "This Formatter class does not set default format string value."
-            in str(context.exception)
+        self.assertIn(
+            "This Formatter class does not set default format string value.",
+            str(context.exception),
         )
 
     def test_base_formatter_parse_with_fmt(self):
         with self.assertRaises(NotImplementedError) as context:
             fmt.Formatter.parse("dummy", "%Z")
-        self.assertTrue(
+        self.assertIn(
             (
                 "Please implement ``formatter`` static method "
                 "for this sub-formatter class"
-            )
-            in str(context.exception)
+            ),
+            str(context.exception),
         )
 
     def test_base_formatter_prepare_value(self):
         with self.assertRaises(NotImplementedError) as context:
             fmt.Formatter.prepare_value("Demo")
-        self.assertTrue(
+        self.assertIn(
             (
                 "Please implement ``prepare_value`` static method for this "
                 "sub-formatter class."
-            )
-            in str(context.exception)
+            ),
+            str(context.exception),
         )
 
     def test_new_format_with_wrong_formatter(self):
         with self.assertRaises(fmt.FormatterValueError) as context:
             self.wrong_fmt_cls.regex()
-        self.assertTrue(
-            "formatter does not contain `regex` or `cregex` "
-            "in dict value" in str(context.exception)
+        self.assertIn(
+            "formatter does not contain `regex` or `cregex` in dict value",
+            str(context.exception),
         )
 
     def test_new_format_without_priorities(self):
@@ -219,9 +219,9 @@ class FormatterTestCase(unittest.TestCase):
         #       Can't instantiate abstract class NotImpPriority without an
         #       implementation for abstract methods 'prepare_value',
         #       'priorities'
-        self.assertTrue(
-            "Can't instantiate abstract class NotImpPriority"
-            in str(context.exception)
+        self.assertIn(
+            "Can't instantiate abstract class NotImpPriority",
+            str(context.exception),
         )
         for value in ("prepare_value", "priorities"):
             self.assertTrue(value in str(context.exception))
@@ -229,9 +229,9 @@ class FormatterTestCase(unittest.TestCase):
     def test_new_validate_error(self):
         with self.assertRaises(fmt.FormatterValueError) as context:
             self.validate_fmt_cls()
-        self.assertTrue(
-            "Parsing value does not valid from validator"
-            in str(context.exception)
+        self.assertIn(
+            "Parsing value does not valid from validator",
+            str(context.exception),
         )
 
 
@@ -391,12 +391,12 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
     def test_type_formatter_regex(self):
         with self.assertRaises(fmt.FormatterArgumentError) as context:
             self.cst_with_type_cls_raise02.regex()
-        self.assertTrue(
+        self.assertIn(
             (
                 "with 'format', format cregex string that contain %Z regex "
                 "does not found."
-            )
-            in str(context.exception)
+            ),
+            str(context.exception),
         )
 
     def test_type_formatter_parse(self):
@@ -411,10 +411,10 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
 
         with self.assertRaises(fmt.FormatterValueError) as context:
             self.cst_with_type_cls_raise.parse("2000B", "%B")
-        self.assertTrue(
+        self.assertIn(
             (
                 "Regex format string does not set group name for parsing value "
                 "to its class."
-            )
-            in str(context.exception)
+            ),
+            str(context.exception),
         )

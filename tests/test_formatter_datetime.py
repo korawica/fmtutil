@@ -35,9 +35,9 @@ class DatetimeTestCase(unittest.TestCase):
     def test_datetime_formatter_raise(self):
         with self.assertRaises(fmt.FormatterValueError) as context:
             fmt.Datetime.formatter(2023)
-        self.assertTrue(
-            ("Datetime formatter does not support for value, 2023")
-            in str(context.exception)
+        self.assertIn(
+            "Datetime formatter does not support for value, 2023",
+            str(context.exception),
         )
 
     def test_datetime_regex(self):
@@ -130,87 +130,93 @@ class DatetimeTestCase(unittest.TestCase):
 
         with self.assertRaises(fmt.FormatterValueError) as context:
             fmt.Datetime.parse("2021-01-01 20220101", "%Y-%m-%d %Y%m%d")
-        self.assertTrue(
+        self.assertIn(
             (
                 "Parsing with some duplicate format name that have value "
                 "do not all equal."
-            )
-            in str(context.exception)
+            ),
+            str(context.exception),
         )
 
         with self.assertRaises(fmt.FormatterValueError) as context:
             fmt.Datetime.parse("2023-Sep Monday 5", "%Y-%b %A %-d")
-        self.assertTrue(
+        self.assertIn(
             (
                 "Week that was parsed does not equal with standard datetime, "
                 "this weekday should be Thursday."
-            )
-            in str(context.exception)
+            ),
+            str(context.exception),
         )
 
         # Week year with monday raise with month value.
         with self.assertRaises(fmt.FormatterValueError) as context:
             fmt.Datetime.parse("2023-Feb 03 36", "%Y-%b %W %-j")
-        self.assertTrue(
+        self.assertIn(
             (
                 "Parsing value does not valid with month: 02 and "
                 "week-year-monday: 03."
-            )
-            in str(context.exception)
+            ),
+            str(context.exception),
         )
 
         # Week year with monday raise with day value.
         with self.assertRaises(fmt.FormatterValueError) as context:
             fmt.Datetime.parse("2023-Feb 05 10", "%Y-%b %W %d")
-        self.assertTrue(
+        self.assertIn(
             (
                 "Parsing value does not valid with day: 10 and "
                 "week-year-monday: 05."
-            )
-            in str(context.exception)
+            ),
+            str(context.exception),
         )
 
         # Week year with sunday raise with month value.
         with self.assertRaises(fmt.FormatterValueError) as context:
             fmt.Datetime.parse("2023-Feb 03 36", "%Y-%b %U %-j")
-        self.assertTrue(
+        self.assertIn(
             (
                 "Parsing value does not valid with month: 02 and "
                 "week-year-sunday: 03."
-            )
-            in str(context.exception)
+            ),
+            str(context.exception),
         )
 
         # Week year with monday raise with day value.
         with self.assertRaises(fmt.FormatterValueError) as context:
             fmt.Datetime.parse("2023-Feb 05 10", "%Y-%b %U %d")
-        self.assertTrue(
+        self.assertIn(
             (
                 "Parsing value does not valid with day: 10 and "
                 "week-year-sunday: 05."
-            )
-            in str(context.exception)
+            ),
+            str(context.exception),
         )
 
         with self.assertRaises(fmt.FormatterValueError) as context:
             fmt.Datetime.parse("2023-Aug 253", "%Y-%b %-j")
-        self.assertTrue(
-            "Parsing value does not valid with month: 08 and day-year: 253."
-            in str(context.exception)
+        self.assertIn(
+            "Parsing value does not valid with month: 08 and day-year: 253.",
+            str(context.exception),
         )
 
         with self.assertRaises(fmt.FormatterValueError) as context:
             fmt.Datetime.parse("2023 D60, 21AM", "%Y D%-j, %H%p")
-        self.assertTrue(
-            "Locale that was parsed does not equal with standard datetime, "
-            "this locale should be PM." in str(context.exception)
+        self.assertIn(
+            (
+                "Locale that was parsed does not equal with standard datetime, "
+                "this locale should be PM."
+            ),
+            str(context.exception),
         )
 
         with self.assertRaises(fmt.FormatterArgumentError) as context:
             fmt.Datetime.parse("20231212", "%y%m%d%s")
-        self.assertTrue(
-            "with 'fmt', The format string, '%s', does not exists in "
-            "``cls.regex``." in str(context.exception)
+        self.assertIn(
+            (
+                "with 'fmt', The format string, '%s', does not exists in "
+                "``cls.regex``."
+            ),
+            str(context.exception),
         )
 
     def test_datetime_parser_cmp_datetime(self):
@@ -282,12 +288,12 @@ class DatetimeTestCase(unittest.TestCase):
             fmt.Datetime.parse(
                 "2023-09 Sep October 5", "%Y-%m %b %B %-d", strict=True
             )
-        self.assertTrue(
+        self.assertIn(
             (
                 "Parsing duplicate values do not equal, 09 and 10, in "
                 "``self.month`` with strict mode."
-            )
-            in str(context.exception)
+            ),
+            str(context.exception),
         )
 
     def test_datetime_format(self):
@@ -310,19 +316,16 @@ class DatetimeTestCase(unittest.TestCase):
 
         # NOTE: '20230123' is valid for python-version >= 3.11
         with self.assertRaises(ValueError) as context:
-            self.assertEqual(
-                "2023-01-23 00:00:00.000000",
-                fmt.Datetime.from_value("2023012300").string,
-            )
+            _ = fmt.Datetime.from_value("2023012300").string
         self.assertEqual(
             "Invalid isoformat string: '2023012300'",
             str(context.exception),
         )
 
     def test_datetime_order(self):
-        self.assertTrue(
-            fmt.Datetime.parse("2021-01-1 135043", "%Y-%m-%-d %f")
-            <= fmt.Datetime.parse("2021-01-2 135043", "%Y-%m-%-d %f")
+        self.assertLessEqual(
+            fmt.Datetime.parse("2021-01-1 135043", "%Y-%m-%-d %f"),
+            fmt.Datetime.parse("2021-01-2 135043", "%Y-%m-%-d %f"),
         )
         self.assertFalse(
             fmt.Datetime.parse("2021-01-1 135043", "%Y-%m-%-d %f")

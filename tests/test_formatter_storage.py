@@ -78,9 +78,9 @@ class StorageTestCase(unittest.TestCase):
     def test_storage_formatter_raise(self):
         with self.assertRaises(fmt.FormatterValueError) as context:
             fmt.Storage.formatter("1.23a")
-        self.assertTrue(
-            "Storage formatter does not support for value, '1.23a'."
-            in str(context.exception)
+        self.assertIn(
+            "Storage formatter does not support for value, '1.23a'.",
+            str(context.exception),
         )
 
     def test_storage_properties(self):
@@ -109,23 +109,23 @@ class StorageTestCase(unittest.TestCase):
 
         with self.assertRaises(fmt.FormatterKeyError) as context:
             self.st_default.format("%A")
-        self.assertTrue(
-            "the format: '%A' does not support for 'Storage'"
-            in str(context.exception)
+        self.assertIn(
+            "the format: '%A' does not support for 'Storage'",
+            str(context.exception),
         )
 
     def test_storage_order(self):
-        self.assertTrue(self.st_p <= self.st_p2)
-        self.assertTrue(self.st_p < self.st_p2)
-        self.assertFalse(self.st_p == self.st_p2)
+        self.assertLessEqual(self.st_p, self.st_p2)
+        self.assertLess(self.st_p, self.st_p2)
+        self.assertNotEqual(self.st_p, self.st_p2)
         self.assertFalse(self.st_p >= self.st_p2)
         self.assertFalse(self.st_p > self.st_p2)
 
     def test_level_compare(self):
         self.assertEqual(1, self.st_p.level.value)
         self.assertEqual(0, self.st_default.level.value)
-        self.assertTrue(self.st_p.level == self.st_p2.level)
-        self.assertFalse(self.st_default.level == self.st_p2.level)
-        self.assertTrue(self.st_default.level < self.st_p2.level)
+        self.assertEqual(self.st_p.level, self.st_p2.level)
+        self.assertNotEqual(self.st_default.level, self.st_p2.level)
+        self.assertLess(self.st_default.level, self.st_p2.level)
         self.assertListEqual([True], self.st_p.level.slot)
         self.assertListEqual([False], self.st_default.level.slot)

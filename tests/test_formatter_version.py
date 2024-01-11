@@ -60,9 +60,9 @@ class VersionTestCase(unittest.TestCase):
                     "pre": "rx3",
                 }
             )
-        self.assertTrue(
-            "Convert prefix dose not valid for value `rx3`"
-            in str(context.exception)
+        self.assertIn(
+            "Convert prefix dose not valid for value `rx3`",
+            str(context.exception),
         )
 
     def test_version_regex(self):
@@ -79,8 +79,14 @@ class VersionTestCase(unittest.TestCase):
                 "%d": "(?P<dev>dev[-_\\.]?[0-9]+)",
                 "%l": "(?P<local>\\+[a-z0-9]+(?:[-_\\.][a-z0-9]+)*)",
                 "%-l": "(?P<local_str>[a-z0-9]+(?:[-_\\.][a-z0-9]+)*)",
-                "%f": "(?P<major>\\d{1,3})_(?P<minor>\\d{1,3})_(?P<micro>\\d{1,3})",
-                "%-f": "(?P<major>\\d{1,3})-(?P<minor>\\d{1,3})-(?P<micro>\\d{1,3})",
+                "%f": (
+                    "(?P<major>\\d{1,3})_(?P<minor>\\d{1,3})_"
+                    "(?P<micro>\\d{1,3})"
+                ),
+                "%-f": (
+                    "(?P<major>\\d{1,3})-(?P<minor>\\d{1,3})-"
+                    "(?P<micro>\\d{1,3})"
+                ),
             },
             fmt.Version.regex(),
         )
@@ -145,9 +151,9 @@ class VersionTestCase(unittest.TestCase):
     def test_version_formatter_raise(self):
         with self.assertRaises(ValueError) as context:
             fmt.Version.formatter("2.0.0.1")
-        self.assertTrue(
-            "2.0.0.1 is not valid Packaging Version string"
-            in str(context.exception)
+        self.assertIn(
+            "2.0.0.1 is not valid Packaging Version string",
+            str(context.exception),
         )
 
         with self.assertRaises(FormatterValueError) as context:

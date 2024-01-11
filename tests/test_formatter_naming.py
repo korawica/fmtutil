@@ -30,9 +30,9 @@ class NamingTestCase(unittest.TestCase):
     def test_naming_formatter_raise(self):
         with self.assertRaises(fmt.FormatterValueError) as context:
             fmt.Naming.formatter(2023)
-        self.assertTrue(
-            "Naming formatter does not support for value, 2023."
-            in str(context.exception)
+        self.assertIn(
+            "Naming formatter does not support for value, 2023.",
+            str(context.exception),
         )
 
     def test_naming_values(self):
@@ -139,7 +139,7 @@ class NamingTestCase(unittest.TestCase):
                 "%k": "(?P<strings_kebab>[a-z0-9]+(?:-[a-z0-9]+)*)",
                 "%K": "(?P<strings_kebab_upper>[A-Z0-9]+(?:-[A-Z0-9]+)*)",
                 "%-K": (
-                    "(?P<strings_train>[A-Z][a-z0-9]+" "(?:-[A-Z]+[a-z0-9]*)*)"
+                    "(?P<strings_train>[A-Z][a-z0-9]+(?:-[A-Z]+[a-z0-9]*)*)"
                 ),
                 "%f": "(?P<flats>[a-z0-9]+)",
                 "%F": "(?P<flats_upper>[A-Z0-9]+)",
@@ -150,7 +150,7 @@ class NamingTestCase(unittest.TestCase):
                     "(?:_[A-Z]+[a-z0-9]*)*)"
                 ),
                 "%T": (
-                    "(?P<strings_train>[A-Z][a-z0-9]+" "(?:-[A-Z]+[a-z0-9]*)*)"
+                    "(?P<strings_train>[A-Z][a-z0-9]+(?:-[A-Z]+[a-z0-9]*)*)"
                 ),
                 "%v": "(?P<vowels>[b-df-hj-np-tv-z]+)",
                 "%V": "(?P<vowels_upper>[B-DF-HJ-NP-TV-Z]+)",
@@ -209,46 +209,56 @@ class NamingTestCase(unittest.TestCase):
 
         with self.assertRaises(fmt.FormatterValueError) as context:
             fmt.Naming.parse("monkey-d-luffy ddd", "%k %a")
-        self.assertTrue(
-            "Parsing value does not valid with short from strings: "
-            "['m', 'd', 'l'] and shorts: ['d', 'd', 'd']."
-            in str(context.exception)
+        self.assertIn(
+            (
+                "Parsing value does not valid with short from strings: "
+                "['m', 'd', 'l'] and shorts: ['d', 'd', 'd']."
+            ),
+            str(context.exception),
         )
 
         with self.assertRaises(fmt.FormatterValueError) as context:
             fmt.Naming.parse("data_is_new_oil bcd", "%s %v")
-        self.assertTrue(
-            "Parsing value does not valid with vowel from strings: "
-            "['dtsnwl'] and vowels: ['bcd']." in str(context.exception)
+        self.assertIn(
+            (
+                "Parsing value does not valid with vowel from strings: "
+                "['dtsnwl'] and vowels: ['bcd']."
+            ),
+            str(context.exception),
         )
 
         with self.assertRaises(fmt.FormatterValueError) as context:
             fmt.Naming.parse("data_engine_framework dataframework", "%s %f")
-        self.assertTrue(
-            "Parsing value does not valid with flat from strings: "
-            "['dataengineframework'] and flats: ['dataframework']."
-            in str(context.exception)
+        self.assertIn(
+            (
+                "Parsing value does not valid with flat from strings: "
+                "['dataengineframework'] and flats: ['dataframework']."
+            ),
+            str(context.exception),
         )
 
         with self.assertRaises(fmt.FormatterValueError) as context:
             fmt.Naming.parse("datadriven|dtdr", r"%f\|%v")
-        self.assertTrue(
-            "Flat and Vowel that were parsed are not equal, datadriven and "
-            "dtdr." in str(context.exception)
+        self.assertIn(
+            (
+                "Flat and Vowel that were parsed are not equal, datadriven and "
+                "dtdr."
+            ),
+            str(context.exception),
         )
 
         with self.assertRaises(fmt.FormatterValueError) as context:
             fmt.Naming.parse("foobar ff", r"%f %a")
-        self.assertTrue(
-            "Flat and Shortname that were parsed are not equal, foobar and ff."
-            in str(context.exception)
+        self.assertIn(
+            "Flat and Shortname that were parsed are not equal, foobar and ff.",
+            str(context.exception),
         )
 
         with self.assertRaises(fmt.FormatterValueError) as context:
             fmt.Naming.parse("fbr ff", r"%v %a")
-        self.assertTrue(
-            "Shortname and Vowel that were parsed are not equal, ff and fbr."
-            in str(context.exception)
+        self.assertIn(
+            "Shortname and Vowel that were parsed are not equal, ff and fbr.",
+            str(context.exception),
         )
 
     def test_naming_format(self):
