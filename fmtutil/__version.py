@@ -10,20 +10,16 @@ from __future__ import annotations
 
 import itertools
 import re
+from collections.abc import Collection, Iterable
 from functools import wraps
+from re import Pattern
 from typing import (
     Any,
     Callable,
     ClassVar,
-    Collection,
-    Dict,
-    Iterable,
     NoReturn,
     Optional,
-    Pattern,
     SupportsInt,
-    Tuple,
-    Type,
     Union,
     cast,
     get_args,
@@ -35,7 +31,7 @@ from .__type import (
     String,
 )
 
-Comparable = Union["BaseVersion", Dict[str, int], Collection[int], str]
+Comparable = Union["BaseVersion", dict[str, int], Collection[int], str]
 Comparator = Callable[["BaseVersion", Comparable], bool]
 
 
@@ -188,7 +184,7 @@ def increment(s: str) -> str:
     return s
 
 
-def necessary_release(release: Tuple[int, int, int]) -> Tuple[int, ...]:
+def necessary_release(release: tuple[int, int, int]) -> tuple[int, ...]:
     """Generate a necessary release value for comparison process.
 
     :rtype: Tuple[int, ...]
@@ -248,7 +244,7 @@ class BaseVersion:
             raise AttributeError(f"attribute {attr!r} is readonly")
         super().__setattr__(attr, value)
 
-    def to_tuple(self) -> Tuple[Union[int, str], ...]:
+    def to_tuple(self) -> tuple[Union[int, str], ...]:
         """Convert the BaseVersion object to a tuple.
 
         :rtype: Tuple[int, int, int]
@@ -256,7 +252,7 @@ class BaseVersion:
         """
         return tuple(getattr(self, attr) for attr in self.__class__.__slots__)
 
-    def to_dict(self) -> Dict[str, int]:
+    def to_dict(self) -> dict[str, int]:
         """Convert the Version object to a dict.
 
         :return: A dict with the keys in the order ``major``, ``minor``, and
@@ -299,7 +295,7 @@ class BaseVersion:
         :return: The return value is negative if ver1 < ver2,
             zero if ver1 == ver2 and strictly positive if ver1 > ver2
         """
-        cls: Type[BaseVersion] = type(self)
+        cls: type[BaseVersion] = type(self)
         if isinstance(other, get_args(String)):
             other = cls.parse(other)
         elif isinstance(other, dict):
@@ -328,7 +324,7 @@ class BaseVersion:
         :rtype: BaseVersion
         :return: A new object with the appropriate part raised
         """
-        valid_parts: Tuple[str, ...] = self.__class__.__slots__
+        valid_parts: tuple[str, ...] = self.__class__.__slots__
         if part not in self.__class__.__slots__:
             raise ValueError(
                 f"Invalid part. Expected one of {valid_parts}, but got {part!r}"
@@ -362,7 +358,7 @@ class BaseVersion:
     def __getitem__(
         self,
         index: Union[int, slice],
-    ) -> Union[int, Optional[str], Tuple[Union[int, str], ...]]:
+    ) -> Union[int, Optional[str], tuple[Union[int, str], ...]]:
         """If the part requested is undefined, or a part of the range requested
         is undefined, it will throw an index error.
 
@@ -411,7 +407,7 @@ class BaseVersion:
         return hash(self.to_tuple())
 
     @classmethod
-    def extract_wildcard(cls, expr: str) -> Tuple[BaseVersion, BaseVersion]:
+    def extract_wildcard(cls, expr: str) -> tuple[BaseVersion, BaseVersion]:
         """Extract version instance from an input wildcard version value.
 
         :param expr: An expression string value of version wildcard.
@@ -437,7 +433,7 @@ class BaseVersion:
             ) from err
 
     @staticmethod
-    def __validate_expr_match(expr: str) -> Tuple[str, str]:
+    def __validate_expr_match(expr: str) -> tuple[str, str]:
         """Validate expression string of version matching string value."""
         prefix: str = expr[:2]
         match: str
@@ -537,7 +533,7 @@ class BaseVersion:
 
     @classmethod
     def parse(
-        cls: Type[BaseVersion],
+        cls: type[BaseVersion],
         version: String,
         *,
         optional_minor_and_patch: bool = False,
@@ -625,7 +621,7 @@ class BaseVersion:
     def _extract_letter(
         letter: Optional[str],
         force_raise: bool = False,
-    ) -> Tuple[str, int]:
+    ) -> tuple[str, int]:
         """Extract letter to standard word.
 
         :param letter: A letter string that want to extract with prefix pattern.
@@ -638,7 +634,7 @@ class BaseVersion:
             r"[._-]?(?P<prefix>[a-zA-Z]+)[._-]?(?P<number>\d+)?$",
             letter,
         ):
-            match: Dict[str, str] = m.groupdict()
+            match: dict[str, str] = m.groupdict()
             convert: str = match["prefix"].lower()
             for matches in (
                 ("alpha", "a"),
@@ -732,7 +728,7 @@ class VersionPackage(BaseVersion):
         self.local = None if local is None else str(local)
 
     def __extract_tuple(self):
-        release: Tuple[int, ...] = necessary_release(self.to_tuple()[1:4])
+        release: tuple[int, ...] = necessary_release(self.to_tuple()[1:4])
         if self.pre is None and self.post is None and self.dev is not None:
             pre = NegInf
         elif self.pre is None:
@@ -755,7 +751,7 @@ class VersionPackage(BaseVersion):
     @staticmethod
     def __extract_local(
         local: Optional[str],
-    ) -> Optional[Tuple[Union[str, int], ...]]:
+    ) -> Optional[tuple[Union[str, int], ...]]:
         if local is not None:
             return tuple(
                 part.lower() if not part.isdigit() else int(part)
@@ -897,7 +893,7 @@ class VersionPackage(BaseVersion):
 
     @classmethod
     def parse(
-        cls: Type[VersionPackage],
+        cls: type[VersionPackage],
         version: String,
         optional_minor_and_patch: bool = False,
     ) -> VersionPackage:
@@ -909,7 +905,7 @@ class VersionPackage(BaseVersion):
         if (match := cls.regex.match(version)) is None:
             raise ValueError(f"{version} is not valid Packaging Version string")
 
-        matched_version_parts: Dict[str, Any] = match.groupdict()
+        matched_version_parts: dict[str, Any] = match.groupdict()
         if not matched_version_parts["epoch"]:
             matched_version_parts["epoch"] = 0
         if not matched_version_parts["minor"]:
@@ -1079,7 +1075,7 @@ class VersionSemver(BaseVersion):
 
     @classmethod
     def parse(
-        cls: Type[VersionSemver],
+        cls: type[VersionSemver],
         version: String,
         *,
         optional_minor_and_patch: bool = False,
@@ -1096,7 +1092,7 @@ class VersionSemver(BaseVersion):
         if match is None:
             raise ValueError(f"{version} is not valid {cls.__name__} string")
 
-        matched_version_parts: Dict[str, Any] = match.groupdict()
+        matched_version_parts: dict[str, Any] = match.groupdict()
         if not matched_version_parts["minor"]:
             matched_version_parts["minor"] = 0
         if not matched_version_parts["patch"]:
@@ -1104,7 +1100,7 @@ class VersionSemver(BaseVersion):
         return cls(**matched_version_parts)
 
     def __extract_tuple(self):
-        _release: Tuple[int, ...] = necessary_release(self.to_tuple()[:3])
+        _release: tuple[int, ...] = necessary_release(self.to_tuple()[:3])
         _pre = self._extract_letter(self.pre) if self.pre else Inf
         return _release, _pre
 

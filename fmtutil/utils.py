@@ -1,27 +1,25 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
 from decimal import Decimal
 from typing import (
     Any,
     Callable,
-    Dict,
-    Iterable,
-    List,
     Union,
     get_args,
 )
 
 from .__type import String
 
-FMT_STR_MAP: Dict[str, str] = {
+FMT_STR_MAP: dict[str, str] = {
     "-": "minus",
     "+": "plus",
     "!": "exclamation",
     "*": "asterisk",
 }
 
-FMT_STR_OTAN_MAP: Dict[str, str] = {
+FMT_STR_OTAN_MAP: dict[str, str] = {
     "A": "alpha",
     "B": "bravo",
     "C": "charlie",
@@ -50,7 +48,7 @@ FMT_STR_OTAN_MAP: Dict[str, str] = {
     "Z": "zulu",
 }
 
-concat: Callable[[Union[List[str], Iterable[str]]], str] = "".join
+concat: Callable[[Union[list[str], Iterable[str]]], str] = "".join
 
 
 def itself(x: Any = None) -> Any:

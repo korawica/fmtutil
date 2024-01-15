@@ -1,6 +1,6 @@
+from collections.abc import Iterator
 from datetime import datetime
 from pathlib import Path
-from typing import Iterator, List
 
 from memory_profiler import profile
 
@@ -31,17 +31,17 @@ class DatetimePerfLoadTestCase:  # no cov
 
     @profile(precision=4, stream=perf_f)
     def perf_datetime_parse_01(self):
-        dts: List[Datetime] = [make_datetime_formatter(dt) for dt in self.dts]
+        dts: list[Datetime] = [make_datetime_formatter(dt) for dt in self.dts]
         print(len(dts))
 
     @profile(precision=4, stream=perf_f)
     def perf_datetime_parse_02(self):
-        dts: List[Datetime] = [make_datetime_formatter(dt) for dt in self.dts2]
+        dts: list[Datetime] = [make_datetime_formatter(dt) for dt in self.dts2]
         print(len(dts))
 
     @profile(precision=4, stream=perf_f)
     def perf_datetime_parse_03(self):
-        dts: List[Datetime] = [make_datetime_formatter(dt) for dt in self.dts3]
+        dts: list[Datetime] = [make_datetime_formatter(dt) for dt in self.dts3]
         print(len(dts))
 
     def runner(self):

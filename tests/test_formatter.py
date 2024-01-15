@@ -8,7 +8,7 @@ Test the formatter object.
 """
 import unittest
 from abc import ABC
-from typing import Any, Dict, Optional, Type
+from typing import Any, Optional
 
 import fmtutil.formatter as fmt
 from fmtutil.utils import default
@@ -84,13 +84,13 @@ class FormatterTestCase(unittest.TestCase):
                 raise NotImplementedError
 
             @property
-            def priorities(self) -> Dict[str, dict]:  # pragma: no cover
+            def priorities(self) -> dict[str, dict]:  # pragma: no cover
                 raise NotImplementedError
 
             @staticmethod
             def formatter(
                 serial: Optional[int] = None,
-            ) -> Dict[str, Dict[str, str]]:
+            ) -> dict[str, dict[str, str]]:
                 _value: str = str(serial or 0)
                 return {
                     "%n": {
@@ -124,7 +124,7 @@ class FormatterTestCase(unittest.TestCase):
             @staticmethod
             def formatter(
                 serial: Optional[int] = None,
-            ) -> Dict[str, Dict[str, str]]:
+            ) -> dict[str, dict[str, str]]:
                 _value: str = str(serial or 0)
                 return {
                     "%n": {
@@ -312,7 +312,7 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
         def prepare_value(v: Any) -> Any:
             return v
 
-        self.cst_with_type_cls: Type[fmt.Formatter] = type(  # no cov
+        self.cst_with_type_cls: type[fmt.Formatter] = type(  # no cov
             "Storage",
             (fmt.Formatter,),
             {
@@ -339,7 +339,7 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
             )
             base_fmt = "%b"
 
-        self.cst_with_type_cls2: Type[fmt.Formatter] = type(  # no cov
+        self.cst_with_type_cls2: type[fmt.Formatter] = type(  # no cov
             "Storage",
             (TypeConstructFormatterMeta,),
             {
@@ -352,7 +352,7 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
             },
         )
 
-        self.cst_with_type_cls_raise: Type[fmt.Formatter] = type(  # no cov
+        self.cst_with_type_cls_raise: type[fmt.Formatter] = type(  # no cov
             "Storage",
             (TypeConstructFormatterMeta,),
             {
@@ -365,7 +365,7 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
             },
         )
 
-        self.cst_with_type_cls_raise02: Type[fmt.Formatter] = type(  # no cov
+        self.cst_with_type_cls_raise02: type[fmt.Formatter] = type(  # no cov
             "Storage",
             (TypeConstructFormatterMeta,),
             {
