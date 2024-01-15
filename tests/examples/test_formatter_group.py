@@ -7,7 +7,6 @@
 Test the formatter group object examples.
 """
 import unittest
-from typing import List, Tuple
 
 import fmtutil.formatter as fmt
 
@@ -27,7 +26,7 @@ class FormatterGroupExampleTestCase(unittest.TestCase):
                 "timestamp": fmt.Datetime,
             }
         )
-        rs_parse: List[fmt.FormatterGroup] = []
+        rs_parse: list[fmt.FormatterGroup] = []
         for filename in (
             "dataEngineer_demo_20230101.json",
             "dataEngineer_demo_20230226.json",
@@ -63,7 +62,7 @@ class FormatterGroupExampleTestCase(unittest.TestCase):
         grouping: fmt.FormatterGroupType = init_group_instance.to_const(
             included=["naming", "domain"]
         )
-        rs_parse: List[fmt.FormatterGroup] = []
+        rs_parse: list[fmt.FormatterGroup] = []
         for filename in (
             "dataEngineer_demo_20230101.json",
             "dataEngineer_demo_20230226.json",
@@ -120,7 +119,7 @@ class FormatterGroupExampleTestCase(unittest.TestCase):
                 }
             )
 
-        rs_parse: List[Tuple[int, fmt.FormatterGroup]] = []
+        rs_parse: list[tuple[int, fmt.FormatterGroup]] = []
         for idx, filename in enumerate(
             [
                 "conn_local_data_landing.20230915_162359.json",

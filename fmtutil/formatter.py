@@ -24,12 +24,8 @@ from itertools import tee, zip_longest
 from typing import (
     Any,
     Callable,
-    Dict,
-    List,
     NoReturn,
     Optional,
-    Tuple,
-    Type,
     TypedDict,
     Union,
     final,  # docs: https://github.com/python/mypy/issues/9953
@@ -63,9 +59,9 @@ from .utils import (
     remove_pad,
 )
 
-FormatterType = Type["Formatter"]
-FormatterGroupType = Type["FormatterGroup"]
-ConstantType = Type["Constant"]
+FormatterType = type["Formatter"]
+FormatterGroupType = type["FormatterGroup"]
+ConstantType = type["Constant"]
 
 PriorityCallable = Union[Callable[[Any], Any], Callable[[], Any], partial[Any]]
 FormatterCallable = Union[Callable[[], Any], partial[Any]]
@@ -94,8 +90,8 @@ class RegexValue(TypedDict):
     regex: str
 
 
-ReturnPrioritiesType = Dict[str, PriorityValue]
-ReturnFormattersType = Dict[str, Union[CRegexValue, RegexValue]]
+ReturnPrioritiesType = dict[str, PriorityValue]
+ReturnFormattersType = dict[str, Union[CRegexValue, RegexValue]]
 
 
 @total_ordering
@@ -140,7 +136,7 @@ class SlotLevel:
         with level input value length of False.
         """
         self.level = level
-        self.slot: List[bool] = [False] * level
+        self.slot: list[bool] = [False] * level
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__}(level={self.level})>"
@@ -267,7 +263,7 @@ class BaseFormatter(ABC):
             A tuple of necessary attribute for any subclass of Formatter class.
     """
 
-    __slots__: Tuple[str, ...] = ()
+    __slots__: tuple[str, ...] = ()
 
 
 @total_ordering
@@ -491,7 +487,7 @@ class Formatter(BaseFormatter):
             expression string value for comply with the `re` module to any
             string value.
         """
-        _cache: Dict[str, int] = defaultdict(int)
+        _cache: dict[str, int] = defaultdict(int)
         _prefix: str = prefix or ""
         _suffix: str = suffix or ""
         regexes = cls.regex()
@@ -629,7 +625,7 @@ class Formatter(BaseFormatter):
 
     def __init__(
         self,
-        formats: Optional[Dict[str, Any]] = None,
+        formats: Optional[dict[str, Any]] = None,
         *,
         set_strict_mode: bool = False,
         set_std_value: bool = True,
@@ -640,7 +636,7 @@ class Formatter(BaseFormatter):
 
             The setter of attribute does not do anything to __slot__ variable.
         """
-        _formats: Dict[str, Any] = self.__validate_format(formats)
+        _formats: dict[str, Any] = self.__validate_format(formats)
         # Set level of SlotLevel object that set from `base_level` and pass this
         # value to _level variable for update process in priorities loop.
         self.level = SlotLevel(level=self.base_level)
@@ -804,8 +800,8 @@ class Formatter(BaseFormatter):
 
     @staticmethod
     def __validate_format(
-        formats: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        formats: Optional[dict[str, Any]] = None,
+    ) -> dict[str, Any]:
         """Return a formats value that validate with duplicate format string
         values, and it will raise error if any duplication format name do not
         all equal.
@@ -817,8 +813,8 @@ class Formatter(BaseFormatter):
         :return: A formats value that validate with duplicate format string
             values.
         """
-        results: Dict[str, Any] = {}
-        _formats: Dict[str, Any] = formats or {}
+        results: dict[str, Any] = {}
+        _formats: dict[str, Any] = formats or {}
         for fmt in _formats:
             _fmt: str = fmt.split("__", maxsplit=1)[0]
             if _fmt not in results:
@@ -2127,7 +2123,7 @@ class Version(Formatter, level=4):
 
     def __add__(  # type: ignore
         self,
-        other: Union[Tuple[int, int, int], Any],
+        other: Union[tuple[int, int, int], Any],
     ):  # no cov
         if isinstance(other, tuple) and len(other) == 3:
             old = self.value
@@ -2168,7 +2164,7 @@ class Naming(Formatter, level=5):
     )
 
     @property
-    def value(self) -> List[str]:
+    def value(self) -> list[str]:
         """Return a list of word of naming value."""
         return self.string.split()
 
@@ -2234,7 +2230,7 @@ class Naming(Formatter, level=5):
         return True
 
     @staticmethod
-    def __validate_word_with_short(word: str, shorts: List[str]) -> bool:
+    def __validate_word_with_short(word: str, shorts: list[str]) -> bool:
         """Validate a word with list of shortname Private static-method.
 
         :param word: A word string that want to validate.
@@ -2256,8 +2252,8 @@ class Naming(Formatter, level=5):
     @staticmethod
     def __extract_from_word_with_short(
         word: str,
-        shorts: List[str],
-    ) -> List[str]:
+        shorts: list[str],
+    ) -> list[str]:
         """Return a list of word that was extracted from word by list of
         shortnames.
 
@@ -2271,7 +2267,7 @@ class Naming(Formatter, level=5):
             shortnames.
         """
         idx: int = 0
-        rs: List[int] = []
+        rs: list[int] = []
         for s in shorts:
             idx += word[idx:].index(s)
             rs.append(idx)
@@ -2389,7 +2385,7 @@ class Naming(Formatter, level=5):
 
     @staticmethod
     def formatter(
-        nm: Optional[Union[str, List[str]]] = None,
+        nm: Optional[Union[str, list[str]]] = None,
     ) -> ReturnFormattersType:
         """Return a formatter value that define by property of this formatter
         object. Generate formatter that support mapping formatter,
@@ -2427,7 +2423,7 @@ class Naming(Formatter, level=5):
         :return: A generated mapping values of all format string pattern of this
             naming formatter object.
         """
-        _value: List[str] = Naming.prepare_value(nm)
+        _value: list[str] = Naming.prepare_value(nm)
         return {
             "%n": {
                 "value": partial(Naming.__join_with, " ", _value),
@@ -2570,7 +2566,7 @@ class Naming(Formatter, level=5):
         }
 
     @staticmethod
-    def prepare_value(value: Optional[Union[str, List[str]]]) -> List[str]:
+    def prepare_value(value: Optional[Union[str, list[str]]]) -> list[str]:
         """Prepare value before passing to convert logic in the formatter
         method that define by property of this formatter object. Return
         List of empty string if an input value does not pass.
@@ -2596,7 +2592,7 @@ class Naming(Formatter, level=5):
             )
         return [re.sub(r"[^\-.\w\s]+", "", v) for v in value]
 
-    def _from_flats(self, value: str) -> List[str]:
+    def _from_flats(self, value: str) -> list[str]:
         """Return a validated flats value.
 
         :param value: A format string value that pass from initialize.
@@ -2608,7 +2604,7 @@ class Naming(Formatter, level=5):
         :rtype: List[str]
         :return: a validated flats value.
         """
-        v: List[str] = [value]
+        v: list[str] = [value]
         if self.level.checker(5) and (_s := ["".join(self.strings)]) != v:
             raise FormatterValueError(
                 f"Parsing value does not valid with flat from "
@@ -2616,7 +2612,7 @@ class Naming(Formatter, level=5):
             )
         return v
 
-    def _from_shorts(self, value: str) -> List[str]:
+    def _from_shorts(self, value: str) -> list[str]:
         """Return a validated shorts value.
 
         :param value: A format string value that pass from initialize.
@@ -2628,7 +2624,7 @@ class Naming(Formatter, level=5):
         :rtype: List[str]
         :return: a validated shorts value.
         """
-        v: List[str] = list(value)
+        v: list[str] = list(value)
         if self.level.checker(5) and (_s := [s[0] for s in self.strings]) != v:
             raise FormatterValueError(
                 f"Parsing value does not valid with short from "
@@ -2636,7 +2632,7 @@ class Naming(Formatter, level=5):
             )
         return v
 
-    def _from_vowels(self, value: str) -> List[str]:
+    def _from_vowels(self, value: str) -> list[str]:
         """Return a validated vowels value.
 
         :param value: A format string value that pass from initialize.
@@ -2648,7 +2644,7 @@ class Naming(Formatter, level=5):
         :rtype: List[str]
         :return: A validated vowels value.
         """
-        v: List[str] = [value]
+        v: list[str] = [value]
         if (
             self.level.checker(5)
             and (_s := [re.sub(r"[aeiou]", "", "".join(self.strings))]) != v
@@ -2661,8 +2657,8 @@ class Naming(Formatter, level=5):
 
     def __default(
         self,
-        logic: Callable[[List[str]], str],
-    ) -> Callable[[], List[str]]:
+        logic: Callable[[list[str]], str],
+    ) -> Callable[[], list[str]]:
         """Return a default function that pass logic to ``self.strings`` if
         it was set from initialization.
 
@@ -2674,7 +2670,7 @@ class Naming(Formatter, level=5):
             it was set from initialization.
         """
 
-        def sub_caller() -> List[str]:
+        def sub_caller() -> list[str]:
             if not self.level.slot[4]:
                 return []
             return (
@@ -2718,7 +2714,7 @@ class Naming(Formatter, level=5):
     @staticmethod
     def __join_with(
         by: str,
-        values: List[str],
+        values: list[str],
         func: Optional[Callable[[str], str]] = None,
     ) -> str:
         """Return a string value that join with any separate string after
@@ -2738,7 +2734,7 @@ class Naming(Formatter, level=5):
         return by.join(map(func, values)) if func else by.join(values)
 
     @staticmethod
-    def __remove_special_char(value: str) -> List[str]:
+    def __remove_special_char(value: str) -> list[str]:
         """Return a list of word that split from an input value string
         before remove special character.
 
@@ -2753,7 +2749,7 @@ class Naming(Formatter, level=5):
         return re.sub(r"[\-._\s]", " ", result).strip().split()
 
     @staticmethod
-    def __split_pascal_case(value: str) -> List[str]:
+    def __split_pascal_case(value: str) -> list[str]:
         """Return a list of word that prepare from the Pascal case.
 
         :param value: A pascal value string that want to prepare.
@@ -2775,7 +2771,7 @@ class Naming(Formatter, level=5):
         return NotImplemented
 
 
-SIZE: Tuple[str, ...] = (
+SIZE: tuple[str, ...] = (
     "B",
     "KB",
     "MB",
@@ -3060,7 +3056,7 @@ class Constant(Formatter):
 
     base_fmt: str = "%%"
 
-    __slots__: Tuple[str, ...] = ("_constant",)
+    __slots__: tuple[str, ...] = ("_constant",)
 
     @classmethod
     def from_value(cls, value: Any) -> NoReturn:
@@ -3113,7 +3109,7 @@ class Constant(Formatter):
 
     def __init__(
         self,
-        formats: Optional[Dict[str, Any]] = None,
+        formats: Optional[dict[str, Any]] = None,
         *,
         set_strict_mode: bool = False,
     ) -> None:
@@ -3136,7 +3132,7 @@ class Constant(Formatter):
 
         # Set ``_constant`` property that contain all arguments from
         # ``cls.__slots__``.
-        self._constant: List[str] = [
+        self._constant: list[str] = [
             getter for v in self.__slots__ if (getter := getattr(self, v, None))
         ]
 
@@ -3144,7 +3140,7 @@ class Constant(Formatter):
         self._setter_std_value(flag=True)
 
     @property
-    def value(self) -> List[str]:
+    def value(self) -> list[str]:
         """Return a list of string value that list from ``cls.__slots__``
         attributes.
 
@@ -3261,7 +3257,7 @@ def dict2const(
 
         __qualname__ = name
 
-        __slots__: Tuple[str, ...] = (
+        __slots__: tuple[str, ...] = (
             name.lower(),
             "_constant",
             *(convert_fmt_str(f) for f in fmt),
@@ -3432,13 +3428,13 @@ class ParseValue(TypedDict):
     props: DictStr
 
 
-ReturnGroupGenFormatType = Dict[str, GenFormatValue]
-ReturnParseType = Dict[str, ParseValue]
+ReturnGroupGenFormatType = dict[str, GenFormatValue]
+ReturnParseType = dict[str, ParseValue]
 
 
-BaseGroupsType = Dict[str, FormatterType]
-GroupsType = Dict[str, Formatter]
-FormatsGroupType = Union[Dict[str, DictStr], GroupsType, Dict[str, Any]]
+BaseGroupsType = dict[str, FormatterType]
+GroupsType = dict[str, Formatter]
+FormatsGroupType = Union[dict[str, DictStr], GroupsType, dict[str, Any]]
 
 Comparator = Callable[["FormatterGroup", "FormatterGroup"], bool]
 
@@ -3532,7 +3528,7 @@ class FormatterGroup:
     @classmethod
     def from_formats(
         cls,
-        formats: Dict[str, DictStr],
+        formats: dict[str, DictStr],
     ) -> FormatterGroup:
         """Passer the formats to this formatter group directly to its formatter
         object.
@@ -3561,7 +3557,7 @@ class FormatterGroup:
     @classmethod
     def from_value(
         cls,
-        values: Dict[str, Any],
+        values: dict[str, Any],
     ) -> FormatterGroup:
         """Passer the value to this formatter group that will pass this value to
         ``cls.from_value`` method of its formatter.
@@ -3609,7 +3605,7 @@ class FormatterGroup:
         """
         _value: str = bytes2str(value)
         parser_rs: ReturnParseType = cls.__parse(_value, fmt)
-        rs: Dict[str, DictStr] = defaultdict(dict)
+        rs: dict[str, DictStr] = defaultdict(dict)
         for group in parser_rs:
             group_origin: str = group.split("__")[0]
             rs[group_origin] |= parser_rs[group]["props"]
@@ -3661,7 +3657,7 @@ class FormatterGroup:
         return rs
 
     @classmethod
-    def gen_format(cls, fmt: str) -> Tuple[str, ReturnGroupGenFormatType]:
+    def gen_format(cls, fmt: str) -> tuple[str, ReturnGroupGenFormatType]:
         """Generate format string value that combine from any matching of
         format name to regular expression value that able to search with any
         input value string.
@@ -3802,8 +3798,8 @@ class FormatterGroup:
         return hash(self.__str__())
 
     def __repr__(self) -> str:
-        values: List[str] = []
-        fmts: List[str] = []
+        values: list[str] = []
+        fmts: list[str] = []
         for group in self.base_groups:
             formatter: Formatter = self.groups[group]
             values.append(formatter.string)
@@ -3837,7 +3833,7 @@ class FormatterGroup:
             not self.groups[g].__gt__(other.groups[g]) for g in self.base_groups
         )
 
-    def adjust(self, values: Dict[str, Any]) -> FormatterGroup:  # no cov
+    def adjust(self, values: dict[str, Any]) -> FormatterGroup:  # no cov
         """Adjust value to any formatter instance in ``self.groups`` of this
         formatter group.
 
@@ -3851,7 +3847,7 @@ class FormatterGroup:
         :rtype: FormatterGroup
         :return: Self that was adjusted the value.
         """
-        _keys: List[str] = [
+        _keys: list[str] = [
             f"{k!r}" for k in values if k not in self.base_groups
         ]
         if _keys:
@@ -3867,7 +3863,7 @@ class FormatterGroup:
 
     def to_const(
         self,
-        included: Optional[List[str]] = None,
+        included: Optional[list[str]] = None,
     ) -> FormatterGroupType:  # no cov
         """Convert this formatter group instance to constant group object.
 
@@ -3875,7 +3871,7 @@ class FormatterGroup:
         :return: A FormatterGroup object that create from constant of
             ``self.groups`` values.
         """
-        _inc: List[str] = included or list(self.groups.keys())
+        _inc: list[str] = included or list(self.groups.keys())
         if any(i not in self.base_groups for i in _inc):
             raise FormatterGroupArgumentError(
                 "included",

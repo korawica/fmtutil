@@ -8,7 +8,7 @@ Define Errors Object for formatter
 """
 from __future__ import annotations
 
-from typing import Tuple, Union
+from typing import Union
 
 
 class BaseError(Exception):
@@ -51,7 +51,7 @@ class FormatterArgumentError(FormatterError):
 
     def __init__(
         self,
-        argument: Union[str, Tuple[str, ...]],
+        argument: Union[str, tuple[str, ...]],
         message: str,
     ) -> None:
         """Main Initialization that merge the argument and message input values

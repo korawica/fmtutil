@@ -7,13 +7,13 @@ from __future__ import annotations  # pragma: no cover.
 
 import datetime
 import sys
-from typing import Any, Dict
+from typing import Any
 
 import click
 
 from .formatter import Datetime, FormatterType, Naming, Serial, Version
 
-MAP_FMTS: Dict[str, FormatterType] = {
+MAP_FMTS: dict[str, FormatterType] = {
     "datetime": Datetime,
     "serial": Serial,
     "version": Version,
