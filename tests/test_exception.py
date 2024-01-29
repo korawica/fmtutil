@@ -12,8 +12,7 @@ import fmtutil.exceptions as err
 
 
 class ExceptionsTestCase(unittest.TestCase):
-    def setUp(self) -> None:
-        ...
+    def setUp(self) -> None: ...
 
     def test_exception_config_str_arg(self):
         result = err.FormatterArgumentError(

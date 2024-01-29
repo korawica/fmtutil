@@ -45,8 +45,7 @@ class SlotLevelTestCase(unittest.TestCase):
 
 
 class PriorityDataTestCase(unittest.TestCase):
-    def setUp(self) -> None:
-        ...
+    def setUp(self) -> None: ...
 
     @staticmethod
     def caller(x):

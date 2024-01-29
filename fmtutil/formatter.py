@@ -220,9 +220,11 @@ class SlotLevel:
         """
         _numbers: TupleInt = self.make_tuple(numbers)
         return all(
-            self.slot[_n]
-            if (0 <= (_n := (n - 1)) <= (self.level - 1))
-            else False
+            (
+                self.slot[_n]
+                if (0 <= (_n := (n - 1)) <= (self.level - 1))
+                else False
+            )
             for n in filter(lambda x: x != 0, _numbers)
         )
 
