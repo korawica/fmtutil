@@ -30,7 +30,7 @@ data source and ingest the right names to in-house or data target.
 ## Installation
 
 ```shell
-pip install fmtutil
+pip install -U fmtutil
 ```
 
 For example, we want to get filename with the format like, `filename_20220101.csv`,
@@ -63,8 +63,11 @@ better package than this project.
 > format string value like the above the example scenario,
 > ```python
 > this_date = Datetime.parse('20220101', '%Y%m%d')
-> this_date.valid('any_files_20220101.csv', 'any_files_%Y%m%d.csv')  # True
+> assert this_date.valid('any_files_20220101.csv', 'any_files_%Y%m%d.csv')
 > ```
+
+> **Warning**: \
+> For Python 3.8, `pip install "fmtutil>=0.4,<0.5.0"`
 
 ## Formatter Objects
 
@@ -236,7 +239,10 @@ from fmtutil import (
 
 name: Naming = Naming.parse('Google Map', fmt='%t')
 
-fmt_group: FormatterGroupType = make_group({"naming": name.to_const(), "timestamp": Datetime})
+fmt_group: FormatterGroupType = make_group({
+    "naming": name.to_const(),
+    "timestamp": Datetime,
+})
 
 rs: List[FormatterGroup] = []
 for file in (
