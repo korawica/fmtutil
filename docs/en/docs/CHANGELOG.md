@@ -2,6 +2,19 @@
 
 ## Latest Changes
 
+## 1.0.1
+
+### Code Changes
+
+- :construction: refactored: 🚧 [pre-commit.ci] auto fixes from pre-commit.com hooks (_2024-01-29_)
+- :construction: refactored: 🚧 [pre-commit.ci] auto fixes from pre-commit.com hooks (_2024-01-15_)
+- :construction: refactored: upgrade pyupgrade config for support py39. (_2024-01-11_)
+- :test_tube: test: reformat test case that use assertIn instead assertTrue. (_2024-01-11_)
+
+### Build & Workflow
+
+- :toolbox: build: remove fix version of clishelf package. (_2024-01-30_)
+
 ## 1.0.0
 
 ### Features
