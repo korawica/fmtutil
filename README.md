@@ -7,16 +7,16 @@
 
 **Table of Contents**:
 
-- [Installation](#installation)
-- [Formatter Objects](#formatter-objects)
-  - [Datetime](#datetime)
-  - [Version](#version)
-  - [Serial](#serial)
-  - [Naming](#naming)
-  - [Storage](#storage)
-  - [Constant](#constant)
-- [FormatterGroup Object](#formattergroup-object)
-- [Usecase](#usecase)
+* [Installation](#installation)
+* [Formatter Objects](#formatter-objects)
+  * [Datetime](#datetime)
+  * [Version](#version)
+  * [Serial](#serial)
+  * [Naming](#naming)
+  * [Storage](#storage)
+  * [Constant](#constant)
+* [FormatterGroup Object](#formattergroup-object)
+* [Usecase](#usecase)
 
 This **Formatter Utility Objects** package was created for `parse` and `format`
 any string values that match a format pattern string with Python regular
@@ -66,17 +66,21 @@ better package than this project.
 > assert this_date.valid('any_files_20220101.csv', 'any_files_%Y%m%d.csv')
 > ```
 
-> **Warning**: \
-> For Python 3.8, `pip install "fmtutil>=0.4,<0.5.0"`
+**Dependency supported**:
+
+| Python Version  | Installation                        |
+|-----------------|-------------------------------------|
+| `== 3.8`        | `pip install "fmtutil>=0.4,<0.5.0"` |
+| `>=3.9,<3.13`   | `pip install -U fmtutil`            |
 
 ## Formatter Objects
 
-- [Datetime](#datetime)
-- [Version](#version)
-- [Serial](#serial)
-- [Naming](#naming)
-- [Storage](#storage)
-- [Constant](#constant)
+* [Datetime](#datetime)
+* [Version](#version)
+* [Serial](#serial)
+* [Naming](#naming)
+* [Storage](#storage)
+* [Constant](#constant)
 
 The main purpose is **Formatter Objects** for `parse` and `format` with string
 value, such as `Datetime`, `Version`, and `Serial` formatter objects. These objects
