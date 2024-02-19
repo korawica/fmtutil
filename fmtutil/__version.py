@@ -20,11 +20,12 @@ from typing import (
     NoReturn,
     Optional,
     SupportsInt,
-    TypeAlias,
     Union,
     cast,
     get_args,
 )
+
+from typing_extensions import TypeAlias
 
 from .__type import (
     Inf,

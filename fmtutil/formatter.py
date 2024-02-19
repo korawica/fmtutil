@@ -26,13 +26,13 @@ from typing import (
     Callable,
     NoReturn,
     Optional,
-    TypeAlias,
     TypedDict,
     Union,
     final,  # docs: https://github.com/python/mypy/issues/9953
 )
 
 from dateutil.relativedelta import relativedelta
+from typing_extensions import TypeAlias
 
 from .__type import (
     DictStr,

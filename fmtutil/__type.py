@@ -8,7 +8,9 @@
 # ------------------------------------------------------------------------------
 from __future__ import annotations
 
-from typing import TypeAlias, Union
+from typing import Union
+
+from typing_extensions import TypeAlias
 
 String: TypeAlias = Union[str, bytes]
 DictStr: TypeAlias = dict[str, str]

@@ -31,7 +31,10 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
-dependencies = ["python-dateutil>=2.8.2,<3.0.0"]
+dependencies = [
+    "python-dateutil>=2.8.2,<3.0.0",
+    "typing-extensions",
+]
 dynamic = ["version"]
 
 [project.urls]
