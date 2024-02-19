@@ -8,11 +8,11 @@
 # ------------------------------------------------------------------------------
 from __future__ import annotations
 
-from typing import Union
+from typing import TypeAlias, Union
 
-String = Union[str, bytes]
-DictStr = dict[str, str]
-TupleInt = tuple[int, ...]
+String: TypeAlias = Union[str, bytes]
+DictStr: TypeAlias = dict[str, str]
+TupleInt: TypeAlias = tuple[int, ...]
 
 
 class InfObject:

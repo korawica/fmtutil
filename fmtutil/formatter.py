@@ -26,6 +26,7 @@ from typing import (
     Callable,
     NoReturn,
     Optional,
+    TypeAlias,
     TypedDict,
     Union,
     final,  # docs: https://github.com/python/mypy/issues/9953
@@ -63,8 +64,12 @@ FormatterType = type["Formatter"]
 FormatterGroupType = type["FormatterGroup"]
 ConstantType = type["Constant"]
 
-PriorityCallable = Union[Callable[[Any], Any], Callable[[], Any], partial[Any]]
-FormatterCallable = Union[Callable[[], Any], partial[Any]]
+PriorityCallable: TypeAlias = Union[
+    Callable[[Any], Any],
+    Callable[[], Any],
+    partial[Any],
+]
+FormatterCallable: TypeAlias = Union[Callable[[], Any], partial[Any]]
 
 
 class PriorityValue(TypedDict):
@@ -90,8 +95,8 @@ class RegexValue(TypedDict):
     regex: str
 
 
-ReturnPrioritiesType = dict[str, PriorityValue]
-ReturnFormattersType = dict[str, Union[CRegexValue, RegexValue]]
+ReturnPrioritiesType: TypeAlias = dict[str, PriorityValue]
+ReturnFormattersType: TypeAlias = dict[str, Union[CRegexValue, RegexValue]]
 
 
 @total_ordering
@@ -3028,7 +3033,7 @@ class Storage(Formatter):
         return Storage.round_up(Decimal(value.replace(order, "")) * p)
 
 
-ConstantComparator = Callable[["Constant", "Constant"], bool]
+ConstantComparator: TypeAlias = Callable[["Constant", "Constant"], bool]
 
 
 def const_comparison(operator: ConstantComparator) -> ConstantComparator:
@@ -3430,15 +3435,19 @@ class ParseValue(TypedDict):
     props: DictStr
 
 
-ReturnGroupGenFormatType = dict[str, GenFormatValue]
-ReturnParseType = dict[str, ParseValue]
+ReturnGroupGenFormatType: TypeAlias = dict[str, GenFormatValue]
+ReturnParseType: TypeAlias = dict[str, ParseValue]
 
 
-BaseGroupsType = dict[str, FormatterType]
-GroupsType = dict[str, Formatter]
-FormatsGroupType = Union[dict[str, DictStr], GroupsType, dict[str, Any]]
+BaseGroupsType: TypeAlias = dict[str, FormatterType]
+GroupsType: TypeAlias = dict[str, Formatter]
+FormatsGroupType: TypeAlias = Union[
+    dict[str, DictStr],
+    GroupsType,
+    dict[str, Any],
+]
 
-Comparator = Callable[["FormatterGroup", "FormatterGroup"], bool]
+Comparator: TypeAlias = Callable[["FormatterGroup", "FormatterGroup"], bool]
 
 
 def comparison(operator: Comparator) -> Comparator:

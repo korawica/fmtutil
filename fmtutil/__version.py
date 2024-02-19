@@ -20,6 +20,7 @@ from typing import (
     NoReturn,
     Optional,
     SupportsInt,
+    TypeAlias,
     Union,
     cast,
     get_args,
@@ -31,8 +32,13 @@ from .__type import (
     String,
 )
 
-Comparable = Union["BaseVersion", dict[str, int], Collection[int], str]
-Comparator = Callable[["BaseVersion", Comparable], bool]
+Comparable: TypeAlias = Union[
+    "BaseVersion",
+    dict[str, int],
+    Collection[int],
+    str,
+]
+Comparator: TypeAlias = Callable[["BaseVersion", Comparable], bool]
 
 
 class RegVersion:
