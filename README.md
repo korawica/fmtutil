@@ -58,7 +58,7 @@ From above filename format string, the `datetime` package does not enough for
 this scenario right? but you can handle by your hard-code object or create the
 better package than this project.
 
-> **Note**: \
+> [!NOTE]
 > Any formatter object was implemented the `self.valid` method for help us validate
 > format string value like the above the example scenario,
 > ```python
@@ -90,7 +90,7 @@ The formatter able to enhancement any format value from sting value, like in
 `Datetime`, for `%B` value that was designed for month shortname (`Jan`,
 `Feb`, etc.) that does not support in build-in `datetime` package.
 
-> **Note**: \
+> [!IMPORTANT]
 > The main usage of this formatter object is `parse` and `format` method.
 
 ### Datetime
@@ -186,7 +186,7 @@ except FormatterError:
 >>> 'The value of %s is special'
 ```
 
-> **Note**: \
+> [!NOTE]
 > This package already implement the environment constant object,
 > `fmtutil.EnvConst`. \
 > [Read more about this formats](/docs/en/docs/API.md#environment-constant)
@@ -270,7 +270,7 @@ repr(max(rs).groups['timestamp'])
 >>> <Datetime.parse('2023-01-03 00:00:00.000000', '%Y-%m-%d %H:%M:%S.%f')>
 ```
 
-> **Note**: \
+> [!TIP]
 > The above example will convert the `name`, Naming instance, to Constant
 > instance before passing to the formatter group because it does not want
 > to dynamic this naming format when find any filenames in target path.
