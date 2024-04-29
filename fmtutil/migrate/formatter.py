@@ -1,3 +1,18 @@
+# ------------------------------------------------------------------------------
+# Copyright (c) 2022 Korawich Anuttra. All rights reserved.
+# Licensed under the MIT License. See LICENSE in the project root for
+# license information.
+# ------------------------------------------------------------------------------
+"""
+Migration Note:
+
+*   I will improve the scalable of the Formatter object that able to transform
+    coding from Python to Rust.
+*   Change the initialize process of Formatter object that using dynamic self
+    attributes to fixing attribute with dynamic asset instead.
+"""
+from __future__ import annotations
+
 import re
 from collections import defaultdict
 from dataclasses import dataclass, field
@@ -40,7 +55,7 @@ def parsing_format(value: dict[str, Any]) -> Format:
     raise ValueError("Format does not have any regex key")
 
 
-number_asset: dict[str, Format] = {
+NUMBER_ASSET: dict[str, Format] = {
     "%n": parsing_format(
         {
             "alias": "number",
@@ -61,7 +76,7 @@ number_asset: dict[str, Format] = {
     ),
 }
 
-datetime_asset: dict[str, Format] = {
+DATETIME_ASSET: dict[str, Format] = {
     "%n": parsing_format(
         {
             "alias": "datetime_normal",
@@ -75,7 +90,7 @@ datetime_asset: dict[str, Format] = {
 
 class Formatter:
 
-    def __init__(self, register):
+    def __init__(self, register: dict[str, Format]):
         self.regis: dict[str, Format] = register
         self.regex = self._regex()
 
@@ -156,8 +171,12 @@ class Formatter:
         return results
 
 
-if __name__ == "__main__":
-    print(number_asset)
-    naming_fmt = Formatter(register=number_asset)
+def demo_number_formating():
+    # print(NUMBER_ASSET)
+    naming_fmt: Formatter = Formatter(register=NUMBER_ASSET)
     print(naming_fmt.regex)
     print(naming_fmt.gen_format("This is a number %n but extra %e"))
+
+
+if __name__ == "__main__":
+    demo_number_formating()
