@@ -20,7 +20,7 @@ from functools import partial
 from typing import Any, Callable, Optional, Union
 
 from fmtutil.exceptions import FormatterArgumentError, FormatterValueError
-from fmtutil.utils import itself
+from fmtutil.utils import itself, remove_pad
 
 DictStr = dict[str, str]
 
@@ -44,10 +44,13 @@ class CombineFormat(BaseFormat):
     level: Union[int, tuple[int, ...]] = field(default=(0,))
 
 
-Format = Union[CombineFormat, CombineFormat]
+Format = Union[CommonFormat, CombineFormat]
 
 
-def parsing_format(value: dict[str, Any]) -> Format:
+def parsing_format(
+    value: dict[str, CommonFormat | CombineFormat | Any],
+) -> Format:
+    """Parsing any mapping value to Format dataclass."""
     if "regex" in value.keys() and "cregex" in value.keys():
         raise ValueError("Format does not support for getting all regex keys.")
     elif "regex" in value.keys():
@@ -57,13 +60,63 @@ def parsing_format(value: dict[str, Any]) -> Format:
     raise ValueError("Format does not have any regex key, `regex` or `cregex`.")
 
 
-NUMBER_ASSET: dict[str, Format] = {
+SERIAL_MAX_PADDING: int = 3
+SERIAL_MAX_BINARY: int = 8
+
+
+def to_padding(value: str) -> str:
+    """Return a padding string value with zero by setting config
+    ``Serial.Config.serial_max_padding`` value.
+
+    :param value: A string value that want to pad with zero.
+    :type value: str
+
+    :rtype: str
+    :return: A padding string value with zero by setting config
+        ``Serial.Config.serial_max_padding`` value.
+    """
+    return value.rjust(SERIAL_MAX_PADDING, "0") if value else ""
+
+
+def to_binary(value: str) -> str:
+    """Return a binary number string value with limit of max zero padding
+    by setting config ``Serial.Config.serial_max_binary`` value.
+
+    :param value: A string value that want to convert to binary.
+    :type value: str
+
+    :rtype: str
+    :return: A binary number string value with limit of max zero padding
+        by setting config ``Serial.Config.serial_max_binary`` value.
+    """
+    return f"{int(value):0{str(SERIAL_MAX_BINARY)}b}" if value else ""
+
+
+SERIAL_ASSET: dict[str, Format] = {
     "%n": parsing_format(
         {
             "alias": "number",
             "regex": r"[0-9]*",
             "fmt": lambda x: partial(itself, str(x)),
             "parse": lambda x: x,
+            "level": 1,
+        }
+    ),
+    "%p": parsing_format(
+        {
+            "alias": "number_pad",
+            "regex": rf"[0-9]{{{SERIAL_MAX_PADDING}}}",
+            "fmt": lambda x: partial(to_padding, str(x)),
+            "parse": lambda x: remove_pad(x),
+            "level": 1,
+        }
+    ),
+    "%b": parsing_format(
+        {
+            "alias": "number_binary",
+            "regex": rf"[0-1]{{{SERIAL_MAX_BINARY}}}",
+            "fmt": lambda x: partial(to_binary, str(x)),
+            "parse": lambda x: str(int(x, 2)),
             "level": 1,
         }
     ),
@@ -76,23 +129,46 @@ NUMBER_ASSET: dict[str, Format] = {
             "level": 1,
         }
     ),
+    "%u": parsing_format(
+        {
+            "alias": "number_underscore",
+            "regex": r"\d{1,3}(?:_\d{3})*",
+            "fmt": lambda x: partial(itself, f"{x:_}"),
+            "parse": lambda x: x.replace("_", ""),
+            "level": 1,
+        }
+    ),
+    # TODO: remove %e from testing asset.
     "%e": parsing_format(
         {
             "alias": "number_extra",
-            "cregex": "%n_%n",
+            "cregex": "%n_%p_%c_%n",
             "fmt": lambda x: partial(itself, str(x)),
             "parse": lambda x: x,
             "level": 1,
         }
     ),
+    # "_": parsing_format(
+    #     {
+    #         "alias": "number_default",
+    #     }
+    # )
 }
 
 DATETIME_ASSET: dict[str, Format] = {
     "%n": parsing_format(
         {
             "alias": "datetime_normal",
-            "cregex": "%Y%m%d_%H%M%S",
-            "fmt": lambda x: x.strftime("%Y%m%d_%H%M%S"),
+            "regex": "%Y%m%d_%H%M%S",
+            "fmt": lambda x: partial(x.strftime("%Y%m%d_%H%M%S")),
+            "parse": ...,
+        }
+    ),
+    "%Y": parsing_format(
+        {
+            "alias": "datetime_year",
+            "regex": "",
+            "fmt": "",
             "parse": ...,
         }
     ),
@@ -101,7 +177,12 @@ DATETIME_ASSET: dict[str, Format] = {
 
 class Formatter:
 
-    def __init__(self, asset: dict[str, Format]):
+    def __init__(
+        self,
+        asset: dict[str, Format],
+        *,
+        validator=None,
+    ):
         self.asset: dict[str, Format] = asset
         self.regex: DictStr = self._regex()
 
@@ -112,7 +193,7 @@ class Formatter:
         prefix: Optional[str] = None,
         suffix: Optional[str] = None,
         alias: bool = True,
-    ):
+    ) -> str:
         _cache: dict[str, int] = defaultdict(int)
         _prefix: str = prefix or ""
         _suffix: str = suffix or ""
@@ -128,26 +209,29 @@ class Formatter:
                     ),
                 )
             regex: str = regexes[fmt_str]
-            print(regex)
-            if _alias_match := re.search(
-                r"^\(\?P<(?P<alias_name>\w+)>(?P<fmt_regex>.+)?\)$",
+            insided: bool = False
+            for fmt_inside in re.finditer(
+                r"\(\?P<(?P<alias>\w+)>(?P<fmt>(?:(?!\(\?P<\w+>).)*)\)",
                 regex,
             ):
-                _sr_re: str = _alias_match.group("alias_name")
-                if alias:
-                    regex = re.sub(
-                        rf"\(\?P<{_sr_re}>",
-                        f"(?P<{_prefix}{_sr_re}__{_cache[fmt_str]}{_suffix}>",
-                        regex,
-                    )
-                else:
-                    regex = re.sub(rf"\(\?P<{_sr_re}>", "(", regex)
-            else:
-                raise FormatterValueError(
-                    "Regex format string does not set group name for parsing "
-                    "value to its class."
+                _sr_re: str = fmt_inside.group("alias")
+                regex = re.sub(
+                    rf"\(\?P<{_sr_re}>",
+                    (
+                        f"(?P<{_prefix}{_sr_re}__{_cache[_sr_re]}{_suffix}>"
+                        if alias
+                        else "("
+                    ),
+                    regex,
+                    count=1,
                 )
-            _cache[fmt_str] += 1
+                _cache[_sr_re] += 1
+                insided = True
+            if not insided:
+                raise FormatterValueError(
+                    "Regex format string does not set group name for "
+                    "parsing value to its class."
+                )
             fmt = fmt.replace(fmt_str, regex, 1)
         return fmt
 
@@ -184,10 +268,17 @@ class Formatter:
 
 def demo_number_formating():
     # print(NUMBER_ASSET)
-    naming: Formatter = Formatter(asset=NUMBER_ASSET)
-    print(naming.regex)
-    print(naming.gen_format("This is a number %n but extra %e"))
+    serial: Formatter = Formatter(asset=SERIAL_ASSET)
+    # print(serial.regex)
+    print(serial.gen_format("This is a number %n but extra %e"))
+
+
+def demo_datetime_formating():
+    dt_format: Formatter = Formatter(asset=DATETIME_ASSET)
+    print(dt_format.regex)
+    print(dt_format.gen_format("This is a datetime %n"))
 
 
 if __name__ == "__main__":
     demo_number_formating()
+    # demo_datetime_formating()
