@@ -2,6 +2,36 @@
 
 ## Latest Changes
 
+## 1.0.3
+
+### :sparkles: Features
+
+- :dart: feat: add clishelf git config for force fix commit prefix. (_2024-04-29_)
+- :dart: feat: add parse method on migration of formatter object. (_2024-04-29_)
+- :dart: feat: change input argument name from register to asset. (_2024-04-29_)
+- :dart: feat: add migration code for support dynamic creation. (_2024-03-04_)
+
+### :black_nib: Code Changes
+
+- :construction: refactored: remove exception classes that do not use on the formatter. (_2024-04-29_)
+
+### :card_file_box: Documents
+
+- :page_facing_up: docs: add migration note on formatter file. (_2024-04-29_)
+
+### :bug: Fix Bugs
+
+- :gear: fixed: merge branch 'migration' that fix the suffix matching. (_2024-04-29_)
+- :gear: fixed: fix the bug that does not add suffix with the correct cache number. (_2024-04-29_)
+
+### :package: Build & Workflow
+
+- :toolbox: build: add pytest on installation step that loss from clishelf. (_2024-04-14_)
+
+### :postbox: Dependencies
+
+- :arrow_up: deps: upgrade dependencies from main branch (#63) (_2024-04-10_)
+
 ## 1.0.2
 
 ### :sparkles: Features
