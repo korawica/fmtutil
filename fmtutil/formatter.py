@@ -509,25 +509,29 @@ class Formatter(BaseFormatter):
                     ),
                 )
             regex: str = regexes[fmt_str]
-            if _alias_match := re.search(
-                r"^\(\?P<(?P<alias_name>\w+)>(?P<fmt_regex>.+)?\)$",
+            insided: bool = False
+            for fmt_inside in re.finditer(
+                r"\(\?P<(?P<alias>\w+)>(?P<fmt>(?:(?!\(\?P<\w+>).)*)\)",
                 regex,
             ):
-                _sr_re: str = _alias_match.group("alias_name")
-                if alias:
-                    regex = re.sub(
-                        rf"\(\?P<{_sr_re}>",
-                        f"(?P<{_prefix}{_sr_re}__{_cache[fmt_str]}{_suffix}>",
-                        regex,
-                    )
-                else:
-                    regex = re.sub(rf"\(\?P<{_sr_re}>", "(", regex)
-            else:
-                raise FormatterValueError(
-                    "Regex format string does not set group name for parsing "
-                    "value to its class."
+                _sr_re: str = fmt_inside.group("alias")
+                regex = re.sub(
+                    rf"\(\?P<{_sr_re}>",
+                    (
+                        f"(?P<{_prefix}{_sr_re}__{_cache[_sr_re]}{_suffix}>"
+                        if alias
+                        else "("
+                    ),
+                    regex,
+                    count=1,
                 )
-            _cache[fmt_str] += 1
+                _cache[_sr_re] += 1
+                insided = True
+            if not insided:
+                raise FormatterValueError(
+                    "Regex format string does not set group name for "
+                    "parsing value to its class."
+                )
             fmt = fmt.replace(fmt_str, regex, 1)
         return fmt
 

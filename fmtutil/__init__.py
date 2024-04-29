@@ -23,8 +23,6 @@ from .exceptions import (
     FormatterGroupArgumentError,
     FormatterGroupValueError,
     FormatterKeyError,
-    FormatterNotFoundError,
-    FormatterTypeError,
     FormatterValueError,
 )
 from .formatter import (
@@ -66,8 +64,6 @@ __all__ = (
     "FormatterArgumentError",
     "FormatterError",
     "FormatterKeyError",
-    "FormatterNotFoundError",
-    "FormatterTypeError",
     "FormatterValueError",
     "FormatterGroupArgumentError",
     "FormatterGroupValueError",

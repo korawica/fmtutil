@@ -21,14 +21,6 @@ class FormatterError(BaseError):
     """Core Base Error object for formatter"""
 
 
-class FormatterNotFoundError(FormatterError):
-    """Error raise for a method not found the config file or data."""
-
-
-class FormatterTypeError(FormatterError):
-    """Error raise for typing does not match or support."""
-
-
 class FormatterValueError(FormatterError):
     """Error raise for value does not valid"""
 
@@ -40,8 +32,12 @@ class FormatterKeyError(FormatterError):
 class FormatterArgumentError(FormatterError):
     """Error raise for a wrong configuration argument.
 
-    >>> FormatterArgumentError(argument='demo', message='does not support')
-    FormatterArgumentError("with 'demo', does not support")
+    Examples:
+        >>> FormatterArgumentError(
+        ...     argument='demo',
+        ...     message='does not support',
+        ... )
+        FormatterArgumentError("with 'demo', does not support")
 
     :param argument: An argument of this error that raise to client
     :type argument: Union[str, tuple]
@@ -73,10 +69,6 @@ class FormatterArgumentError(FormatterError):
         else:
             _argument = f"{argument!r}"
         super().__init__(f"with {_argument}, {message}")
-
-
-class FormatterGroupError(FormatterError):
-    """Core Base Error object for formatter group"""
 
 
 class FormatterGroupValueError(FormatterValueError):

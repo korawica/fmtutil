@@ -1,10 +1,10 @@
 # ------------------------------------------------------------------------------
-# This file license under the BSD-3 License of ``python-semver`` package and
-# BSD and Apache-2.0 License of ``packaging`` package.
+# This file license under the BSD-3 License of the ``python-semver`` package and
+# BSD and Apache-2.0 Licenses of the ``packaging`` package the provide by PyPA.
 # ------------------------------------------------------------------------------
-# refs:
-# * https://github.com/python-semver/python-semver
-# * https://github.com/pypa/packaging
+# references:
+# * [GitHub: Python - semver](https://github.com/python-semver/python-semver)
+# * [GitHub: PYPA - Packaging](https://github.com/pypa/packaging)
 # ------------------------------------------------------------------------------
 from __future__ import annotations
 

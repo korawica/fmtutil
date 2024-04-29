@@ -74,6 +74,7 @@ omit = [
     "fmtutil/__version.py",
     "fmtutil/cli.py",
     "fmtutil/utils.py",
+    "fmtutil/migrate/",
 ]
 relative_files = true
 
