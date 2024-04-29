@@ -48,11 +48,13 @@ Format = Union[CombineFormat, CombineFormat]
 
 
 def parsing_format(value: dict[str, Any]) -> Format:
-    if "regex" in value.keys():
+    if "regex" in value.keys() and "cregex" in value.keys():
+        raise ValueError("Format does not support for getting all regex keys.")
+    elif "regex" in value.keys():
         return CommonFormat(**value)
     elif "cregex" in value.keys():
         return CombineFormat(**value)
-    raise ValueError("Format does not have any regex key")
+    raise ValueError("Format does not have any regex key, `regex` or `cregex`.")
 
 
 NUMBER_ASSET: dict[str, Format] = {
@@ -62,6 +64,15 @@ NUMBER_ASSET: dict[str, Format] = {
             "regex": r"[0-9]*",
             "fmt": lambda x: partial(itself, str(x)),
             "parse": lambda x: x,
+            "level": 1,
+        }
+    ),
+    "%c": parsing_format(
+        {
+            "alias": "number_comma",
+            "regex": r"\d{1,3}(?:,\d{3})*",
+            "fmt": lambda x: partial(itself, f"{x:,}"),
+            "parse": lambda x: x.replace(",", ""),
             "level": 1,
         }
     ),
@@ -90,9 +101,9 @@ DATETIME_ASSET: dict[str, Format] = {
 
 class Formatter:
 
-    def __init__(self, register: dict[str, Format]):
-        self.regis: dict[str, Format] = register
-        self.regex = self._regex()
+    def __init__(self, asset: dict[str, Format]):
+        self.asset: dict[str, Format] = asset
+        self.regex: DictStr = self._regex()
 
     def gen_format(
         self,
@@ -113,7 +124,7 @@ class Formatter:
                     "fmt",
                     (
                         f"The format string, {fmt_str!r}, does not exists in "
-                        f"``cls.regex``."
+                        f"``self.regex``."
                     ),
                 )
             regex: str = regexes[fmt_str]
@@ -143,7 +154,7 @@ class Formatter:
     def _regex(self) -> DictStr:
         results: DictStr = {}
         pre_results: DictStr = {}
-        for f, props in self.regis.items():
+        for f, props in self.asset.items():
             if isinstance(props, CommonFormat):
                 results[f] = f"(?P<{props.alias}>{props.regex})"
             elif isinstance(props, CombineFormat):
@@ -173,9 +184,9 @@ class Formatter:
 
 def demo_number_formating():
     # print(NUMBER_ASSET)
-    naming_fmt: Formatter = Formatter(register=NUMBER_ASSET)
-    print(naming_fmt.regex)
-    print(naming_fmt.gen_format("This is a number %n but extra %e"))
+    naming: Formatter = Formatter(asset=NUMBER_ASSET)
+    print(naming.regex)
+    print(naming.gen_format("This is a number %n but extra %e"))
 
 
 if __name__ == "__main__":
