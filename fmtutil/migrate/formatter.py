@@ -19,10 +19,13 @@ from dataclasses import dataclass, field
 from functools import partial
 from typing import Any, Callable, Optional, Union
 
+from typing_extensions import TypeAlias
+
 from fmtutil.exceptions import FormatterArgumentError, FormatterValueError
-from fmtutil.utils import itself, remove_pad
+from fmtutil.utils import bytes2str, itself, remove_pad
 
 DictStr = dict[str, str]
+String: TypeAlias = Union[str, bytes]
 
 
 @dataclass
@@ -45,6 +48,12 @@ class CombineFormat(BaseFormat):
 
 
 Format = Union[CommonFormat, CombineFormat]
+
+
+@dataclass
+class ConfigFormat:
+    default_fmt: str
+    validator: Callable[[Any], Any] = field(default_factory=lambda x: x)
 
 
 def parsing_format(
@@ -180,11 +189,33 @@ class Formatter:
     def __init__(
         self,
         asset: dict[str, Format],
-        *,
-        validator=None,
+        config: ConfigFormat,
     ):
         self.asset: dict[str, Format] = asset
+        self.conf: ConfigFormat = config
         self.regex: DictStr = self._regex()
+
+    def parse(
+        self,
+        value: String,
+        fmt: Optional[str] = None,
+    ) -> DictStr:
+        _fmt: str = fmt or self.conf.default_fmt
+        _value: str = bytes2str(value)
+
+        if not _fmt:
+            raise NotImplementedError(
+                "This Formatter class does not set default format string "
+                "value."
+            )
+
+        _fmt = self.gen_format(_fmt)
+        if _search := re.search(rf"^{_fmt}$", _value):
+            return self.__validate_format(_search.groupdict())
+
+        raise FormatterValueError(
+            f"value {_value!r} does not match with format {_fmt!r}"
+        )
 
     def gen_format(
         self,
@@ -265,16 +296,41 @@ class Formatter:
             results[f] = cr.replace("[ESCAPE]", "%%")
         return results
 
+    @staticmethod
+    def __validate_format(
+        formats: DictStr | None = None,
+    ) -> DictStr:
+        results: DictStr = {}
+        _formats: DictStr = formats or {}
+        for fmt in _formats:
+            _fmt: str = fmt.split("__", maxsplit=1)[0]
+            if _fmt not in results:
+                results[_fmt] = _formats[fmt]
+                continue
+            if results[_fmt] != _formats[fmt]:
+                raise FormatterValueError(
+                    "Parsing with some duplicate format name that have "
+                    "value do not all equal."
+                )
+        return results
+
 
 def demo_number_formating():
     # print(NUMBER_ASSET)
-    serial: Formatter = Formatter(asset=SERIAL_ASSET)
+    serial: Formatter = Formatter(
+        asset=SERIAL_ASSET,
+        config=ConfigFormat(default_fmt="%n"),
+    )
     # print(serial.regex)
     print(serial.gen_format("This is a number %n but extra %e"))
+    print(serial.parse("Number: 20240101", fmt="Number: %n"))
 
 
 def demo_datetime_formating():
-    dt_format: Formatter = Formatter(asset=DATETIME_ASSET)
+    dt_format: Formatter = Formatter(
+        asset=DATETIME_ASSET,
+        config=ConfigFormat(default_fmt="%Y-%m-%d %H:%M:%S"),
+    )
     print(dt_format.regex)
     print(dt_format.gen_format("This is a datetime %n"))
 
