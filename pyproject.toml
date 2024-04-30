@@ -53,6 +53,9 @@ perf = [
 [project.scripts]
 fmtutil = "fmtutil.__main__:main"
 
+[tool.shelf.git]
+commit_prefix_force_fix = true
+
 [tool.shelf.version]
 version = "./fmtutil/__about__.py"
 changelog = "./docs/en/docs/CHANGELOG.md"
