@@ -928,9 +928,6 @@ class Formatter(BaseFormatter):
         except (TypeError, FormatterValueError):
             return NotImplemented
 
-    def __format__(self, format_spec) -> str:
-        return self.format(format_spec)
-
 
 class Serial(Formatter):
     """Serial formatter object that parse and format any serial (positive

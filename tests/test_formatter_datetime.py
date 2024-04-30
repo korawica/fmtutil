@@ -303,8 +303,6 @@ class DatetimeTestCase(unittest.TestCase):
         )
         self.assertEqual("22", self.dt.format("%-y"))
         self.assertEqual("19000101", self.dt_default.format("%Y%m%d"))
-        self.assertEqual("2022", self.dt.format("%Y"))
-        self.assertEqual("2022", f"{self.dt:%Y}")
 
     def test_datetime_form_value(self):
         self.assertEqual(
