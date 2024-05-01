@@ -6,7 +6,6 @@ from decimal import Decimal
 from typing import (
     Any,
     Callable,
-    Union,
     get_args,
 )
 
@@ -48,7 +47,7 @@ FMT_STR_OTAN_MAP: dict[str, str] = {
     "Z": "zulu",
 }
 
-concat: Callable[[Union[list[str], Iterable[str]]], str] = "".join
+concat: Callable[[list[str] | Iterable[str]], str] = "".join
 
 
 def itself(x: Any = None) -> Any:
@@ -61,7 +60,7 @@ def default(value: Any) -> Callable[[], Any]:
     return lambda: value
 
 
-def caller(func: Union[Callable[[], Any], Any]) -> Any:
+def caller(func: Callable[[], Any] | Any) -> Any:
     """Call function if it was callable
 
     Examples:

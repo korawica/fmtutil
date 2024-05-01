@@ -17,15 +17,16 @@ import re
 from collections import defaultdict
 from dataclasses import dataclass, field
 from functools import partial
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, Optional, Protocol, Union
 
 from typing_extensions import TypeAlias
 
 from fmtutil.exceptions import FormatterArgumentError, FormatterValueError
-from fmtutil.utils import bytes2str, itself, remove_pad
+from fmtutil.utils import bytes2str, can_int, itself, remove_pad
 
 DictStr = dict[str, str]
 String: TypeAlias = Union[str, bytes]
+TupleInt: TypeAlias = tuple[int, ...]
 
 
 @dataclass
@@ -38,13 +39,13 @@ class BaseFormat:
 @dataclass
 class CommonFormat(BaseFormat):
     regex: str
-    level: Union[int, tuple[int, ...]] = field(default=(0,))
+    level: Union[int, TupleInt] = field(default=(0,))
 
 
 @dataclass
 class CombineFormat(BaseFormat):
     cregex: str
-    level: Union[int, tuple[int, ...]] = field(default=(0,))
+    level: Union[int, TupleInt] = field(default=(0,))
 
 
 Format = Union[CommonFormat, CombineFormat]
@@ -53,7 +54,8 @@ Format = Union[CommonFormat, CombineFormat]
 @dataclass
 class ConfigFormat:
     default_fmt: str
-    validator: Callable[[Any], Any] = field(default_factory=lambda x: x)
+    proxy: type[BaseProxy]
+    validator: Callable[[Any], Any] = field(default_factory=itself)
 
 
 def parsing_format(
@@ -74,30 +76,10 @@ SERIAL_MAX_BINARY: int = 8
 
 
 def to_padding(value: str) -> str:
-    """Return a padding string value with zero by setting config
-    ``Serial.Config.serial_max_padding`` value.
-
-    :param value: A string value that want to pad with zero.
-    :type value: str
-
-    :rtype: str
-    :return: A padding string value with zero by setting config
-        ``Serial.Config.serial_max_padding`` value.
-    """
     return value.rjust(SERIAL_MAX_PADDING, "0") if value else ""
 
 
 def to_binary(value: str) -> str:
-    """Return a binary number string value with limit of max zero padding
-    by setting config ``Serial.Config.serial_max_binary`` value.
-
-    :param value: A string value that want to convert to binary.
-    :type value: str
-
-    :rtype: str
-    :return: A binary number string value with limit of max zero padding
-        by setting config ``Serial.Config.serial_max_binary`` value.
-    """
     return f"{int(value):0{str(SERIAL_MAX_BINARY)}b}" if value else ""
 
 
@@ -157,12 +139,41 @@ SERIAL_ASSET: dict[str, Format] = {
             "level": 1,
         }
     ),
-    # "_": parsing_format(
-    #     {
-    #         "alias": "number_default",
-    #     }
-    # )
 }
+
+
+class BaseProxyProtocol(Protocol): ...
+
+
+class BaseProxy:
+
+    def receive(self, parsing: DictStr): ...
+
+
+class SerialProxy(BaseProxy):
+
+    def __init__(
+        self,
+        number: int | str | float | None,
+    ):
+        if number is None:
+            self.number: int = 0
+        if not can_int(number) or ((prepare := int(float(number))) < 0):
+            raise FormatterValueError(
+                f"Serial formatter does not support for value, {number!r}."
+            )
+        self.number: int = prepare
+
+    @classmethod
+    def receive(cls, parsing: DictStr):
+        return cls(**parsing)
+
+
+SERIAL_CONF = ConfigFormat(
+    default_fmt="%n",
+    proxy=SerialProxy,
+)
+
 
 DATETIME_ASSET: dict[str, Format] = {
     "%n": parsing_format(
@@ -229,6 +240,7 @@ class Formatter:
         _prefix: str = prefix or ""
         _suffix: str = suffix or ""
         regexes = self.regex
+        # TODO: Add exclude for `%%n` format string value.
         for fmt_match in re.finditer(r"(%[-+!*]?[A-Za-z])", fmt):
             fmt_str: str = fmt_match.group()
             if fmt_str not in regexes:
@@ -316,14 +328,17 @@ class Formatter:
 
 
 def demo_number_formating():
-    # print(NUMBER_ASSET)
-    serial: Formatter = Formatter(
-        asset=SERIAL_ASSET,
-        config=ConfigFormat(default_fmt="%n"),
-    )
-    # print(serial.regex)
-    print(serial.gen_format("This is a number %n but extra %e"))
-    print(serial.parse("Number: 20240101", fmt="Number: %n"))
+    # Step 01: Initialize serial formatter with asset + config params.
+    serial: Formatter = Formatter(asset=SERIAL_ASSET, config=SERIAL_CONF)
+
+    # Step 02: Generate format from string and Parsing with specific format.
+    print(serial.gen_format("This is a number `%n` but extra `%e`"))
+    serial_proxy = serial.parse("Number: 20240101", fmt="Number: %n")
+    print(serial_proxy)
+
+    # # Step Final: Parse and format.
+    # serial_proxy = serial.parse("Number: 20240101", fmt="Number: %n")
+    # print(serial_proxy.format("This is format number: %n"))
 
 
 def demo_datetime_formating():
