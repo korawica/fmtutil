@@ -2,6 +2,25 @@
 
 ## Latest Changes
 
+## 1.0.4.post0
+
+### :sparkles: Features
+
+- :dart: feat: add validate method for Storage formatter object. (_2024-05-02_)
+
+### :black_nib: Code Changes
+
+- :test_tube: tests: add testcase for formatter group that should to fixed. (_2024-05-02_)
+- :test_tube: tests: add testcase for str2byte on Storage formatter obj. (_2024-05-02_)
+
+### :bug: Fix Bugs
+
+- :gear: fixed: change staticmethod that use itself class to classmethod for support inherit. (_2024-05-02_)
+
+### :package: Build & Workflow
+
+- :toolbox: build: add environment for seperate deployment to PyPI. (_2024-05-02_)
+
 ## 1.0.4
 
 ### :sparkles: Features
