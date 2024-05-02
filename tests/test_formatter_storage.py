@@ -44,6 +44,12 @@ class StorageStaticTestCase(unittest.TestCase):
             self.st3digits.search_order("0.523"),
         )
 
+    def test_storage_str2byte(self):
+        self.assertEqual(
+            decimal.Decimal(130023424.000),
+            self.st3digits.str2byte("124MB"),
+        )
+
 
 class StorageTestCase(unittest.TestCase):
     def setUp(self) -> None:

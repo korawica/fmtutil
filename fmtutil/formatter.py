@@ -3099,7 +3099,7 @@ class Storage(Formatter, fmt="%b"):
         :param value: A string value that want to convert to the byte value.
         :type value: str
         :param order: The order value that want to power with 1024.
-        :type order: str
+        :type order: str | None(=None)
 
         Examples:
 
