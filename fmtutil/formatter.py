@@ -1011,8 +1011,9 @@ class Serial(Formatter, fmt="%n"):
             },
         }
 
-    @staticmethod
+    @classmethod
     def formatter(
+        cls,
         serial: int | str | float | None = None,
     ) -> ReturnFormattersType:
         """Return a formatter value that define by property of this formatter
@@ -1031,7 +1032,7 @@ class Serial(Formatter, fmt="%n"):
         :return: A generated mapping values of all format string pattern of this
             serial formatter object.
         """
-        _value: int = Serial.prepare_value(serial)
+        _value: int = cls.prepare_value(serial)
         return {
             "%n": {
                 # "value": lambda: str(_value),
@@ -1039,14 +1040,14 @@ class Serial(Formatter, fmt="%n"):
                 "regex": r"(?P<number>[0-9]*)",
             },
             "%p": {
-                "value": partial(Serial.to_padding, str(_value)),
+                "value": partial(cls.to_padding, str(_value)),
                 "regex": (
                     r"(?P<number_pad>"
-                    rf"[0-9]{{{str(Serial.Config.serial_max_padding)}}})"
+                    rf"[0-9]{{{str(cls.Config.serial_max_padding)}}})"
                 ),
             },
             "%b": {
-                "value": partial(Serial.to_binary, str(_value)),
+                "value": partial(cls.to_binary, str(_value)),
                 "regex": r"(?P<number_binary>[0-1]*)",
             },
             "%c": {
@@ -1083,8 +1084,8 @@ class Serial(Formatter, fmt="%n"):
             )
         return prepare
 
-    @staticmethod
-    def to_padding(value: str) -> str:
+    @classmethod
+    def to_padding(cls, value: str) -> str:
         """Return a padding string value with zero by setting config
         ``Serial.Config.serial_max_padding`` value.
 
@@ -1095,12 +1096,10 @@ class Serial(Formatter, fmt="%n"):
         :return: A padding string value with zero by setting config
             ``Serial.Config.serial_max_padding`` value.
         """
-        return (
-            value.rjust(Serial.Config.serial_max_padding, "0") if value else ""
-        )
+        return value.rjust(cls.Config.serial_max_padding, "0") if value else ""
 
-    @staticmethod
-    def to_binary(value: str) -> str:
+    @classmethod
+    def to_binary(cls, value: str) -> str:
         """Return a binary number string value with limit of max zero padding
         by setting config ``Serial.Config.serial_max_binary`` value.
 
@@ -1112,7 +1111,7 @@ class Serial(Formatter, fmt="%n"):
             by setting config ``Serial.Config.serial_max_binary`` value.
         """
         return (
-            f"{int(value):0{str(Serial.Config.serial_max_binary)}b}"
+            f"{int(value):0{str(cls.Config.serial_max_binary)}b}"
             if value
             else ""
         )
@@ -1410,8 +1409,9 @@ class Datetime(Formatter, level=10, fmt="%Y-%m-%d %H:%M:%S.%f"):
             },
         }
 
-    @staticmethod
+    @classmethod
     def formatter(
+        cls,
         dt: str | datetime | date | None = None,
     ) -> ReturnFormattersType:
         """Return a formatter value that define by property of this formatter
@@ -1464,7 +1464,7 @@ class Datetime(Formatter, level=10, fmt="%Y-%m-%d %H:%M:%S.%f"):
         :return: A generated mapping values of all format string pattern of this
             datetime formatter object.
         """
-        _dt: datetime = Datetime.prepare_value(dt)
+        _dt: datetime = cls.prepare_value(dt)
         return {
             "%n": {
                 "value": partial(_dt.strftime, "%Y%m%d_%H%M%S"),
@@ -1479,7 +1479,7 @@ class Datetime(Formatter, level=10, fmt="%Y-%m-%d %H:%M:%S.%f"):
                 "regex": r"(?P<year_cut_pad>\d{2})",
             },
             "%-y": {
-                "value": partial(Datetime.remove_pad_dt, _dt, "%y"),
+                "value": partial(cls.remove_pad_dt, _dt, "%y"),
                 "regex": r"(?P<year_cut>\d{1,2})",
             },
             "%m": {
@@ -1487,7 +1487,7 @@ class Datetime(Formatter, level=10, fmt="%Y-%m-%d %H:%M:%S.%f"):
                 "regex": r"(?P<month_pad>01|02|03|04|05|06|07|08|09|10|11|12)",
             },
             "%-m": {
-                "value": partial(Datetime.remove_pad_dt, _dt, "%m"),
+                "value": partial(cls.remove_pad_dt, _dt, "%m"),
                 "regex": r"(?P<month>1|2|3|4|5|6|7|8|9|10|11|12)",
             },
             "%b": {
@@ -1530,7 +1530,7 @@ class Datetime(Formatter, level=10, fmt="%Y-%m-%d %H:%M:%S.%f"):
                 "regex": r"(?P<day_pad>[0-3][0-9])",
             },
             "%-d": {
-                "value": partial(Datetime.remove_pad_dt, _dt, "%d"),
+                "value": partial(cls.remove_pad_dt, _dt, "%d"),
                 "regex": r"(?P<day>\d{1,2})",
             },
             "%H": {
@@ -1538,7 +1538,7 @@ class Datetime(Formatter, level=10, fmt="%Y-%m-%d %H:%M:%S.%f"):
                 "regex": r"(?P<hour_pad>[0-2][0-9])",
             },
             "%-H": {
-                "value": partial(Datetime.remove_pad_dt, _dt, "%H"),
+                "value": partial(cls.remove_pad_dt, _dt, "%H"),
                 "regex": r"(?P<hour>\d{2})",
             },
             "%I": {
@@ -1549,7 +1549,7 @@ class Datetime(Formatter, level=10, fmt="%Y-%m-%d %H:%M:%S.%f"):
                 ),
             },
             "%-I": {
-                "value": partial(Datetime.remove_pad_dt, _dt, "%I"),
+                "value": partial(cls.remove_pad_dt, _dt, "%I"),
                 "regex": r"(?P<hour_12>0|1|2|3|4|5|6|7|8|9|10|11|12)",
             },
             "%M": {
@@ -1557,7 +1557,7 @@ class Datetime(Formatter, level=10, fmt="%Y-%m-%d %H:%M:%S.%f"):
                 "regex": r"(?P<minute_pad>[0-6][0-9])",
             },
             "%-M": {
-                "value": partial(Datetime.remove_pad_dt, _dt, "%M"),
+                "value": partial(cls.remove_pad_dt, _dt, "%M"),
                 "regex": r"(?P<minute>\d{1,2})",
             },
             "%S": {
@@ -1565,7 +1565,7 @@ class Datetime(Formatter, level=10, fmt="%Y-%m-%d %H:%M:%S.%f"):
                 "regex": r"(?P<second_pad>[0-6][0-9])",
             },
             "%-S": {
-                "value": partial(Datetime.remove_pad_dt, _dt, "%S"),
+                "value": partial(cls.remove_pad_dt, _dt, "%S"),
                 "regex": r"(?P<second>\d{1,2})",
             },
             "%j": {
@@ -1573,7 +1573,7 @@ class Datetime(Formatter, level=10, fmt="%Y-%m-%d %H:%M:%S.%f"):
                 "regex": r"(?P<day_year_pad>[0-3][0-9][0-9])",
             },
             "%-j": {
-                "value": partial(Datetime.remove_pad_dt, _dt, "%j"),
+                "value": partial(cls.remove_pad_dt, _dt, "%j"),
                 "regex": r"(?P<day_year>\d{1,3})",
             },
             "%U": {
@@ -1961,8 +1961,9 @@ class Version(Formatter, level=4, fmt="%m_%n_%c"):
             },
         }
 
-    @staticmethod
+    @classmethod
     def formatter(
+        cls,
         version: str | VerPackage | None = None,
     ) -> ReturnFormattersType:
         """Return a formatter value that define by property of this formatter
@@ -1989,7 +1990,7 @@ class Version(Formatter, level=4, fmt="%m_%n_%c"):
         :return: A generated mapping values of all format string pattern of this
             version formatter object.
         """
-        _version: VerPackage = Version.prepare_value(version)
+        _version: VerPackage = cls.prepare_value(version)
         return {
             "%f": {
                 "value": partial(
@@ -2401,8 +2402,9 @@ class Naming(Formatter, level=5, fmt="%n"):
             },
         }
 
-    @staticmethod
+    @classmethod
     def formatter(
+        cls,
         nm: str | list[str] | None = None,
     ) -> ReturnFormattersType:
         """Return a formatter value that define by property of this formatter
@@ -2441,37 +2443,37 @@ class Naming(Formatter, level=5, fmt="%n"):
         :return: A generated mapping values of all format string pattern of this
             naming formatter object.
         """
-        _value: list[str] = Naming.prepare_value(nm)
+        _value: list[str] = cls.prepare_value(nm)
         return {
             "%n": {
-                "value": partial(Naming.__join_with, " ", _value),
+                "value": partial(cls.__join_with, " ", _value),
                 "cregex": "%l",
             },
             "%N": {
                 "value": partial(
-                    Naming.__join_with, " ", _value, lambda x: x.upper()
+                    cls.__join_with, " ", _value, lambda x: x.upper()
                 ),
                 "cregex": "%u",
             },
             "%-N": {
                 "value": partial(
-                    Naming.__join_with, " ", _value, lambda x: x.capitalize()
+                    cls.__join_with, " ", _value, lambda x: x.capitalize()
                 ),
                 "cregex": "%t",
             },
             "%u": {
                 "value": partial(
-                    Naming.__join_with, " ", _value, lambda x: x.upper()
+                    cls.__join_with, " ", _value, lambda x: x.upper()
                 ),
                 "regex": r"(?P<strings_upper>[A-Z0-9]+(?:\s[A-Z0-9]+)*)",
             },
             "%l": {
-                "value": partial(Naming.__join_with, " ", _value),
+                "value": partial(cls.__join_with, " ", _value),
                 "regex": r"(?P<strings>[a-z0-9]+(?:\s[a-z0-9]+)*)",
             },
             "%t": {
                 "value": partial(
-                    Naming.__join_with, " ", _value, lambda x: x.capitalize()
+                    cls.__join_with, " ", _value, lambda x: x.capitalize()
                 ),
                 "regex": (
                     r"(?P<strings_title>[A-Z][a-z0-9]+(?:\s[A-Z]+[a-z0-9]*)*)"
@@ -2479,7 +2481,7 @@ class Naming(Formatter, level=5, fmt="%n"):
             },
             "%a": {
                 "value": partial(
-                    Naming.__join_with,
+                    cls.__join_with,
                     "",
                     _value,
                     lambda x: (x[0] if x else ""),
@@ -2488,7 +2490,7 @@ class Naming(Formatter, level=5, fmt="%n"):
             },
             "%A": {
                 "value": partial(
-                    Naming.__join_with,
+                    cls.__join_with,
                     "",
                     _value,
                     lambda x: (x[0].upper() if x else ""),
@@ -2496,7 +2498,7 @@ class Naming(Formatter, level=5, fmt="%n"):
                 "regex": r"(?P<shorts_upper>[A-Z0-9]+)",
             },
             "%c": {
-                "value": partial(Naming.camel_case, "_".join(_value)),
+                "value": partial(cls.camel_case, "_".join(_value)),
                 "regex": (
                     r"(?P<strings_camel>[a-z]+"
                     r"((\d)|([A-Z0-9][a-z0-9]+))*([A-Z])?)"
@@ -2504,11 +2506,11 @@ class Naming(Formatter, level=5, fmt="%n"):
                 ),
             },
             "%-c": {
-                "value": partial(Naming.pascal_case, "_".join(_value)),
+                "value": partial(cls.pascal_case, "_".join(_value)),
                 "cregex": "%p",
             },
             "%p": {
-                "value": partial(Naming.pascal_case, "_".join(_value)),
+                "value": partial(cls.pascal_case, "_".join(_value)),
                 "regex": (
                     r"(?P<strings_pascal>[A-Z]"
                     r"([A-Z0-9]*[a-z][a-z0-9]*[A-Z]|"
@@ -2518,44 +2520,44 @@ class Naming(Formatter, level=5, fmt="%n"):
                 ),
             },
             "%k": {
-                "value": partial(Naming.__join_with, "-", _value),
+                "value": partial(cls.__join_with, "-", _value),
                 "regex": r"(?P<strings_kebab>[a-z0-9]+(?:-[a-z0-9]+)*)",
             },
             "%K": {
                 "value": partial(
-                    Naming.__join_with, "-", _value, lambda x: x.upper()
+                    cls.__join_with, "-", _value, lambda x: x.upper()
                 ),
                 "regex": r"(?P<strings_kebab_upper>[A-Z0-9]+(?:-[A-Z0-9]+)*)",
             },
             "%-K": {
                 "value": partial(
-                    Naming.__join_with, "-", _value, lambda x: x.capitalize()
+                    cls.__join_with, "-", _value, lambda x: x.capitalize()
                 ),
                 "cregex": "%T",
             },
             "%f": {
-                "value": partial(Naming.__join_with, "", _value),
+                "value": partial(cls.__join_with, "", _value),
                 "regex": r"(?P<flats>[a-z0-9]+)",
             },
             "%F": {
                 "value": partial(
-                    Naming.__join_with, "", _value, lambda x: x.upper()
+                    cls.__join_with, "", _value, lambda x: x.upper()
                 ),
                 "regex": r"(?P<flats_upper>[A-Z0-9]+)",
             },
             "%s": {
-                "value": partial(Naming.__join_with, "_", _value),
+                "value": partial(cls.__join_with, "_", _value),
                 "regex": r"(?P<strings_snake>[a-z0-9]+(?:_[a-z0-9]+)*)",
             },
             "%S": {
                 "value": partial(
-                    Naming.__join_with, "_", _value, lambda x: x.upper()
+                    cls.__join_with, "_", _value, lambda x: x.upper()
                 ),
                 "regex": r"(?P<strings_snake_upper>[A-Z0-9]+(?:_[A-Z0-9]+)*)",
             },
             "%-S": {
                 "value": partial(
-                    Naming.__join_with, "_", _value, lambda x: x.capitalize()
+                    cls.__join_with, "_", _value, lambda x: x.capitalize()
                 ),
                 "regex": (
                     r"(?P<strings_snake_title>"
@@ -2564,7 +2566,7 @@ class Naming(Formatter, level=5, fmt="%n"):
             },
             "%T": {
                 "value": partial(
-                    Naming.__join_with, "-", _value, lambda x: x.capitalize()
+                    cls.__join_with, "-", _value, lambda x: x.capitalize()
                 ),
                 "regex": (
                     r"(?P<strings_train>"
@@ -2583,8 +2585,8 @@ class Naming(Formatter, level=5, fmt="%n"):
             },
         }
 
-    @staticmethod
-    def prepare_value(value: str | list[str] | None) -> list[str]:
+    @classmethod
+    def prepare_value(cls, value: str | list[str] | None) -> list[str]:
         """Prepare value before passing to convert logic in the formatter
         method that define by property of this formatter object. Return
         List of empty string if an input value does not pass.
@@ -2601,7 +2603,7 @@ class Naming(Formatter, level=5, fmt="%n"):
         if value is None:
             return [""]
         if isinstance(value, str):
-            return Naming.__remove_special_char(value)
+            return cls.__remove_special_char(value)
         elif not isinstance(value, list) or any(
             not isinstance(v, str) for v in value
         ):
@@ -2711,8 +2713,8 @@ class Naming(Formatter, level=5, fmt="%n"):
         """
         return re.sub(r"(?:^|_)(.)", lambda m: m.group(1).upper(), snake_case)
 
-    @staticmethod
-    def camel_case(snake_case: str) -> str:
+    @classmethod
+    def camel_case(cls, snake_case: str) -> str:
         """Return a string value with camel case with lower case first
         letter.
 
@@ -2724,7 +2726,7 @@ class Naming(Formatter, level=5, fmt="%n"):
             letter.
         """
         return (
-            (snake_case[0].lower() + Naming.pascal_case(snake_case)[1:])
+            (snake_case[0].lower() + cls.pascal_case(snake_case)[1:])
             if snake_case
             else ""
         )
