@@ -4,7 +4,8 @@
 # license information.
 # ------------------------------------------------------------------------------
 """
-Define Errors Object for formatter
+Define Errors Object for formatter that will use instead built-in exception
+classes without NotImplementedError only.
 """
 from __future__ import annotations
 
@@ -38,7 +39,7 @@ class FormatterArgumentError(FormatterError):
         FormatterArgumentError("with 'demo', does not support")
 
     :param argument: An argument of this error that raise to client
-    :type argument: Union[str, tuple]
+    :type argument: str | tuple
     :param message: A string message of this error
     :type message: str
     """
@@ -74,4 +75,4 @@ class FormatterGroupValueError(FormatterValueError):
 
 
 class FormatterGroupArgumentError(FormatterArgumentError):
-    """Error raise for a wrong configuration argument."""
+    """Error raise for a wrong configuration argument"""

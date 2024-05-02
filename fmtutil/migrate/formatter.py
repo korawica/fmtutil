@@ -176,42 +176,67 @@ SERIAL_CONF = ConfigFormat(
 
 
 DATETIME_ASSET: dict[str, Format] = {
-    "%n": parsing_format(
-        {
-            "alias": "datetime_normal",
-            "regex": "%Y%m%d_%H%M%S",
-            "fmt": lambda x: partial(x.strftime("%Y%m%d_%H%M%S")),
-            "parse": ...,
-        }
-    ),
+    # "%n": parsing_format(
+    #     {
+    #         "alias": "datetime_normal",
+    #         "cregex": "%Y%m%d_%H%M%S",
+    #         "fmt": lambda x: partial(x.strftime("%Y%m%d_%H%M%S")),
+    #         "parse": ...,
+    #     }
+    # ),
     "%Y": parsing_format(
         {
-            "alias": "datetime_year",
-            "regex": "",
-            "fmt": "",
+            "alias": "year",
+            "regex": r"\d{4}",
+            "fmt": lambda x: partial(x.strftime, "%Y"),
+            "parse": lambda x: x,
+            "level": 10,
+        }
+    ),
+    "%m": parsing_format(
+        {
+            "alias": "month_pad",
+            "regex": "01|02|03|04|05|06|07|08|09|10|11|12",
+            "fmt": lambda x: partial(x.strftime, "%m"),
             "parse": ...,
+            "level": 9,
         }
     ),
 }
 
 
+DATETIME_CONF = ConfigFormat(
+    default_fmt="%Y-%m-%d %H:%M:%S",
+    proxy=BaseProxy,
+)
+
+
 class Formatter:
+    asset: dict[str, Format]
+    config: ConfigFormat
 
-    def __init__(
-        self,
-        asset: dict[str, Format],
-        config: ConfigFormat,
-    ):
-        self.asset: dict[str, Format] = asset
-        self.conf: ConfigFormat = config
-        self.regex: DictStr = self._regex()
+    def __init_subclass__(
+        cls,
+        /,
+        asset: dict[str, Format] | None = None,
+        config: ConfigFormat | None = None,
+        **kwargs,
+    ) -> None:
+        cls.asset = asset or cls.asset
+        cls.config = config or cls.config
 
+        if cls.asset is None:
+            raise NotImplementedError
+        if cls.config is None:
+            raise NotImplementedError
+
+    @classmethod
     def parse(
-        self,
+        cls,
         value: String,
         fmt: Optional[str] = None,
     ) -> DictStr:
-        _fmt: str = fmt or self.conf.default_fmt
+        _fmt: str = fmt or cls.config.default_fmt
         _value: str = bytes2str(value)
 
         if not _fmt:
@@ -220,16 +245,17 @@ class Formatter:
                 "value."
             )
 
-        _fmt = self.gen_format(_fmt)
+        _fmt = cls.gen_format(_fmt)
         if _search := re.search(rf"^{_fmt}$", _value):
-            return self.__validate_format(_search.groupdict())
+            return cls.__validate_format(_search.groupdict())
 
         raise FormatterValueError(
             f"value {_value!r} does not match with format {_fmt!r}"
         )
 
+    @classmethod
     def gen_format(
-        self,
+        cls,
         fmt: str,
         *,
         prefix: Optional[str] = None,
@@ -239,7 +265,7 @@ class Formatter:
         _cache: dict[str, int] = defaultdict(int)
         _prefix: str = prefix or ""
         _suffix: str = suffix or ""
-        regexes = self.regex
+        regexes = cls._regex()
         # TODO: Add exclude for `%%n` format string value.
         for fmt_match in re.finditer(r"(%[-+!*]?[A-Za-z])", fmt):
             fmt_str: str = fmt_match.group()
@@ -248,7 +274,7 @@ class Formatter:
                     "fmt",
                     (
                         f"The format string, {fmt_str!r}, does not exists in "
-                        f"``self.regex``."
+                        f"``cls.regex``."
                     ),
                 )
             regex: str = regexes[fmt_str]
@@ -278,10 +304,11 @@ class Formatter:
             fmt = fmt.replace(fmt_str, regex, 1)
         return fmt
 
-    def _regex(self) -> DictStr:
+    @classmethod
+    def _regex(cls) -> DictStr:
         results: DictStr = {}
         pre_results: DictStr = {}
-        for f, props in self.asset.items():
+        for f, props in cls.asset.items():
             if isinstance(props, CommonFormat):
                 results[f] = f"(?P<{props.alias}>{props.regex})"
             elif isinstance(props, CombineFormat):
@@ -327,13 +354,18 @@ class Formatter:
         return results
 
 
+class Serial(Formatter, asset=SERIAL_ASSET, config=SERIAL_CONF): ...
+
+
+class Datetime(Formatter, asset=DATETIME_ASSET, config=DATETIME_CONF): ...
+
+
 def demo_number_formating():
     # Step 01: Initialize serial formatter with asset + config params.
-    serial: Formatter = Formatter(asset=SERIAL_ASSET, config=SERIAL_CONF)
 
     # Step 02: Generate format from string and Parsing with specific format.
-    print(serial.gen_format("This is a number `%n` but extra `%e`"))
-    serial_proxy = serial.parse("Number: 20240101", fmt="Number: %n")
+    print(Serial.gen_format("This is a number `%n` but extra `%e`"))
+    serial_proxy = Serial.parse("Number: 20240101", fmt="Number: %n")
     print(serial_proxy)
 
     # # Step Final: Parse and format.
@@ -342,14 +374,10 @@ def demo_number_formating():
 
 
 def demo_datetime_formating():
-    dt_format: Formatter = Formatter(
-        asset=DATETIME_ASSET,
-        config=ConfigFormat(default_fmt="%Y-%m-%d %H:%M:%S"),
-    )
-    print(dt_format.regex)
-    print(dt_format.gen_format("This is a datetime %n"))
+    # print(dt_format.regex)
+    print(Datetime.gen_format("This is a datetime %Y%m"))
 
 
 if __name__ == "__main__":
     demo_number_formating()
-    # demo_datetime_formating()
+    demo_datetime_formating()

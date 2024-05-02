@@ -92,7 +92,7 @@ class FormatterGroupTestCase(unittest.TestCase):
             str(context.exception),
         )
 
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaises(fmt.FormatterGroupValueError) as context:
             fmt.make_group(
                 {
                     "naming": fmt.make_const(

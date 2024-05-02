@@ -191,7 +191,7 @@ class SlotLevel:
             range numbers.
         :type strict: bool(=True)
 
-        :raises ValueError: if updated number does not exist in range.
+        :raises FormatterValueError: if updated number does not exist in range.
 
         :rtype: SlotLevel
         :return: Self that was updated level
@@ -441,8 +441,8 @@ class Formatter(BaseFormatter):
 
         :raises NotImplementedError: if fmt value parameter does not pass form
             input, or `cls.base_fmt` does not implement.
-        :raises ValueError: if value does not match with regular expression
-            format string.
+        :raises FormatterValueError: if value does not match with regular
+            expression format string.
 
         :rtype: Formatter
         :return: An instance of formatter that parse from a bytes or string
@@ -3914,8 +3914,8 @@ def make_group(group: BaseGroupsType) -> FormatterGroupType:
     :param group: A dict of group naming and Formatter class.
     :type group: BaseGroupsType
 
-    :raises ValueError: If any value in an input group does not be subclassed of
-        Formatter instance.
+    :raises FormatterGroupValueError: If any value in an input group does not
+        be subclassed of Formatter instance.
     :raises FormatterGroupArgumentError: If any value in an input group does not
         be objected that mean this value is any instance.
 
@@ -3926,7 +3926,7 @@ def make_group(group: BaseGroupsType) -> FormatterGroupType:
     for _ in group.values():
         try:
             if not issubclass(_, Formatter):
-                raise ValueError(
+                raise FormatterGroupValueError(
                     f"Make group constructor function want group with type, "
                     f"Dict[str, FormatterType], not {_.__name__!r}."
                 )
