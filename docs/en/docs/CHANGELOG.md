@@ -2,6 +2,31 @@
 
 ## Latest Changes
 
+## 1.0.4
+
+### :sparkles: Features
+
+- :dart: feat: migrate and optimization the formatter object (_2024-05-02_)
+
+### :black_nib: Code Changes
+
+- :construction: refactored: change format generator suffix value update. (_2024-05-02_)
+- :construction: refactored: add ClassVar to any class attributes. (_2024-05-01_)
+- :construction: refactored: update change from the latest of main. (_2024-05-01_)
+
+### :bug: Fix Bugs
+
+- :gear: fixed: raise exception class does not use from exceptions file. (_2024-05-02_)
+- :gear: fixed: revert "Merge branch 'main' into migration". (_2024-04-30_)
+
+### :package: Build & Workflow
+
+- :toolbox: build: add use venv step for activate python interpeter. (_2024-04-30_)
+- :toolbox: build: add cache on venv that reduce installation time. (_2024-04-30_)
+- :toolbox: build: use uv for installing Python dependencies in tests. (_2024-04-30_)
+- :toolbox: build: change installation uv by curl command. (_2024-04-30_)
+- :toolbox: build: test upgrade pip installation with uv. (_2024-04-30_)
+
 ## 1.0.3
 
 ### :sparkles: Features
