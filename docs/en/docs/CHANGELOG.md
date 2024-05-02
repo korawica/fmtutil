@@ -2,7 +2,7 @@
 
 ## Latest Changes
 
-## 1.0.4.post0
+## 1.0.5
 
 ### :sparkles: Features
 
@@ -19,6 +19,7 @@
 
 ### :package: Build & Workflow
 
+- :toolbox: build: change repo url from github workflow file to env variable. (_2024-05-02_)
 - :toolbox: build: add environment for seperate deployment to PyPI. (_2024-05-02_)
 
 ## 1.0.4
