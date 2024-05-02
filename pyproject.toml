@@ -53,12 +53,29 @@ perf = [
 [project.scripts]
 fmtutil = "fmtutil.__main__:main"
 
-[tool.shelf.git]
-commit_prefix_force_fix = true
-
 [tool.shelf.version]
 version = "./fmtutil/__about__.py"
 changelog = "./docs/en/docs/CHANGELOG.md"
+
+[tool.shelf.git]
+commit_prefix_force_fix = true
+
+[tool.hatch.version]
+scheme = "standard"
+source = "code"
+path = "fmtutil/__about__.py"
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+    "/.github",
+    "/docs",
+    "/tests",
+    "/.pre-commit-config.yaml",
+    "/fmtutil/__assets.py",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["fmtutil"]
 
 [tool.coverage.run]
 branch = true
@@ -72,30 +89,14 @@ omit = [
     "tests/perfs/",
     "scripts/",
     "fmtutil/__about__.py",
+    "fmtutil/__assets.py",
     "fmtutil/__main__.py",
     "fmtutil/__type.py",
     "fmtutil/__version.py",
     "fmtutil/cli.py",
     "fmtutil/utils.py",
-    "fmtutil/migrate/",
 ]
 relative_files = true
-
-[tool.hatch.version]
-scheme = "standard"
-source = "code"
-path = "fmtutil/__about__.py"
-
-[tool.hatch.build.targets.sdist]
-exclude = [
-    "/.github",
-    "/docs",
-    "/tests",
-    "/.pre-commit-config.yaml",
-]
-
-[tool.hatch.build.targets.wheel]
-packages = ["fmtutil"]
 
 [tool.coverage.report]
 exclude_lines = [
@@ -147,7 +148,16 @@ exclude = """
 
 [tool.ruff]
 line-length = 80
-lint.select = [
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".git",
+    ".mypy_cache",
+    ".ruff_cache",
+    "venv",
+]
+
+[tool.ruff.lint]
+select = [
     "E",  # pycodestyle errors
     "W",  # pycodestyle warnings
     "F",  # pyflakes
@@ -155,17 +165,10 @@ lint.select = [
     "C",  # flake8-comprehensions
     "B",  # flake8-bugbear
 ]
-lint.ignore = [
+ignore = [
     "E501",  # line too long, handled by black
     "B008",  # do not perform function calls in argument defaults
     "C901",  # too complex
-]
-# Exclude a variety of commonly ignored directories.
-exclude = [
-    ".git",
-    ".mypy_cache",
-    ".ruff_cache",
-    "venv",
 ]
 
 [tool.ruff.lint.per-file-ignores]

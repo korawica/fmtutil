@@ -154,7 +154,7 @@ class ConstantTestCase(unittest.TestCase):
         self.assertIn(
             (
                 "value 'special_job' does not match "
-                "with format '(?P<sierra__0>special)_life'"
+                "with format '(?P<sierra>special)_life'"
             ),
             str(context.exception),
         )

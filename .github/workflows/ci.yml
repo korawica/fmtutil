@@ -31,19 +31,26 @@ jobs:
       - uses: actions/cache@v4
         id: cache
         with:
-          path: ${{ env.pythonLocation }}
-          key: ${{ runner.os }}-python-${{ env.pythonLocation }}-${{ hashFiles('pyproject.toml', 'requirements-tests.txt') }}-test-v04
+          path: .venv
+          key: ${{ runner.os }}-python-${{ steps.setup_python.outputs.python-version }}-${{ hashFiles('pyproject.toml') }}-ci
 
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          pip install -e .[dev]
-          pip install "coverage[toml]" pytest
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          uv venv
+          uv pip install -U pip
+          uv pip install -e .[dev]
+          uv pip install "coverage[toml]" pytest
 
-      - run: mkdir coverage
+      - name: Use Python virtual environment
+        run: |
+          echo "$GITHUB_WORKSPACE/.venv/bin" >> $GITHUB_PATH
+          echo "VIRTUAL_ENV=$GITHUB_WORKSPACE/.venv" >> $GITHUB_ENV
 
       - name: Run coverage and produce a .coverage file
         run: |
+          mkdir coverage
           coverage run -m pytest --disable-pytest-warnings
         env:
           COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ matrix.python-version }}
@@ -89,13 +96,19 @@ jobs:
           path: coverage
           merge-multiple: true
 
-      - run: |
-          pip install "coverage[toml]"
-          pip install "pytest>=7.4.3,<8.0.0"
+      - name: Install Python Dependencies
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          uv venv
+          uv pip install -U pip
+          uv pip install "coverage[toml]"
+          uv pip install "pytest>=7.4.3,<8.0.0"
+          echo "$GITHUB_WORKSPACE/.venv/bin" >> $GITHUB_PATH
+          echo "VIRTUAL_ENV=$GITHUB_WORKSPACE/.venv" >> $GITHUB_ENV
 
-      - run: ls -al coverage
       - name: Run coverage
         run: |
+          ls -al coverage
           coverage combine coverage
           coverage report --show-missing
           coverage html --show-contexts --title "Coverage for ${{ github.sha }}"

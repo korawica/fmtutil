@@ -24,8 +24,8 @@ from itertools import tee, zip_longest
 from typing import (
     Any,
     Callable,
+    ClassVar,
     NoReturn,
-    Optional,
     TypedDict,
     Union,
     final,  # docs: https://github.com/python/mypy/issues/9953
@@ -58,6 +58,7 @@ from .utils import (
     default,
     itself,
     remove_pad,
+    scache,
 )
 
 FormatterType = type["Formatter"]
@@ -76,7 +77,7 @@ class PriorityValue(TypedDict):
     """Type Dictionary for value of mapping of ``cls.priorities``"""
 
     value: PriorityCallable
-    level: Optional[Union[int, TupleInt]]
+    level: int | TupleInt | None
 
 
 @final
@@ -120,7 +121,7 @@ class SlotLevel:
             A sum of weighted value from a True value in any slot position.
 
     Methods:
-        * update: [Optional[Union[int, TupleInt]]] -> SlotLevel
+        * update: int | TupleInt | None -> SlotLevel
             Self that was updated level
         * checker: [Union[int, TupleInt]] -> bool
             A True if all values in ``self.slot`` that match with index numbers
@@ -180,7 +181,7 @@ class SlotLevel:
 
     def update(
         self,
-        numbers: Optional[Union[int, TupleInt]] = None,
+        numbers: int | TupleInt | None = None,
         strict: bool = True,
     ) -> SlotLevel:
         """Update boolean value in ``self.slot`` from False to True.
@@ -191,7 +192,7 @@ class SlotLevel:
             range numbers.
         :type strict: bool(=True)
 
-        :raises ValueError: if updated number does not exist in range.
+        :raises FormatterValueError: if updated number does not exist in range.
 
         :rtype: SlotLevel
         :return: Self that was updated level
@@ -212,7 +213,7 @@ class SlotLevel:
 
     def checker(
         self,
-        numbers: Union[int, TupleInt],
+        numbers: int | TupleInt,
     ) -> bool:
         """Return True if boolean value in ``self.slot`` is all True.
 
@@ -234,7 +235,7 @@ class SlotLevel:
         )
 
     @staticmethod
-    def make_tuple(value: Union[int, TupleInt]) -> TupleInt:
+    def make_tuple(value: int | TupleInt) -> TupleInt:
         """Return tuple of integer value that was created from input value
         parameter if it is not tuple.
 
@@ -254,11 +255,11 @@ class PriorityData:
     .. dataclass attributes::
 
         - value: PriorityCallable
-        - level: Optional[Union[int, TupleInt]]
+        - level: int | TupleInt | None
     """
 
     value: PriorityCallable = field(default=itself, repr=False)
-    level: Optional[Union[int, TupleInt]] = field(default=(0,))
+    level: int | TupleInt | None = field(default=(0,))
 
 
 class BaseFormatter(ABC):
@@ -281,7 +282,7 @@ class Formatter(BaseFormatter):
     as `the cls.formatter()` method or the `cls.priorities` property.
 
     :param formats: A mapping value of priority attribute data.
-    :type formats: Optional[Dict[str, Any]](=None)
+    :type formats: dict[str, Any] | None(=None)
     :param set_strict_mode: A flag to allow checking duplicate attribute value.
     :type set_strict_mode: bool(=False)
     :param set_std_value: A flag to allow for set standard value form string,
@@ -326,7 +327,7 @@ class Formatter(BaseFormatter):
         * _setter_std_value: [bool] -> NoReturn
             Setting standard value that have an argument name be the class name
             with lower case if input flag is True.
-        * values: [Optional[Any]] -> DictStr
+        * values: Any | None -> DictStr
             A dict of format string, and it's string value that was passed an
             input value to `cls.formatter` method.
         * format: [str] -> str
@@ -343,9 +344,9 @@ class Formatter(BaseFormatter):
             ``self.values()``.
 
     .. static-methods::
-        * __validate_format: [Optional[Dict[str, Any]]] -> Dict[str, Any]
+        * __validate_format: Dict[str, Any] | None -> Dict[str, Any]
             A formats value that validate with duplicate format string values.
-        * formatter: [Optional[Any]] -> ReturnFormattersType
+        * formatter: Any | None -> ReturnFormattersType
             A formatter value that define by property of this formatter object.
         * prepare_value: [Any] -> Any
             A prepared value with defined logic.
@@ -358,30 +359,35 @@ class Formatter(BaseFormatter):
     """
 
     # This value must reassign from child class
-    base_fmt: str = ""
+    base_fmt: ClassVar[str] = ""
 
     # This value must reassign from child class
-    base_level: int = 1
+    base_level: ClassVar[int] = 1
 
     class Config:
         """A Configuration object that use for group and keep any config for
         this sub-formatter object.
         """
 
-        base_config_value: Optional[Any] = None
+        base_config_value: ClassVar[Any | None] = None
 
     def __init_subclass__(
         cls: FormatterType,
         /,
-        level: Optional[int] = None,
+        level: int | None = None,
+        fmt: str | None = None,
         **kwargs: Any,
     ) -> NoReturn:
-        """Subclass Initialize method.
+        """Subclass Initialize method that will declare class variables if it
+        set from class creation or direct override with that variables.
 
-        :param level
-        :type level: int (default=1)
+        :param level: The max level that this formatter class will limit.
+        :type level: int | None(=1)
+        :param fmt: The default format string value that use on the parsing.
+        :type fmt: str | None(=None)
         """
-        cls.base_level = level or cls.base_level
+        cls.base_level: int = level or cls.base_level
+        cls.base_fmt: str = fmt or cls.base_fmt
         super().__init_subclass__(**kwargs)
 
         if not cls.base_fmt:
@@ -423,7 +429,7 @@ class Formatter(BaseFormatter):
     def parse(
         cls,
         value: String,
-        fmt: Optional[str] = None,
+        fmt: str | None = None,
         *,
         strict: bool = False,
     ) -> Formatter:
@@ -435,14 +441,14 @@ class Formatter(BaseFormatter):
         :type value: String
         :param fmt: a format value will use `cls.base_fmt` if it does not pass
             from input argument.
-        :type fmt: Optional[str](=None)
+        :type fmt: str | None(=None)
         :param strict: A flag strict validate that pass to ``set_strict_mode``.
         :type strict: bool(=False)
 
         :raises NotImplementedError: if fmt value parameter does not pass form
             input, or `cls.base_fmt` does not implement.
-        :raises ValueError: if value does not match with regular expression
-            format string.
+        :raises FormatterValueError: if value does not match with regular
+            expression format string.
 
         :rtype: Formatter
         :return: An instance of formatter that parse from a bytes or string
@@ -470,8 +476,8 @@ class Formatter(BaseFormatter):
         cls,
         fmt: str,
         *,
-        prefix: Optional[str] = None,
-        suffix: Optional[str] = None,
+        prefix: str | None = None,
+        suffix: str | None = None,
         alias: bool = True,
     ) -> str:
         """Generate format string value that combine from any matching of
@@ -481,10 +487,10 @@ class Formatter(BaseFormatter):
         :type fmt: str
         :param prefix: a prefix string value that will add to alias format
             string value.
-        :type prefix: Optional[str]
+        :type prefix: str | None(=None)
         :param suffix: a suffix string value that will add to alias format
             string value.
-        :type suffix: Optional[str]
+        :type suffix: str | None(=None)
         :param alias: an alias boolean flag that will pass alias name if it
             true to the format string value.
         :type alias: bool
@@ -498,8 +504,11 @@ class Formatter(BaseFormatter):
         _prefix: str = prefix or ""
         _suffix: str = suffix or ""
         regexes = cls.regex()
-        for fmt_match in re.finditer(r"(%[-+!*]?[A-Za-z])", fmt):
+        for fmt_match in re.finditer(r"(%?%[-+!*]?[A-Za-z])", fmt):
             fmt_str: str = fmt_match.group()
+            if fmt_str.startswith("%%"):
+                fmt = fmt.replace(fmt_str, fmt_str[1:], 1)
+                continue
             if fmt_str not in regexes:
                 raise FormatterArgumentError(
                     "fmt",
@@ -518,7 +527,10 @@ class Formatter(BaseFormatter):
                 regex = re.sub(
                     rf"\(\?P<{_sr_re}>",
                     (
-                        f"(?P<{_prefix}{_sr_re}__{_cache[_sr_re]}{_suffix}>"
+                        (
+                            f"(?P<{_prefix}{_sr_re}{scache(_cache[_sr_re])}"
+                            f"{_suffix}>"
+                        )
                         if alias
                         else "("
                     ),
@@ -587,7 +599,7 @@ class Formatter(BaseFormatter):
             results[f] = cr.replace("[ESCAPE]", "%%")
         return results
 
-    def values(self, value: Optional[Any] = None) -> DictStr:
+    def values(self, value: Any | None = None) -> DictStr:
         """Return a dict of format string, and it's string value that was passed
         an input value to `cls.formatter` method.
 
@@ -636,7 +648,7 @@ class Formatter(BaseFormatter):
 
     def __init__(
         self,
-        formats: Optional[dict[str, Any]] = None,
+        formats: dict[str, Any] | None = None,
         *,
         set_strict_mode: bool = False,
         set_std_value: bool = True,
@@ -811,14 +823,14 @@ class Formatter(BaseFormatter):
 
     @staticmethod
     def __validate_format(
-        formats: Optional[dict[str, Any]] = None,
+        formats: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Return a formats value that validate with duplicate format string
         values, and it will raise error if any duplication format name do not
         all equal.
 
         :param formats:
-        :type formats: Optional[Dict[str, Any]]
+        :type formats: dict[str, Any] | None(=None)
 
         :rtype: Dict[str, Any]
         :return: A formats value that validate with duplicate format string
@@ -855,12 +867,12 @@ class Formatter(BaseFormatter):
 
     @staticmethod
     @abstractmethod
-    def formatter(value: Optional[Any] = None) -> ReturnFormattersType:
+    def formatter(value: Any | None = None) -> ReturnFormattersType:
         """Return a formatter value that define by property of this formatter
         object.
 
         :param value: An any value that want to generate with formatter.
-        :type value: Optional[Any](=None)
+        :type value: Any | None(=None)
 
         :rtype: ReturnFormattersType
         :return: a formatter value that define by property of this formatter
@@ -932,12 +944,10 @@ class Formatter(BaseFormatter):
         return self.format(format_spec)
 
 
-class Serial(Formatter):
+class Serial(Formatter, fmt="%n"):
     """Serial formatter object that parse and format any serial (positive
     integer) value.
     """
-
-    base_fmt: str = "%n"
 
     class Config(Formatter.Config):
         serial_max_padding: int = 3
@@ -1003,7 +1013,7 @@ class Serial(Formatter):
 
     @staticmethod
     def formatter(
-        serial: Optional[Union[int, str, float]] = None,
+        serial: int | str | float | None = None,
     ) -> ReturnFormattersType:
         """Return a formatter value that define by property of this formatter
         object. Generate formatter that support mapping formatter,
@@ -1015,7 +1025,7 @@ class Serial(Formatter):
             %u  : Normal with underscore separate number
 
         :param serial: A serial value that pass to generate all format.
-        :type serial: Optional[Union[int, str, float]](=None)
+        :type serial: int | str | float | None(=None)
 
         :rtype: ReturnFormattersType
         :return: A generated mapping values of all format string pattern of this
@@ -1050,14 +1060,14 @@ class Serial(Formatter):
         }
 
     @staticmethod
-    def prepare_value(value: Optional[Union[int, str, float]]) -> int:
+    def prepare_value(value: int | str | float | None) -> int:
         """Prepare value before passing to convert logic in the formatter
         method that define by property of this formatter object. Return 0 if an
         input value does not pass.
 
         :param value: A value that want to prepare before passing to this
             serial formatter.
-        :type value: Optional[Union[int, str, float]]
+        :type value: int | str | float | None
 
         :raises FormatterValueError: If an input value does not able cast to
             integer, or it's value less than 0.
@@ -1144,10 +1154,8 @@ WEEKS_FULL: DictStr = {
 }
 
 
-class Datetime(Formatter, level=10):
+class Datetime(Formatter, level=10, fmt="%Y-%m-%d %H:%M:%S.%f"):
     """Datetime formatter object that parse and format any datetime value."""
-
-    base_fmt: str = "%Y-%m-%d %H:%M:%S.%f"
 
     __slots__ = (
         "year",
@@ -1404,7 +1412,7 @@ class Datetime(Formatter, level=10):
 
     @staticmethod
     def formatter(
-        dt: Optional[Union[str, datetime, date]] = None,
+        dt: str | datetime | date | None = None,
     ) -> ReturnFormattersType:
         """Return a formatter value that define by property of this formatter
         object. Generate formatter that support mapping formatter,
@@ -1450,7 +1458,7 @@ class Datetime(Formatter, level=10):
         **  %X  : Local version of time (%H:%M:%S)
 
         :param dt: A datetime value that pass to generate all format.
-        :type dt: Optional[Union[str, datetime, date]](=None)
+        :type dt: str | datetime | date | None(=None)
 
         :rtype: ReturnFormattersType
         :return: A generated mapping values of all format string pattern of this
@@ -1587,14 +1595,14 @@ class Datetime(Formatter, level=10):
         }
 
     @staticmethod
-    def prepare_value(value: Optional[Union[str, datetime, date]]) -> datetime:
+    def prepare_value(value: str | datetime | date | None) -> datetime:
         """Prepare value before passing to convert logic in the formatter
         method that define by property of this formatter object. Return
         ``datetime.now()`` if an input value does not pass.
 
         :param value: A value that want to prepare before passing to this
             datetime formatter.
-        :type value: Optional[Union[str, datetime, date]]
+        :type value: str | datetime | date | None
 
         :raises FormatterValueError: If an input value does be
             ``datetime.datetime`` or ``datetime.date``.
@@ -1783,7 +1791,7 @@ class Datetime(Formatter, level=10):
         return NotImplemented
 
 
-class Version(Formatter, level=4):
+class Version(Formatter, level=4, fmt="%m_%n_%c"):
     """Version formatter object that parse and format any version
     (``packaging.version.Version``) value.
 
@@ -1823,8 +1831,6 @@ class Version(Formatter, level=4):
         - Enhance the version object from the packaging library
         (https://packaging.pypa.io/en/latest/version.html)
     """
-
-    base_fmt: str = "%m_%n_%c"
 
     __slots__ = (
         "version",
@@ -1957,7 +1963,7 @@ class Version(Formatter, level=4):
 
     @staticmethod
     def formatter(
-        version: Optional[Union[str, VerPackage]] = None,
+        version: str | VerPackage | None = None,
     ) -> ReturnFormattersType:
         """Return a formatter value that define by property of this formatter
         object. Generate formatter that support mapping formatter,
@@ -1977,7 +1983,7 @@ class Version(Formatter, level=4):
             %-l : local release number
 
         :param version: A version value that pass to generate all format.
-        :type version: Optional[Union[str, __version.VersionPackage]](=None)
+        :type version: str | __version.VerPackage | None(=None)
 
         :rtype: ReturnFormattersType
         :return: A generated mapping values of all format string pattern of this
@@ -2051,7 +2057,7 @@ class Version(Formatter, level=4):
 
     @staticmethod
     def prepare_value(
-        value: Optional[Union[str, VerPackage]],
+        value: str | VerPackage | None,
     ) -> VerPackage:
         """Prepare value before passing to convert logic in the formatter
         method that define by property of this formatter object. Return
@@ -2060,7 +2066,7 @@ class Version(Formatter, level=4):
 
         :param value: A value that want to prepare before passing to this
             version formatter.
-        :type value: Optional[Union[str, __version.VersionPackage]]
+        :type value: str |  __version.VersionPackage | None
 
         :raises FormatterValueError: If an input value does be
             ``__version.VersionPackage``
@@ -2158,7 +2164,7 @@ class Version(Formatter, level=4):
         return NotImplemented
 
 
-class Naming(Formatter, level=5):
+class Naming(Formatter, level=5, fmt="%n"):
     """Naming formatter object that parse and format any name value.
 
     .. note::
@@ -2166,8 +2172,6 @@ class Naming(Formatter, level=5):
         A name value that parsing to this class should not contain any
     special characters, this will keep only.
     """
-
-    base_fmt: str = "%n"
 
     __slots__ = (
         "naming",
@@ -2399,7 +2403,7 @@ class Naming(Formatter, level=5):
 
     @staticmethod
     def formatter(
-        nm: Optional[Union[str, list[str]]] = None,
+        nm: str | list[str] | None = None,
     ) -> ReturnFormattersType:
         """Return a formatter value that define by property of this formatter
         object. Generate formatter that support mapping formatter,
@@ -2431,7 +2435,7 @@ class Naming(Formatter, level=5):
             * https://gist.github.com/SuppieRK/a6fb471cf600271230c8c7e532bdae4b
 
         :param nm: A naming value that pass to generate all format.
-        :type nm: Optional[Union[str, List[str]]](=None)
+        :type nm: str | list[str] | None(=None)
 
         :rtype: ReturnFormattersType
         :return: A generated mapping values of all format string pattern of this
@@ -2580,14 +2584,14 @@ class Naming(Formatter, level=5):
         }
 
     @staticmethod
-    def prepare_value(value: Optional[Union[str, list[str]]]) -> list[str]:
+    def prepare_value(value: str | list[str] | None) -> list[str]:
         """Prepare value before passing to convert logic in the formatter
         method that define by property of this formatter object. Return
         List of empty string if an input value does not pass.
 
         :param value: A value that want to prepare before passing to this
             naming formatter.
-        :type value: Optional[Union[str, List[str]]]
+        :type value: str | list[str] | None
 
         :raises FormatterValueError: If an input value does be list of str.
 
@@ -2729,7 +2733,7 @@ class Naming(Formatter, level=5):
     def __join_with(
         by: str,
         values: list[str],
-        func: Optional[Callable[[str], str]] = None,
+        func: Callable[[str], str] | None = None,
     ) -> str:
         """Return a string value that join with any separate string after
         prepare with an input function if it set.
@@ -2739,7 +2743,7 @@ class Naming(Formatter, level=5):
         :param values: A list of word that want to join with.
         :type values: List[str]
         :param func: A function that want to prepare before join.
-        :type func: Optional[Callable[[str], str]](=None)
+        :type func: Callable[[str], str] | None(=None)
 
         :rtype: str
         :return: A string value that join with any separate string after
@@ -2798,7 +2802,7 @@ SIZE: tuple[str, ...] = (
 )
 
 
-class Storage(Formatter):
+class Storage(Formatter, fmt="%b"):
     """Storage formatter object that parse and format any storage value.
 
     .. note::
@@ -2806,8 +2810,6 @@ class Storage(Formatter):
         A storage value will use ``decimal.Decimal`` package for wrap up
     standard value for this Storage formatter object.
     """
-
-    base_fmt: str = "%b"
 
     class Config(Formatter.Config):
         storage_rounding: int = 0
@@ -2894,7 +2896,7 @@ class Storage(Formatter):
         }
 
     @staticmethod
-    def formatter(storage: Optional[int] = None) -> ReturnFormattersType:
+    def formatter(storage: int | None = None) -> ReturnFormattersType:
         """Return a formatter value that define by property of this formatter
         object. Generate formatter that support mapping formatter,
 
@@ -2910,7 +2912,7 @@ class Storage(Formatter):
             %Y  : Yotta-Byte format
 
         :param storage: A storage value that pass to generate all format.
-        :type storage: Optional[int]
+        :type storage: int | None
 
         :rtype: ReturnFormattersType
         :return: A generated mapping values of all format string pattern of this
@@ -2962,7 +2964,7 @@ class Storage(Formatter):
 
     @staticmethod
     def prepare_value(
-        value: Union[int, float, Decimal, str, None],
+        value: int | float | Decimal | str | None,
     ) -> Decimal:
         """Prepare value before passing to convert logic in the formatter
         method that define by property of this formatter object. Return 0 if an
@@ -2970,7 +2972,7 @@ class Storage(Formatter):
 
         :param value: A value that want to prepare before passing to this
             storage formatter.
-        :type value: Optional[int, float, Decimal, str]
+        :type value: int | float | Decimal | str | None
 
         :raises FormatterValueError: If an input value does not able cast to
             integer, or it's value less than 0.
@@ -3044,6 +3046,8 @@ ConstantComparator: TypeAlias = Callable[["Constant", "Constant"], bool]
 
 
 def const_comparison(operator: ConstantComparator) -> ConstantComparator:
+    """Decorator function for compare operators in the Constant class."""
+
     @wraps(operator)
     def wrapper(self: Constant, other) -> bool:
         if not issubclass(other.__class__, Constant):
@@ -3053,11 +3057,11 @@ def const_comparison(operator: ConstantComparator) -> ConstantComparator:
     return wrapper
 
 
-class Constant(Formatter):
+class Constant(Formatter, fmt="%%"):
     """Constant object for create Constant class in the constructor function.
 
     :param formats: A mapping value of priority attribute data.
-    :type formats: Optional[Dict[str, Any]](=None)
+    :type formats: Dict[str, Any] | None(=None)
     :param set_strict_mode: A flag to allow checking duplicate attribute value.
     :type set_strict_mode: bool(=False)
 
@@ -3067,8 +3071,6 @@ class Constant(Formatter):
     any senses to compare a constant instance such as ``__add__``, or
     ``__sub__`` properties.
     """
-
-    base_fmt: str = "%%"
 
     __slots__: tuple[str, ...] = ("_constant",)
 
@@ -3093,7 +3095,7 @@ class Constant(Formatter):
     def parse(
         cls,
         value: String,
-        fmt: Optional[str] = None,
+        fmt: str | None = None,
         *,
         strict: bool = False,
     ) -> Formatter:
@@ -3104,7 +3106,7 @@ class Constant(Formatter):
         :param value: A bytes or string value that match with fmt.
         :type value: String
         :param fmt: a format value.
-        :type fmt: Optional[str](=None)
+        :type fmt: str | None(=None)
         :param strict: A flag strict validate that pass to ``set_strict_mode``.
         :type strict: bool(=False)
 
@@ -3123,7 +3125,7 @@ class Constant(Formatter):
 
     def __init__(
         self,
-        formats: Optional[dict[str, Any]] = None,
+        formats: dict[str, Any] | None = None,
         *,
         set_strict_mode: bool = False,
     ) -> None:
@@ -3186,12 +3188,12 @@ class Constant(Formatter):
         )
 
     @staticmethod
-    def formatter(value: Optional[str] = None) -> ReturnFormattersType:
+    def formatter(value: str | None = None) -> ReturnFormattersType:
         """Return a formatter value that define by property of this formatter
         object.
 
         :param value: An any value that want to generate with formatter.
-        :type value: Optional[str](=None)
+        :type value: str | None(=None)
 
         :rtype: ReturnFormattersType
         :return: a formatter value that define by property of this formatter
@@ -3244,7 +3246,7 @@ def dict2const(
     fmt: DictStr,
     name: str,
     *,
-    base_fmt: Optional[str] = None,
+    base_fmt: str | None = None,
 ) -> ConstantType:
     """Constant function constructor that receive the dict of format string
     value and constant value.
@@ -3255,7 +3257,7 @@ def dict2const(
     :param name: A custom class name that want to rename.
     :type name: str
     :param base_fmt: A base format string value.
-    :type base_fmt: Optional[str](=None)
+    :type base_fmt: str | None(=None)
 
     :rtype: ConstantType
     :return: A constant object that construct from an input fmt and name values.
@@ -3267,7 +3269,7 @@ def dict2const(
         input name from constructor function.
         """
 
-        base_fmt: str = _base_fmt
+        base_fmt: ClassVar[str] = _base_fmt
 
         __qualname__ = name
 
@@ -3286,14 +3288,14 @@ def dict2const(
 
         @staticmethod
         def formatter(  # type: ignore[override]
-            v: Optional[str] = None,
+            v: str | None = None,
         ) -> ReturnFormattersType:
             """Return a formatter value that define by property of this
             formatter object. Generate formatter that support mapping formatter
             with an input dict in fmt value.
 
             :param v: A constant value that pass to generate all format.
-            :type v: Optional[int](=None)
+            :type v: str | None(=None)
 
             :rtype: ReturnFormattersType
             :return: A generated mapping values of all format string pattern of
@@ -3327,7 +3329,7 @@ def dict2const(
                 for f in fmt
             }
 
-        def values(self, value: Optional[Any] = None) -> DictStr:
+        def values(self, value: Any | None = None) -> DictStr:
             """Return the constant values"""
             _ = self.prepare_value(value)
             return fmt
@@ -3348,23 +3350,23 @@ def dict2const(
 
 
 def make_const(
-    name: Optional[str] = None,
-    formatter: Optional[Union[DictStr, Formatter]] = None,
+    name: str | None = None,
+    formatter: DictStr | Formatter | None = None,
     *,
-    fmt: Optional[FormatterType] = None,
-    value: Optional[Any] = None,
+    fmt: FormatterType | None = None,
+    value: Any | None = None,
 ) -> ConstantType:
     """Helper constant constructor function that will prepare all input values
     before call ``dict2const`` constructor function.
 
     :param name: A custom class name that want to rename.
-    :type name: Optional[str](=None)
+    :type name: str | None(=None)
     :param formatter: ...
-    :type formatter: Optional[Union[DictStr, Formatter]]
+    :type formatter: DictStr | Formatter | None
     :param fmt: A formatter object.
-    :type fmt: Optional[FormatterType](=None)
+    :type fmt: FormatterType | None(=None)
     :param value: A value that want to passer to an input fmt value.
-    :type value: Optional[Any](=None)
+    :type value: Any | None(=None)
 
     :raises FormatterArgumentError: If an input formatter was passed together
         with an input fmt value.
@@ -3374,7 +3376,7 @@ def make_const(
     :rtype: ConstantType
     :return: A constant object that construct from an input fmt and name values.
     """
-    base_fmt: Optional[str] = None
+    base_fmt: str | None = None
     _fmt: DictStr
     if formatter is None:
         if fmt is None or not inspect.isclass(fmt):
@@ -3477,7 +3479,7 @@ class FormatterGroup:
     instances.
 
     :param formats: A mapping value of priority attribute data.
-    :type formats: Optional[dict](=None)
+    :type formats: FormatsGroupType
     :param ignore_construct: A flag for ignore pass an input formats value to
         validate and construct function.
     :type ignore_construct: bool(=False)
@@ -3519,7 +3521,7 @@ class FormatterGroup:
         * adjust: [Dict[str, Any]] -> FormatterGroup
             Adjust any formatter instance in ``self.groups`` of this formatter
             group.
-        * to_const: [Optional[List[str]]] -> FormatterGroupType
+        * to_const: list[str] | None -> FormatterGroupType
             A FormatterGroup object that create from constant of ``self.groups``
             values.
 
@@ -3624,9 +3626,9 @@ class FormatterGroup:
         _value: str = bytes2str(value)
         parser_rs: ReturnParseType = cls.__parse(_value, fmt)
         rs: dict[str, DictStr] = defaultdict(dict)
-        for group in parser_rs:
-            group_origin: str = group.split("__")[0]
-            rs[group_origin] |= parser_rs[group]["props"]
+        for g in parser_rs:
+            group_origin: str = g.split("__")[0]
+            rs[group_origin] |= parser_rs[g]["props"]
         return cls(formats=rs)
 
     @classmethod
@@ -3665,9 +3667,9 @@ class FormatterGroup:
                 "fmt": _fmt_getter[name]["fmt"],
                 "value": _search_dict.pop(name),
                 "props": {
-                    k.replace(name, "", 1): _search_dict.pop(k)
+                    k.replace(f"{name}___", "", 1): _search_dict.pop(k)
                     for k in filter(
-                        lambda x: x.startswith(name),
+                        lambda x: x.startswith(f"{name}___"),
                         _search_dict.copy(),
                     )
                 },
@@ -3703,11 +3705,11 @@ class FormatterGroup:
                 fmt_str: str
                 if not (fmt_str := fmt_dict["format"]):
                     fmt_str = formatter.base_fmt
-                group_index: str = f"{group}__{_index}"
+                group_index: str = f"{group}{scache(_index)}"
                 fmt_re = formatter.gen_format(
                     fmt_str,
-                    prefix=group_index,
-                    suffix=f"{_index}",
+                    prefix=f"{group_index}___",
+                    suffix=scache(_index),
                 )
                 fmt = fmt.replace(
                     fmt_dict["found"],
@@ -3881,7 +3883,7 @@ class FormatterGroup:
 
     def to_const(
         self,
-        included: Optional[list[str]] = None,
+        included: list[str] | None = None,
     ) -> FormatterGroupType:  # no cov
         """Convert this formatter group instance to constant group object.
 
@@ -3913,8 +3915,8 @@ def make_group(group: BaseGroupsType) -> FormatterGroupType:
     :param group: A dict of group naming and Formatter class.
     :type group: BaseGroupsType
 
-    :raises ValueError: If any value in an input group does not be subclassed of
-        Formatter instance.
+    :raises FormatterGroupValueError: If any value in an input group does not
+        be subclassed of Formatter instance.
     :raises FormatterGroupArgumentError: If any value in an input group does not
         be objected that mean this value is any instance.
 
@@ -3925,7 +3927,7 @@ def make_group(group: BaseGroupsType) -> FormatterGroupType:
     for _ in group.values():
         try:
             if not issubclass(_, Formatter):
-                raise ValueError(
+                raise FormatterGroupValueError(
                     f"Make group constructor function want group with type, "
                     f"Dict[str, FormatterType], not {_.__name__!r}."
                 )

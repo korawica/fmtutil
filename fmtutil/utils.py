@@ -6,7 +6,6 @@ from decimal import Decimal
 from typing import (
     Any,
     Callable,
-    Union,
     get_args,
 )
 
@@ -48,7 +47,7 @@ FMT_STR_OTAN_MAP: dict[str, str] = {
     "Z": "zulu",
 }
 
-concat: Callable[[Union[list[str], Iterable[str]]], str] = "".join
+concat: Callable[[list[str] | Iterable[str]], str] = "".join
 
 
 def itself(x: Any = None) -> Any:
@@ -61,14 +60,13 @@ def default(value: Any) -> Callable[[], Any]:
     return lambda: value
 
 
-def caller(func: Union[Callable[[], Any], Any]) -> Any:
+def caller(func: Callable[[], Any] | Any) -> Any:
     """Call function if it was callable
 
     Examples:
-
-    >>> some_func = lambda: 100
-    >>> caller(some_func)
-    100
+        >>> some_func = lambda: 100
+        >>> caller(some_func)
+        100
     """
     return func() if callable(func) else func
 
@@ -77,19 +75,18 @@ def convert_fmt_str(fmt: str) -> str:
     """Convert format string to format string name
 
     Examples:
-
-    >>> convert_fmt_str('%a')
-    'alpha'
-    >>> convert_fmt_str('%!b')
-    'bravo_exclamation'
-    >>> convert_fmt_str('%S')
-    'sierra_upper'
-    >>> convert_fmt_str('%-N')
-    'november_upper_minus'
-    >>> convert_fmt_str('G')
-    'G'
-    >>> convert_fmt_str('%H')
-    'hotel_upper'
+        >>> convert_fmt_str('%a')
+        'alpha'
+        >>> convert_fmt_str('%!b')
+        'bravo_exclamation'
+        >>> convert_fmt_str('%S')
+        'sierra_upper'
+        >>> convert_fmt_str('%-N')
+        'november_upper_minus'
+        >>> convert_fmt_str('G')
+        'G'
+        >>> convert_fmt_str('%H')
+        'hotel_upper'
     """
     _fmt_re: str = fmt
     if search := re.search(r"^%(?P<prefix>[-+!*]?)(?P<format>[a-zA-Z])$", fmt):
@@ -110,11 +107,10 @@ def can_int(value: Any) -> bool:
     """Check value that able cast to integer.
 
     Example:
-
-    >>> can_int('0.0')
-    True
-    >>> can_int('-1.0')
-    True
+        >>> can_int('0.0')
+        True
+        >>> can_int('-1.0')
+        True
     """
     try:
         return float(str(value)).is_integer()
@@ -126,11 +122,10 @@ def can_float(value: Any) -> bool:
     """Check value that able cast to float.
 
     Example:
-
-    >>> can_float('0.01')
-    True
-    >>> can_float('0.1a')
-    False
+        >>> can_float('0.01')
+        True
+        >>> can_float('0.1a')
+        False
     """
     if value is None:
         return False
@@ -145,11 +140,10 @@ def remove_pad(value: str) -> str:
     """Remove zero padding of string
 
     Examples:
-
-    >>> remove_pad('000')
-    '0'
-    >>> remove_pad('0123')
-    '123'
+        >>> remove_pad('000')
+        '0'
+        >>> remove_pad('0123')
+        '123'
     """
     return _last_char if (_last_char := value[-1]) == "0" else value.lstrip("0")
 
@@ -158,11 +152,10 @@ def bytes2str(value: String) -> str:
     """Convert byte to string
 
     Example:
-
-    >>> bytes2str(b'foo')
-    'foo'
-    >>> bytes2str('foo')
-    'foo'
+        >>> bytes2str(b'foo')
+        'foo'
+        >>> bytes2str('foo')
+        'foo'
     """
     if isinstance(value, bytes):
         value = str(value, "utf-8", "strict")
@@ -174,3 +167,8 @@ def bytes2str(value: String) -> str:
 def float2decimal(value: float, precision: int = 15) -> Decimal:
     """Convert float to decimal with default precision value."""
     return Decimal(value).quantize(Decimal(10) ** -precision)
+
+
+def scache(cache_num: int) -> str:
+    """Return cache suffix string"""
+    return f"__{cache_num}" if cache_num > 0 else ""

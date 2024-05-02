@@ -18,7 +18,6 @@ from typing import (
     Callable,
     ClassVar,
     NoReturn,
-    Optional,
     SupportsInt,
     Union,
     cast,
@@ -365,7 +364,7 @@ class BaseVersion:
     def __getitem__(
         self,
         index: Union[int, slice],
-    ) -> Union[int, Optional[str], tuple[Union[int, str], ...]]:
+    ) -> Union[int, str | None, tuple[Union[int, str], ...]]:
         """If the part requested is undefined, or a part of the range requested
         is undefined, it will throw an index error.
 
@@ -570,7 +569,7 @@ class BaseVersion:
 
         return cls(**match.groupdict())
 
-    def replace(self, **parts: Union[int, Optional[str]]) -> BaseVersion:
+    def replace(self, **parts: Union[int, str | None]) -> BaseVersion:
         """Replace one or more parts of a version and return a new instance.
 
         :param parts: the parts to be updated. Valid keys are:
@@ -586,7 +585,7 @@ class BaseVersion:
             return self.__class__(**version)
         except TypeError as err:
             unknown = set(parts) - set(self.to_dict())
-            error = (
+            error: str = (
                 f"replace() got {len(unknown)} unexpected keyword "
                 f"argument(s): {', '.join(unknown)}"
             )
@@ -626,7 +625,7 @@ class BaseVersion:
 
     @staticmethod
     def _extract_letter(
-        letter: Optional[str],
+        letter: str | None,
         force_raise: bool = False,
     ) -> tuple[str, int]:
         """Extract letter to standard word.
@@ -717,10 +716,10 @@ class VersionPackage(BaseVersion):
         major: SupportsInt = 0,
         minor: SupportsInt = 0,
         patch: SupportsInt = 0,
-        pre: Optional[Union[String, int]] = None,
-        post: Optional[Union[String, int]] = None,
-        dev: Optional[Union[String, int]] = None,
-        local: Optional[String] = None,
+        pre: String | int | None = None,
+        post: String | int | None = None,
+        dev: String | int | None = None,
+        local: String | None = None,
     ):
         super().__init__(major, minor, patch)
         if (ep := int(epoch or "0")) < 0:
@@ -729,9 +728,9 @@ class VersionPackage(BaseVersion):
             )
 
         self.epoch: int = ep
-        self.pre: Optional[str] = None if pre is None else str(pre)
-        self.post: Optional[str] = None if post is None else str(post)
-        self.dev: Optional[str] = None if dev is None else str(dev)
+        self.pre: str | None = None if pre is None else str(pre)
+        self.post: str | None = None if post is None else str(post)
+        self.dev: str | None = None if dev is None else str(dev)
         self.local = None if local is None else str(local)
 
     def __extract_tuple(self):
@@ -757,8 +756,8 @@ class VersionPackage(BaseVersion):
 
     @staticmethod
     def __extract_local(
-        local: Optional[str],
-    ) -> Optional[tuple[Union[str, int], ...]]:
+        local: str | None,
+    ) -> tuple[Union[str, int], ...] | None:
         if local is not None:
             return tuple(
                 part.lower() if not part.isdigit() else int(part)
@@ -767,21 +766,21 @@ class VersionPackage(BaseVersion):
         return None
 
     @property
-    def v_pre(self) -> Optional[int]:
+    def v_pre(self) -> int | None:
         """Return the version number of pre part if it was set."""
         return self._extract_letter(self.pre)[1] if self.pre else None
 
     @property
-    def v_post(self) -> Optional[int]:
+    def v_post(self) -> int | None:
         """Return the version number of post part if it was set."""
         return self._extract_letter(self.post)[1] if self.post else None
 
     @property
-    def v_dev(self) -> Optional[int]:
+    def v_dev(self) -> int | None:
         """Return the version number of dev part if it was set."""
         return self._extract_letter(self.dev)[1] if self.dev else None
 
-    def bump_pre(self, token: Optional[str] = "rc") -> VersionPackage:
+    def bump_pre(self, token: str | None = "rc") -> VersionPackage:
         """Raise the pre part of the packaging version, return a new object.
 
         :rtype: VersionPackage
@@ -984,14 +983,14 @@ class VersionSemver(BaseVersion):
         major: SupportsInt,
         minor: SupportsInt = 0,
         patch: SupportsInt = 0,
-        pre: Optional[Union[String, int]] = None,
-        build: Optional[Union[String, int]] = None,
+        pre: String | int | None = None,
+        build: String | int | None = None,
     ):
         super().__init__(major, minor, patch)
-        self.pre: Optional[str] = None if pre is None else str(pre)
-        self.build: Optional[str] = None if build is None else str(build)
+        self.pre: str | None = None if pre is None else str(pre)
+        self.build: str | None = None if build is None else str(build)
 
-    def bump_pre(self, token: Optional[str] = "rc") -> VersionSemver:
+    def bump_pre(self, token: str | None = "rc") -> VersionSemver:
         """Raise the pre part of the version, return a new object but leave
         self untouched.
 
@@ -1011,7 +1010,7 @@ class VersionSemver(BaseVersion):
         pre = increment(pre)
         return self.__class__(self.major, self.minor, self.patch, pre)
 
-    def bump_build(self, token: Optional[str] = "build") -> VersionSemver:
+    def bump_build(self, token: str | None = "build") -> VersionSemver:
         """Raise the build part of the version, return a new object but leave
         self untouched.
 

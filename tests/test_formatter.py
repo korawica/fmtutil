@@ -223,7 +223,7 @@ class FormatterTestCase(unittest.TestCase):
             str(context.exception),
         )
         for value in ("prepare_value", "priorities"):
-            self.assertTrue(value in str(context.exception))
+            self.assertIn(value, str(context.exception))
 
     def test_new_validate_error(self):
         with self.assertRaises(fmt.FormatterValueError) as context:
