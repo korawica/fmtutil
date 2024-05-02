@@ -142,7 +142,7 @@ class FormatterGroupExampleTestCase(unittest.TestCase):
         # This line will show the diff of unique id of these classes
         a: fmt.FormatterGroup = rs_parse[0][1]
         b: fmt.FormatterGroup = rs_parse[1][1]
-        self.assertFalse(id(a.__class__) == id(b.__class__))
+        self.assertNotEqual(id(a.__class__), id(b.__class__))
 
         # Able to get the max value from diff unique id
         max_rs = sorted(

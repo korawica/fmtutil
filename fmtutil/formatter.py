@@ -58,6 +58,7 @@ from .utils import (
     default,
     itself,
     remove_pad,
+    scache,
 )
 
 FormatterType = type["Formatter"]
@@ -374,14 +375,19 @@ class Formatter(BaseFormatter):
         cls: FormatterType,
         /,
         level: int | None = None,
+        fmt: str | None = None,
         **kwargs: Any,
     ) -> NoReturn:
-        """Subclass Initialize method.
+        """Subclass Initialize method that will declare class variables if it
+        set from class creation or direct override with that variables.
 
-        :param level
-        :type level: int (default=1)
+        :param level: The max level that this formatter class will limit.
+        :type level: int | None(=1)
+        :param fmt: The default format string value that use on the parsing.
+        :type fmt: str | None(=None)
         """
-        cls.base_level = level or cls.base_level
+        cls.base_level: int = level or cls.base_level
+        cls.base_fmt: str = fmt or cls.base_fmt
         super().__init_subclass__(**kwargs)
 
         if not cls.base_fmt:
@@ -498,8 +504,11 @@ class Formatter(BaseFormatter):
         _prefix: str = prefix or ""
         _suffix: str = suffix or ""
         regexes = cls.regex()
-        for fmt_match in re.finditer(r"(%[-+!*]?[A-Za-z])", fmt):
+        for fmt_match in re.finditer(r"(%?%[-+!*]?[A-Za-z])", fmt):
             fmt_str: str = fmt_match.group()
+            if fmt_str.startswith("%%"):
+                fmt = fmt.replace(fmt_str, fmt_str[1:], 1)
+                continue
             if fmt_str not in regexes:
                 raise FormatterArgumentError(
                     "fmt",
@@ -518,7 +527,10 @@ class Formatter(BaseFormatter):
                 regex = re.sub(
                     rf"\(\?P<{_sr_re}>",
                     (
-                        f"(?P<{_prefix}{_sr_re}__{_cache[_sr_re]}{_suffix}>"
+                        (
+                            f"(?P<{_prefix}{_sr_re}{scache(_cache[_sr_re])}"
+                            f"{_suffix}>"
+                        )
                         if alias
                         else "("
                     ),
@@ -932,12 +944,10 @@ class Formatter(BaseFormatter):
         return self.format(format_spec)
 
 
-class Serial(Formatter):
+class Serial(Formatter, fmt="%n"):
     """Serial formatter object that parse and format any serial (positive
     integer) value.
     """
-
-    base_fmt: ClassVar[str] = "%n"
 
     class Config(Formatter.Config):
         serial_max_padding: int = 3
@@ -1021,7 +1031,6 @@ class Serial(Formatter):
         :return: A generated mapping values of all format string pattern of this
             serial formatter object.
         """
-        # TODO: change this line to decorator function
         _value: int = Serial.prepare_value(serial)
         return {
             "%n": {
@@ -1145,10 +1154,8 @@ WEEKS_FULL: DictStr = {
 }
 
 
-class Datetime(Formatter, level=10):
+class Datetime(Formatter, level=10, fmt="%Y-%m-%d %H:%M:%S.%f"):
     """Datetime formatter object that parse and format any datetime value."""
-
-    base_fmt: ClassVar[str] = "%Y-%m-%d %H:%M:%S.%f"
 
     __slots__ = (
         "year",
@@ -1784,7 +1791,7 @@ class Datetime(Formatter, level=10):
         return NotImplemented
 
 
-class Version(Formatter, level=4):
+class Version(Formatter, level=4, fmt="%m_%n_%c"):
     """Version formatter object that parse and format any version
     (``packaging.version.Version``) value.
 
@@ -1824,8 +1831,6 @@ class Version(Formatter, level=4):
         - Enhance the version object from the packaging library
         (https://packaging.pypa.io/en/latest/version.html)
     """
-
-    base_fmt: ClassVar[str] = "%m_%n_%c"
 
     __slots__ = (
         "version",
@@ -2159,7 +2164,7 @@ class Version(Formatter, level=4):
         return NotImplemented
 
 
-class Naming(Formatter, level=5):
+class Naming(Formatter, level=5, fmt="%n"):
     """Naming formatter object that parse and format any name value.
 
     .. note::
@@ -2167,8 +2172,6 @@ class Naming(Formatter, level=5):
         A name value that parsing to this class should not contain any
     special characters, this will keep only.
     """
-
-    base_fmt: ClassVar[str] = "%n"
 
     __slots__ = (
         "naming",
@@ -2799,7 +2802,7 @@ SIZE: tuple[str, ...] = (
 )
 
 
-class Storage(Formatter):
+class Storage(Formatter, fmt="%b"):
     """Storage formatter object that parse and format any storage value.
 
     .. note::
@@ -2807,8 +2810,6 @@ class Storage(Formatter):
         A storage value will use ``decimal.Decimal`` package for wrap up
     standard value for this Storage formatter object.
     """
-
-    base_fmt: ClassVar[str] = "%b"
 
     class Config(Formatter.Config):
         storage_rounding: int = 0
@@ -3045,6 +3046,8 @@ ConstantComparator: TypeAlias = Callable[["Constant", "Constant"], bool]
 
 
 def const_comparison(operator: ConstantComparator) -> ConstantComparator:
+    """Decorator function for compare operators in the Constant class."""
+
     @wraps(operator)
     def wrapper(self: Constant, other) -> bool:
         if not issubclass(other.__class__, Constant):
@@ -3054,7 +3057,7 @@ def const_comparison(operator: ConstantComparator) -> ConstantComparator:
     return wrapper
 
 
-class Constant(Formatter):
+class Constant(Formatter, fmt="%%"):
     """Constant object for create Constant class in the constructor function.
 
     :param formats: A mapping value of priority attribute data.
@@ -3068,8 +3071,6 @@ class Constant(Formatter):
     any senses to compare a constant instance such as ``__add__``, or
     ``__sub__`` properties.
     """
-
-    base_fmt: ClassVar[str] = "%%"
 
     __slots__: tuple[str, ...] = ("_constant",)
 
@@ -3625,9 +3626,9 @@ class FormatterGroup:
         _value: str = bytes2str(value)
         parser_rs: ReturnParseType = cls.__parse(_value, fmt)
         rs: dict[str, DictStr] = defaultdict(dict)
-        for group in parser_rs:
-            group_origin: str = group.split("__")[0]
-            rs[group_origin] |= parser_rs[group]["props"]
+        for g in parser_rs:
+            group_origin: str = g.split("__")[0]
+            rs[group_origin] |= parser_rs[g]["props"]
         return cls(formats=rs)
 
     @classmethod
@@ -3666,9 +3667,9 @@ class FormatterGroup:
                 "fmt": _fmt_getter[name]["fmt"],
                 "value": _search_dict.pop(name),
                 "props": {
-                    k.replace(name, "", 1): _search_dict.pop(k)
+                    k.replace(f"{name}___", "", 1): _search_dict.pop(k)
                     for k in filter(
-                        lambda x: x.startswith(name),
+                        lambda x: x.startswith(f"{name}___"),
                         _search_dict.copy(),
                     )
                 },
@@ -3704,11 +3705,11 @@ class FormatterGroup:
                 fmt_str: str
                 if not (fmt_str := fmt_dict["format"]):
                     fmt_str = formatter.base_fmt
-                group_index: str = f"{group}__{_index}"
+                group_index: str = f"{group}{scache(_index)}"
                 fmt_re = formatter.gen_format(
                     fmt_str,
-                    prefix=group_index,
-                    suffix=f"{_index}",
+                    prefix=f"{group_index}___",
+                    suffix=scache(_index),
                 )
                 fmt = fmt.replace(
                     fmt_dict["found"],

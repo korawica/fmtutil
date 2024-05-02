@@ -209,6 +209,13 @@ class FormatterGroupTestCase(unittest.TestCase):
             self.gp.__repr__(),
         )
 
+    def test_fmt_group_gen_format(self):
+        _fmt, _fmt_getter = self.DateName.gen_format(
+            "{name:%s}_in_{datetime:%Y%m%d}_{name:%a}__{datetime:%n}"
+        )
+        print(_fmt)
+        print(_fmt_getter)
+
     def test_fmt_group_parser(self):
         self.assertEqual(
             {
@@ -282,12 +289,12 @@ class FormatterGroupTestCase(unittest.TestCase):
         self.assertIn(
             (
                 r"with 'format', 'data_engineer_in_20220101_de' does not "
-                r"match with the format: '^(?P<name__0>"
-                r"(?P<name__0strings_snake__00>[a-z0-9]+(?:_[a-z0-9]+)*))_in_"
-                r"(?P<datetime__0>(?P<datetime__0year__00>\d{4})"
-                r"(?P<datetime__0month_pad__00>01|02|03|04|05|06|07|08|09|10"
-                r"|11|12)(?P<datetime__0day_pad__00>[0-3][0-9]))_"
-                r"(?P<name__1>(?P<name__1shorts__01>[a-z0-9]+))_extension$'"
+                r"match with the format: '^(?P<name>"
+                r"(?P<name___strings_snake>[a-z0-9]+(?:_[a-z0-9]+)*))_in_"
+                r"(?P<datetime>(?P<datetime___year>\d{4})"
+                r"(?P<datetime___month_pad>01|02|03|04|05|06|07|08|09|10"
+                r"|11|12)(?P<datetime___day_pad>[0-3][0-9]))_"
+                r"(?P<name__1>(?P<name__1___shorts__1>[a-z0-9]+))_extension$'"
             ),
             str(context.exception),
         )
@@ -426,9 +433,12 @@ class FormatterGroupTestCase(unittest.TestCase):
                 "20220101_test",
                 fmt="{datetime:%Y%m%d}_{name}",
             )
-        self.assertTrue(
-            "'>' not supported between instances of 'VersionDatetimeGroup' and "
-            "'NamingDatetimeGroup'" in str(context.exception)
+        self.assertIn(
+            (
+                "'>' not supported between instances of 'VersionDatetimeGroup' "
+                "and 'NamingDatetimeGroup'"
+            ),
+            str(context.exception),
         )
 
     def test_fmt_group_max_min(self):

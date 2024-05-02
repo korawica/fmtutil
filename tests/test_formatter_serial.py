@@ -93,6 +93,12 @@ class SerialTestCase(unittest.TestCase):
         self.assertEqual(0, self.sr_default.value)
         self.assertEqual("0", self.sr_default.string)
 
+    def test_serial_gen_format(self):
+        self.assertEqual(
+            "This is normal number (?P<number>[0-9]*) and except %n",
+            fmt.Serial.gen_format("This is normal number %n and except %%n"),
+        )
+
     def test_serial_format(self):
         self.assertEqual("00001001", self.sr_p.format("%b"))
         self.assertEqual("009", self.sr_p.format("%p"))

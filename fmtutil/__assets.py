@@ -22,9 +22,9 @@ from typing import Any, Callable, Optional, Protocol, Union
 from typing_extensions import TypeAlias
 
 from fmtutil.exceptions import FormatterArgumentError, FormatterValueError
-from fmtutil.utils import bytes2str, can_int, itself, remove_pad
+from fmtutil.utils import bytes2str, can_int, itself, remove_pad, scache
 
-DictStr = dict[str, str]
+DictStr: TypeAlias = dict[str, str]
 String: TypeAlias = Union[str, bytes]
 TupleInt: TypeAlias = tuple[int, ...]
 
@@ -33,12 +33,12 @@ TupleInt: TypeAlias = tuple[int, ...]
 class BaseFormat:
     alias: str
     fmt: Callable[[str], str]
-    parse: Callable[[str], str]
 
 
 @dataclass
 class CommonFormat(BaseFormat):
     regex: str
+    parse: Callable[[str], str]
     level: Union[int, TupleInt] = field(default=(0,))
 
 
@@ -129,16 +129,6 @@ SERIAL_ASSET: dict[str, Format] = {
             "level": 1,
         }
     ),
-    # TODO: remove %e from testing asset.
-    "%e": parsing_format(
-        {
-            "alias": "number_extra",
-            "cregex": "%n_%p_%c_%n",
-            "fmt": lambda x: partial(itself, str(x)),
-            "parse": lambda x: x,
-            "level": 1,
-        }
-    ),
 }
 
 
@@ -176,14 +166,13 @@ SERIAL_CONF = ConfigFormat(
 
 
 DATETIME_ASSET: dict[str, Format] = {
-    # "%n": parsing_format(
-    #     {
-    #         "alias": "datetime_normal",
-    #         "cregex": "%Y%m%d_%H%M%S",
-    #         "fmt": lambda x: partial(x.strftime("%Y%m%d_%H%M%S")),
-    #         "parse": ...,
-    #     }
-    # ),
+    "%n": parsing_format(
+        {
+            "alias": "normal",
+            "cregex": "%Y%m%d_%H%M%S",
+            "fmt": lambda x: partial(x.strftime("%Y%m%d_%H%M%S")),
+        }
+    ),
     "%Y": parsing_format(
         {
             "alias": "year",
@@ -198,8 +187,53 @@ DATETIME_ASSET: dict[str, Format] = {
             "alias": "month_pad",
             "regex": "01|02|03|04|05|06|07|08|09|10|11|12",
             "fmt": lambda x: partial(x.strftime, "%m"),
-            "parse": ...,
+            "parse": lambda x: x,
             "level": 9,
+        }
+    ),
+    "%d": parsing_format(
+        {
+            "alias": "day_pad",
+            "regex": "[0-3][0-9]",
+            "fmt": lambda x: partial(x.strftime, "%d"),
+            "parse": lambda x: x,
+            "level": 8,
+        }
+    ),
+    "%H": parsing_format(
+        {
+            "alias": "hour_pad",
+            "regex": "[0-2][0-9]",
+            "fmt": lambda x: partial(x.strftime, "%H"),
+            "parse": lambda x: x,
+            "level": 0,
+        }
+    ),
+    "%M": parsing_format(
+        {
+            "alias": "minute_pad",
+            "regex": "[0-6][0-9]",
+            "fmt": lambda x: partial(x.strftime, "%M"),
+            "parse": lambda x: x,
+            "level": 0,
+        }
+    ),
+    "%S": parsing_format(
+        {
+            "alias": "second_pad",
+            "regex": "[0-6][0-9]",
+            "fmt": lambda x: partial(x.strftime, "%S"),
+            "parse": lambda x: x,
+            "level": 0,
+        }
+    ),
+    "_": parsing_format(
+        {
+            "alias": "",
+            "regex": "",
+            "fmt": lambda x: x,
+            "parse": lambda x: x,
+            "level": 0,
         }
     ),
 }
@@ -266,9 +300,11 @@ class Formatter:
         _prefix: str = prefix or ""
         _suffix: str = suffix or ""
         regexes = cls._regex()
-        # TODO: Add exclude for `%%n` format string value.
-        for fmt_match in re.finditer(r"(%[-+!*]?[A-Za-z])", fmt):
+        for fmt_match in re.finditer(r"(%?%[-+!*]?[A-Za-z])", fmt):
             fmt_str: str = fmt_match.group()
+            if fmt_str.startswith("%%"):
+                fmt = fmt.replace(fmt_str, fmt_str[1:], 1)
+                continue
             if fmt_str not in regexes:
                 raise FormatterArgumentError(
                     "fmt",
@@ -287,7 +323,10 @@ class Formatter:
                 regex = re.sub(
                     rf"\(\?P<{_sr_re}>",
                     (
-                        f"(?P<{_prefix}{_sr_re}__{_cache[_sr_re]}{_suffix}>"
+                        (
+                            f"(?P<{_prefix}{_sr_re}{scache(_cache[_sr_re])}"
+                            f"{_suffix}>"
+                        )
                         if alias
                         else "("
                     ),
@@ -354,7 +393,19 @@ class Formatter:
         return results
 
 
-class Serial(Formatter, asset=SERIAL_ASSET, config=SERIAL_CONF): ...
+class Serial(Formatter, asset=SERIAL_ASSET, config=SERIAL_CONF):
+
+    def __init__(
+        self,
+        number: int | str | float | None,
+    ) -> None:
+        if number is None:
+            self.number: int = 0
+        if not can_int(number) or ((prepare := int(float(number))) < 0):
+            raise FormatterValueError(
+                f"Serial formatter does not support for value, {number!r}."
+            )
+        self.number: int = prepare
 
 
 class Datetime(Formatter, asset=DATETIME_ASSET, config=DATETIME_CONF): ...
@@ -364,7 +415,7 @@ def demo_number_formating():
     # Step 01: Initialize serial formatter with asset + config params.
 
     # Step 02: Generate format from string and Parsing with specific format.
-    print(Serial.gen_format("This is a number `%n` but extra `%e`"))
+    print(Serial.gen_format("This is a number `%n` but extra `%b`"))
     serial_proxy = Serial.parse("Number: 20240101", fmt="Number: %n")
     print(serial_proxy)
 
@@ -375,7 +426,7 @@ def demo_number_formating():
 
 def demo_datetime_formating():
     # print(dt_format.regex)
-    print(Datetime.gen_format("This is a datetime %Y%m"))
+    print(Datetime.gen_format("This is a datetime %Y%m and special %n"))
 
 
 if __name__ == "__main__":
