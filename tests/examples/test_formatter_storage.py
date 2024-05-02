@@ -12,9 +12,8 @@ import fmtutil.formatter as fmt
 
 
 class StorageExampleTestCase(unittest.TestCase):
-    # FIXME: add validate to storage formatter object.
     def test_parse_examples(self):
         self.assertEqual(
-            150,
-            fmt.Storage.parse("150 100B", "%b %B").value,
+            152,
+            fmt.Storage.parse("152 19B", "%b %B").value,
         )

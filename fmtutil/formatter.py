@@ -2802,6 +2802,14 @@ SIZE: tuple[str, ...] = (
 )
 
 
+@final
+class StorageSearchOrder(TypedDict):
+    """Type Dictionary for value of mapping of ``cls.search_order``"""
+
+    value: str
+    order: str
+
+
 class Storage(Formatter, fmt="%b"):
     """Storage formatter object that parse and format any storage value.
 
@@ -2829,6 +2837,26 @@ class Storage(Formatter, fmt="%b"):
     def string(self) -> str:
         """Return a bit string value."""
         return str(self.bit)  # type: ignore[no-any-return]
+
+    def validate(self) -> bool:
+        """Validate method that validate all Storage attributes in initialize
+        layer.
+
+        :raises FormatterValueError: If one of these rules was failed,
+            * attribute ``self.week`` does not equal with value.
+            * attribute ``self.locale`` does not equal with value.
+
+        :rtype: bool
+        :return: True if all validation rules was passed.
+        """
+        if (b := self.byte2bit(self.byte)) != self.bit:
+            raise FormatterValueError(
+                f"Byte that was parsed does not equal with bit, receive {b} bit"
+                f"(byte to bit) but get "
+                f"{self.bit:.{self.Config.storage_rounding:02d}f} bit from "
+                f"parsing."
+            )
+        return True
 
     @property
     def priorities(self) -> ReturnPrioritiesType:
@@ -2962,8 +2990,9 @@ class Storage(Formatter, fmt="%b"):
             },
         }
 
-    @staticmethod
+    @classmethod
     def prepare_value(
+        cls,
         value: int | float | Decimal | str | None,
     ) -> Decimal:
         """Prepare value before passing to convert logic in the formatter
@@ -2987,10 +3016,10 @@ class Storage(Formatter, fmt="%b"):
                 f"Storage formatter does not support for value, {value!r}."
             )
         # Wrap the value to string after pass to decimal value.
-        return Decimal(str(value))
+        return cls.round_up(Decimal(str(value)))
 
-    @staticmethod
-    def round_up(value: Decimal) -> Decimal:
+    @classmethod
+    def round_up(cls, value: Decimal) -> Decimal:
         """Return a rounded value that use ``cls.Config.storage_rounding``.
 
         :param value: A decimal value that want to round up.
@@ -2999,18 +3028,24 @@ class Storage(Formatter, fmt="%b"):
         :rtype: decimal.Decimal
         :return: A rounded value that use ``cls.Config.storage_rounding``.
         """
-        return round(value, Storage.Config.storage_rounding)
+        return round(value, cls.Config.storage_rounding)
 
     def __default_from_byte(self) -> Decimal:
         """Return default value that calculate from the byte value."""
-        return self.round_up(Decimal(self.byte or "0") * 8)
+        return Decimal(self.byte or "0") * 8
 
     def __default_from_bit(self) -> Decimal:
         """Return default value that calculate from the bit value."""
-        return self.round_up(Decimal(self.bit or "0") / 8)
+        return Decimal(self.bit or "0") / 8
 
-    @staticmethod
-    def bit2byte(value: Decimal, order: str) -> str:
+    @classmethod
+    def bit2byte(
+        cls,
+        value: Decimal,
+        order: str,
+        *,
+        suffix: bool = True,
+    ) -> str:
         """Convert the bit value to byte value with string type that depend on
         an input order value.
 
@@ -3018,16 +3053,47 @@ class Storage(Formatter, fmt="%b"):
         :type value: str
         :param order: The order value that want to power with 1024.
         :type order: str
+        :param suffix: A suffix flag that will add order string to return value
+        :type suffix: bool
+
+        Examples:
+
+            >>> Storage.bit2byte('150', 'B')
+            19B
+            >>> Storage.bit2byte('150', 'B', suffix=False)
+            19
 
         :rtype: str
-        :return: The bit value to byte value with string type that depend on
-            an input order value.
+        :return: The bit to byte value with string type that depend on an input
+            order value.
         """
         p: Decimal = Decimal(math.pow(1024, SIZE.index(order)))
-        return f"{(Storage.round_up((value / 8) / p))}{order}"
+        return f"{(cls.round_up((value / 8) / p))}{order if suffix else ''}"
 
-    @staticmethod
-    def str2byte(value: str, order: str) -> Decimal:
+    @classmethod
+    def search_order(cls, value: str) -> StorageSearchOrder:
+        """Searching order suffix
+
+        :rtype: StorageSearchOrder
+        """
+        _decimal: str = (
+            rf"(?:\.\d{{0,{st_round}}})?"
+            if (st_round := cls.Config.storage_rounding) > 0
+            else ""
+        )
+        return (
+            s.groupdict()
+            if (
+                s := re.search(
+                    rf"(?P<value>\d+{_decimal})(?P<order>[KMGTPEZY]?B)?",
+                    value,
+                )
+            )
+            else {"value": value, "order": "B"}
+        )
+
+    @classmethod
+    def str2byte(cls, value: str, order: str | None = None) -> Decimal:
         """Convert to byte value that depend on an input order value.
 
         :param value: A string value that want to convert to the byte value.
@@ -3035,11 +3101,49 @@ class Storage(Formatter, fmt="%b"):
         :param order: The order value that want to power with 1024.
         :type order: str
 
+        Examples:
+
+            >>> Storage.str2byte('12MB', 'MB')
+
         :rtype: decimal.Decimal
         :return: A converted byte value that depend on an input order value.
         """
+        if order is None:
+            searching: StorageSearchOrder = cls.search_order(value)
+            value = searching["value"]
+            order = searching["order"]
         p: Decimal = Decimal(math.pow(1024, SIZE.index(order)))
-        return Storage.round_up(Decimal(value.replace(order, "")) * p)
+        return cls.round_up(Decimal(value.replace(order, "")) * p)
+
+    @classmethod
+    def byte2bit(cls, value: str | Decimal, order: str = "B") -> Decimal:
+        """Convert the byte value to bit value with string type that depend on
+        an input order value or default with `B`.
+
+        :param value: A decimal value that want to convert to the byte string.
+        :type value: str
+        :param order: The order value that want to power with 1024.
+        :type order: str(=B)
+
+        Examples:
+
+            >>> Storage.byte2bit(19.000)
+            152.000
+
+        :rtype: decimal.Decimal
+        :return: The byte to bit value with string type that depend on an input
+            order value.
+        """
+        p: Decimal = Decimal(math.pow(1024, SIZE.index(order)))
+        return cls.round_up(
+            (
+                Decimal(value.replace(order, ""))
+                if isinstance(value, str)
+                else value
+            )
+            * p
+            * 8
+        )
 
 
 ConstantComparator: TypeAlias = Callable[["Constant", "Constant"], bool]

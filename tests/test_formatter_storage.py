@@ -12,6 +12,39 @@ import unittest
 import fmtutil.formatter as fmt
 
 
+class StorageStaticTestCase(unittest.TestCase):
+    def setUp(self) -> None:
+
+        class Storage3Digits(fmt.Storage):
+            class Config(fmt.Storage.Config):
+                storage_rounding: int = 3
+
+        self.st3digits = Storage3Digits
+
+    def test_storage_search_order(self):
+        self.assertDictEqual(
+            {"value": "129.12", "order": "MB"},
+            self.st3digits.search_order("129.12MB"),
+        )
+        self.assertDictEqual(
+            {"value": "0.523", "order": "GB"},
+            self.st3digits.search_order("0.523GB"),
+        )
+        self.assertDictEqual(
+            {"value": "99", "order": "B"},
+            self.st3digits.search_order("99B"),
+        )
+        # TODO: This case should return empty dict from this method?
+        self.assertDictEqual(
+            {"order": "MB", "value": "12"},
+            self.st3digits.search_order(".12MB"),
+        )
+        self.assertDictEqual(
+            {"value": "0.523", "order": None},
+            self.st3digits.search_order("0.523"),
+        )
+
+
 class StorageTestCase(unittest.TestCase):
     def setUp(self) -> None:
         self.st = fmt.Storage({"bit": "10481"})
@@ -21,13 +54,13 @@ class StorageTestCase(unittest.TestCase):
 
     def test_storage_from_value(self):
         self.assertEqual(
-            decimal.Decimal("1000.1"), fmt.Storage.from_value(1000.1).value
+            decimal.Decimal("1000.0"), fmt.Storage.from_value(1000.1).value
         )
         self.assertEqual(
-            decimal.Decimal("10.01"), fmt.Storage.from_value(10.01).value
+            decimal.Decimal("10.00"), fmt.Storage.from_value(10.01).value
         )
         self.assertEqual(
-            decimal.Decimal("10.01"), fmt.Storage.from_value("10.01").value
+            decimal.Decimal("10.00"), fmt.Storage.from_value("10.01").value
         )
         self.assertEqual(
             decimal.Decimal("10"), fmt.Storage.from_value("10").value
@@ -49,6 +82,10 @@ class StorageTestCase(unittest.TestCase):
             },
             fmt.Storage.regex(),
         )
+
+    def test_storage_parsing_raise(self):
+        with self.assertRaises(fmt.FormatterValueError):
+            fmt.Storage.parse("150 19B", "%b %B")
 
     def test_storage_formatter(self):
         formatter = fmt.Storage.formatter(storage=512)

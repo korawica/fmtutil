@@ -12,9 +12,12 @@ import fmtutil.formatter as fmt
 
 
 class SerialExampleTestCase(unittest.TestCase):
-    # FIXME: add validate to serial formatter object.
     def test_parse_examples(self):
         self.assertEqual(
             11,
-            fmt.Serial.parse("00001101 11", "%b %n").value,
+            fmt.Serial.parse("00011101 11", "%b %n").value,
         )
+
+    def test_parse_with_strict_examples(self):
+        with self.assertRaises(fmt.FormatterValueError):
+            fmt.Serial.parse("00011101 11", "%b %n", strict=True)
