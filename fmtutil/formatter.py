@@ -3720,7 +3720,7 @@ class FormatterGroup:
         to another format string values.
 
         :param value: A bytes or string value that match with fmt.
-        :type value: str
+        :type value: String
         :param fmt: a format string value that must have the formatter group
             pattern like `{group-name:fmt-str}`.
         :type fmt: str
@@ -3729,12 +3729,10 @@ class FormatterGroup:
         :return: An instance of formatter group that parse from a bytes or
             string value by a format string.
         """
-        _value: str = bytes2str(value)
-        parser_rs: ReturnParseType = cls.__parse(_value, fmt)
+        parser_rs: ReturnParseType = cls.__parse(bytes2str(value), fmt)
         rs: dict[str, DictStr] = defaultdict(dict)
         for g in parser_rs:
-            group_origin: str = g.split("__")[0]
-            rs[group_origin] |= parser_rs[g]["props"]
+            rs[g.split("__")[0]] |= parser_rs[g]["props"]
         return cls(formats=rs)
 
     @classmethod

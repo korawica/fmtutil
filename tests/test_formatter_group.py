@@ -213,8 +213,6 @@ class FormatterGroupTestCase(unittest.TestCase):
         _fmt, _fmt_getter = self.DateName.gen_format(
             "{name:%s}_in_{datetime:%Y%m%d}_{name:%a}__{datetime:%n}"
         )
-        print(_fmt)
-        print(_fmt_getter)
 
     def test_fmt_group_parser(self):
         self.assertEqual(
@@ -257,18 +255,7 @@ class FormatterGroupTestCase(unittest.TestCase):
                 fmt="{name:%s}\\|{role:%s}",
             ).groups,
         )
-        # # FIXME: parser foo_bar_data to `name` and engineer to `role`
-        # # self.assertEqual(
-        # #     {
-        # #         "name": fmt.Naming.parse("foo bar", "%n"),
-        # #         "role": fmt.Naming.parse("data engineer", "%n"),
-        # #     },
-        # #     self.gp3.parser(
-        # #         "foo_bar_data_engineer",
-        # #         fmt="{name:%s}_{role:%s}",
-        # #         _max=True,
-        # #     ),
-        # # )
+
         self.assertEqual(
             {
                 "datetime": fmt.Datetime.parse("2022-11-21", "%Y-%m-%d"),
@@ -277,6 +264,18 @@ class FormatterGroupTestCase(unittest.TestCase):
             self.DateVersion.parse(
                 "20221121_1_0_0",
                 fmt="{datetime:%Y%m%d}_{version}",
+            ).groups,
+        )
+
+    def test_fmt_group_parser_fixed(self):
+        self.assertEqual(
+            {
+                "name": fmt.Naming.parse("foo bar data", "%n"),
+                "role": fmt.Naming.parse("engineer", "%n"),
+            },
+            self.gp3.parse(
+                "foo_bar_data_engineer",
+                fmt="{name:%s}_{role:%s}",
             ).groups,
         )
 
