@@ -1,4 +1,4 @@
-# API Document
+# API Documents
 
 **Table of Contents**:
 

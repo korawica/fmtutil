@@ -109,7 +109,7 @@ datetime.format('New_datetime_%Y%b-%-d_%H:%M:%S')
 >>> 'New_datetime_2022Jan-1_00:01:01'
 ```
 
-[Supported Datetime formats](/docs/en/docs/API.md#datetime)
+[Supported Datetime formats](/docs/API.md#datetime)
 
 ### Version
 
@@ -124,7 +124,7 @@ version.format('New_version_%m%n%c')
 >>> 'New_version_201'
 ```
 
-[Supported Version formats](/docs/en/docs/API.md#version)
+[Supported Version formats](/docs/API.md#version)
 
 ### Serial
 
@@ -139,7 +139,7 @@ serial.format('Convert to binary: %b')
 >>> 'Convert to binary: 1111001010110010'
 ```
 
-[Supported Serial formats](/docs/en/docs/API.md#serial)
+[Supported Serial formats](/docs/API.md#serial)
 
 ### Naming
 
@@ -154,7 +154,7 @@ naming.format('Camel case is %c')
 >>> 'Camel case is dataEngineer'
 ```
 
-[Supported Naming formats](/docs/en/docs/API.md#naming)
+[Supported Naming formats](/docs/API.md#naming)
 
 ### Storage
 
@@ -169,7 +169,7 @@ storage.format('The byte size is: %b')
 >>> 'The byte size is: 2097152000'
 ```
 
-[Supported Storage formats](/docs/en/docs/API.md#storage)
+[Supported Storage formats](/docs/API.md#storage)
 
 ### Constant
 
@@ -192,7 +192,7 @@ except FormatterError:
 > [!NOTE]
 > This package already implement the environment constant object,
 > `fmtutil.EnvConst`. \
-> [Read more about this formats](/docs/en/docs/API.md#environment-constant)
+> [Read more about this formats](/docs/API.md#environment-constant)
 
 ## FormatterGroup Object
 
