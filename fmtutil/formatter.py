@@ -273,6 +273,13 @@ class BaseFormatter(ABC):
 
     __slots__: tuple[str, ...] = ()
 
+    @abstractmethod
+    def __str__(self) -> str:
+        raise NotImplementedError(
+            "Please implement ``__str__`` build-in method for this "
+            "sub-formatter class"
+        )
+
 
 @total_ordering
 class Formatter(BaseFormatter):
