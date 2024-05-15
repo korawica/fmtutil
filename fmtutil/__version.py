@@ -30,6 +30,7 @@ from .__type import (
     Inf,
     NegInf,
     String,
+    TupleStr,
 )
 
 Comparable: TypeAlias = Union[
@@ -166,7 +167,7 @@ def cmp(self: Any, other: Any) -> int:
     :param other: Another value that able to compare with self.
 
     :rtype: int
-    :return: An integer value from these scenarios:
+    :returns: An integer value from these scenarios:
         * if self < other, then -1
         * if self == other, then 0
         * if self > other, then 1.
@@ -181,7 +182,7 @@ def increment(s: str) -> str:
     :type s: str
 
     :rtype: str
-    :return: An incremented string.
+    :returns: An incremented string.
     """
     if m := re.compile(r"(?:\D*(\d+)\D*)+").search(s):
         next_value = str(int(m.group(1)) + 1)
@@ -204,8 +205,11 @@ class BaseVersion:
     """A Base Version class.
 
     :param major:
+    :type major: SupportsInt(=0)
     :param minor:
+    :type minor: SupportsInt(=0)
     :param patch:
+    :type patch: SupportsInt(=0)
     """
 
     __slots__ = (
@@ -254,14 +258,14 @@ class BaseVersion:
         """Convert the BaseVersion object to a tuple.
 
         :rtype: Tuple[int, int, int]
-        :return: A tuple with all the parts
+        :returns: A tuple with all the parts
         """
         return tuple(getattr(self, attr) for attr in self.__class__.__slots__)
 
     def to_dict(self) -> dict[str, int]:
         """Convert the Version object to a dict.
 
-        :return: A dict with the keys in the order ``major``, ``minor``, and
+        :returns: A dict with the keys in the order ``major``, ``minor``, and
             ``patch``.
         """
         return {attr: getattr(self, attr) for attr in self.__class__.__slots__}
@@ -274,7 +278,7 @@ class BaseVersion:
         """Raise the major part of the version, return a new object
         but leave self untouched.
 
-        :return: new object with the raised major part
+        :returns: new object with the raised major part
         """
         return self.__class__(self.major + 1)
 
@@ -282,7 +286,7 @@ class BaseVersion:
         """Raise the minor part of the version, return a new object
         but leave self untouched.
 
-        :return: new object with the raised minor part
+        :returns: new object with the raised minor part
         """
         return self.__class__(self.major, self.minor + 1)
 
@@ -290,7 +294,7 @@ class BaseVersion:
         """Raise the patch part of the version, return a new object
         but leave self untouched.
 
-        :return: new object with the raised patch part
+        :returns: new object with the raised patch part
         """
         return self.__class__(self.major, self.minor, self.patch + 1)
 
@@ -298,7 +302,10 @@ class BaseVersion:
         """Compare self with this other.
 
         :param other: the second version
-        :return: The return value is negative if ver1 < ver2,
+        :type other: Comparable
+
+        :rtype: int
+        :returns: The return value is negative if ver1 < ver2,
             zero if ver1 == ver2 and strictly positive if ver1 > ver2
         """
         cls: type[BaseVersion] = type(self)
@@ -324,13 +331,13 @@ class BaseVersion:
     ) -> BaseVersion:
         """Determines next version, preserving natural order.
 
-        :param part: One of "major", "minor", "patch"
+        :param part: an one of "major", "minor", "patch" part of version.
         :type part: str
 
         :rtype: BaseVersion
-        :return: A new object with the appropriate part raised
+        :returns: A new object with the appropriate part raised
         """
-        valid_parts: tuple[str, ...] = self.__class__.__slots__
+        valid_parts: TupleStr = self.__class__.__slots__
         if part not in self.__class__.__slots__:
             raise ValueError(
                 f"Invalid part. Expected one of {valid_parts}, but got {part!r}"
@@ -364,7 +371,7 @@ class BaseVersion:
     def __getitem__(
         self,
         index: Union[int, slice],
-    ) -> Union[int, str | None, tuple[Union[int, str], ...]]:
+    ) -> int | str | tuple[Union[int, str], ...] | None:
         """If the part requested is undefined, or a part of the range requested
         is undefined, it will throw an index error.
 
@@ -376,7 +383,8 @@ class BaseVersion:
 
         :raises IndexError: if index is beyond the range or a part is None
 
-        :return: the requested part of the version at position index
+        :rtype: int | str | tuple[Union[int, str], ...] | None
+        :returns: the requested part of the version at position index
         """
         if isinstance(index, int):
             index = slice(index, index + 1)
@@ -421,6 +429,8 @@ class BaseVersion:
             2.*     --> >=2.0.0, <3.0.0
             *       --> >=0.0.0
         :type expr: str
+
+        :rtype: tuple[BaseVersion, BaseVersion]
         """
         if expr == "*":
             return cls.parse("0.0.0"), Inf
@@ -440,7 +450,13 @@ class BaseVersion:
 
     @staticmethod
     def __validate_expr_match(expr: str) -> tuple[str, str]:
-        """Validate expression string of version matching string value."""
+        """Validate expression string of version matching string value.
+
+        :param expr:
+        :type expr: str
+
+        :rtype: tuple[str, str]
+        """
         prefix: str = expr[:2]
         match: str
         if prefix in (
@@ -487,9 +503,10 @@ class BaseVersion:
             ``~``   ``~=``
             ``^``   ^2.1.7      --> >=2.1.7, <3.0.0
                     ^0.24.1     --> >=0.24.1, <0.25.0
+        :type expr: str
 
         :rtype: bool
-        :return: True if the expression matches the version, otherwise False
+        :returns: True if the expression matches the version, otherwise False
         """
         prefix, match = self.__validate_expr_match(expr)
         possibilities = {
@@ -547,13 +564,15 @@ class BaseVersion:
         """Parse version string to a Version instance.
 
         :param version: A version string that want to parse.
+        :type version: String
         :param optional_minor_and_patch: An optional flag for parsing with minor
             and patch value if it exists.
+        :type optional_minor_and_patch: bool(=False)
 
         :raises ValueError: if version is invalid
         :raises TypeError: if version contains the wrong type
 
-        :return: a new :class:`Version` instance
+        :returns: a new :class:`Version` instance
         """
         if isinstance(version, bytes):
             version = str(version, "utf-8", "strict")
@@ -569,15 +588,16 @@ class BaseVersion:
 
         return cls(**match.groupdict())
 
-    def replace(self, **parts: Union[int, str | None]) -> BaseVersion:
+    def replace(self, **parts: int | str | None) -> BaseVersion:
         """Replace one or more parts of a version and return a new instance.
 
         :param parts: the parts to be updated. Valid keys are:
             ``major``, ``minor``, ``patch``, ``pre``, or ``build``
+        :type parts: int | str | None
 
         :raises TypeError: if ``parts`` contain invalid keys
 
-        :return: the new instance with the changed parts
+        :returns: the new instance with the changed parts
         """
         version = self.to_dict()
         version.update(parts)
@@ -596,9 +616,10 @@ class BaseVersion:
         """Check if the string is a valid base version.
 
         :param version: the version string to check
+        :type version: str
 
         :rtype: bool
-        :return: True if the version string is a valid base version, False
+        :returns: True if the version string is a valid base version, False
                 otherwise.
         """
         try:
@@ -610,8 +631,10 @@ class BaseVersion:
     def is_compatible(self, other: BaseVersion) -> bool:
         """Check if current version is compatible with other version.
 
+        :raises TypeError: if other value that not sub-class of BaseVersion.
+
         :param other: the version to check for compatibility
-        :return: True, if ``other`` is compatible with the old version,
+        :returns: True, if ``other`` is compatible with the old version,
             otherwise False
         """
         if not isinstance(other, BaseVersion):
@@ -784,7 +807,7 @@ class VersionPackage(BaseVersion):
         """Raise the pre part of the packaging version, return a new object.
 
         :rtype: VersionPackage
-        :return: A new object with the raised pre part.
+        :returns: A new object with the raised pre part.
         """
         cls = type(self)
         if self.pre is not None:
@@ -807,7 +830,7 @@ class VersionPackage(BaseVersion):
         """Raise the post part of the packaging version, return a new object.
 
         :rtype: VersionPackage
-        :return: A new object with the raised post part.
+        :returns: A new object with the raised post part.
         """
         post: str = increment(self.post or "post0")
         return self.__class__(
@@ -823,7 +846,7 @@ class VersionPackage(BaseVersion):
         """Raise the dev part of the packaging version, return a new object.
 
         :rtype: VersionPackage
-        :return: A new object with the raised dev part.
+        :returns: A new object with the raised dev part.
         """
         dev: str = increment(self.dev or "dev0")
         return self.__class__(
@@ -840,7 +863,7 @@ class VersionPackage(BaseVersion):
         """Raise the local part of the packaging version, return a new object.
 
         :rtype: VersionPackage
-        :return: A new object with the raised local part.
+        :returns: A new object with the raised local part.
         """
         local: str = increment(self.local or "local0")
         return self.__class__(
@@ -855,9 +878,15 @@ class VersionPackage(BaseVersion):
         )
 
     def next_version(self, part: str, pre_token: str = "a") -> VersionPackage:
-        """
+        """Return the next Packaging version.
+
+        :param part: a part that want to generate the next version.
+        :type part: str
+        :param pre_token: a pre kind token string value.
+        :type pre_token: str(='a')
+
         :rtype: VersionPackage
-        :return: A new object with replace the new part of an input part value.
+        :returns: A new object with replace the new part of an input part value.
         """
         cls = type(self)
         valid_parts = cls.__slots__[:-1]
@@ -877,6 +906,7 @@ class VersionPackage(BaseVersion):
         return getattr(version, "bump_" + part)
 
     def __str__(self) -> str:
+        """Return the full version that joining in string format."""
         version: str = f"{self.major}.{self.minor}.{self.patch}"
         if self.epoch > 0:
             version = f"{self.epoch}!{version}"
@@ -903,6 +933,14 @@ class VersionPackage(BaseVersion):
         version: String,
         optional_minor_and_patch: bool = False,
     ) -> VersionPackage:
+        """Return the Packaging version that parsing from an any string value.
+
+        :param version: an any string value that want to parse.
+        :param optional_minor_and_patch: a optional flag.
+
+        :rtype: VersionPackage
+        :return: the Packaging version that parsing from an any string value.
+        """
         if isinstance(version, bytes):
             version = str(version, "utf-8", "strict")
         elif not isinstance(version, get_args(String)):
@@ -937,6 +975,7 @@ class VersionPackage(BaseVersion):
         return cmp(self.__extract_tuple(), other.__extract_tuple())
 
     def is_compatible(self, other: VersionPackage) -> bool:
+        """Check the other version that compatible with this Packaging version."""
         if not isinstance(other, VersionPackage):
             raise TypeError(f"Expected a Version type but got {type(other)}")
 
@@ -995,7 +1034,7 @@ class VersionSemver(BaseVersion):
         self untouched.
 
         :param token: defaults to ``'rc'``
-        :return: new :class:`Version` object with the raised pre part.
+        :returns: new :class:`Version` object with the raised pre part.
             The original object is not modified.
         """
         if self.pre is not None:
@@ -1015,7 +1054,7 @@ class VersionSemver(BaseVersion):
         self untouched.
 
         :param token: defaults to ``'build'``
-        :return: new :class:`Version` object with the raised build part.
+        :returns: new :class:`Version` object with the raised build part.
             The original object is not modified.
         """
         cls = type(self)
@@ -1036,7 +1075,7 @@ class VersionSemver(BaseVersion):
 
         :param part: One of "major", "minor", "patch", or "pre"
         :param pre_token: prefix string of pre, defaults to 'rc'
-        :return: new object with the appropriate part raised
+        :returns: new object with the appropriate part raised
         """
         cls = type(self)
         # "build" is currently not used, that's why we use [:-1]
@@ -1075,7 +1114,7 @@ class VersionSemver(BaseVersion):
     def finalize_version(self) -> VersionSemver:
         """Remove any pre-release and build metadata from the version.
 
-        :return: a new instance with the finalized version string.
+        :returns: a new instance with the finalized version string.
         """
         return self.__class__(self.major, self.minor, self.patch)
 
@@ -1114,7 +1153,7 @@ class VersionSemver(BaseVersion):
         """Compare self with this other.
 
         :param other: the second version
-        :return: The return value is negative if ver1 < ver2,
+        :returns: The return value is negative if ver1 < ver2,
             zero if ver1 == ver2 and strictly positive if ver1 > ver2
         """
         cls = type(self)

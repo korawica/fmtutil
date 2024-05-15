@@ -16,7 +16,7 @@ class ExceptionsTestCase(unittest.TestCase):
 
     def test_exception_config_str_arg(self):
         result = err.FormatterArgumentError(
-            argument="timestamp",
+            arg="timestamp",
             message=(
                 "order file object does not have `timestamp` in name "
                 "formatter"
@@ -30,7 +30,7 @@ class ExceptionsTestCase(unittest.TestCase):
 
     def test_exception_config_tuple_arg(self):
         result = err.FormatterArgumentError(
-            argument=("timestamp", "serial"),
+            arg=("timestamp", "serial"),
             message=(
                 "order file object does not have `timestamp` and `serial` "
                 "in name formatter"

@@ -15,6 +15,7 @@ from typing_extensions import TypeAlias
 String: TypeAlias = Union[str, bytes]
 DictStr: TypeAlias = dict[str, str]
 TupleInt: TypeAlias = tuple[int, ...]
+TupleStr: TypeAlias = tuple[str, ...]
 
 
 class InfObject:

@@ -123,6 +123,7 @@ warn_unreachable = true
 warn_unused_ignores = false
 exclude = [
     '__version\.py$',
+    '__assets\.py$',
 ]
 
 [tool.black]
@@ -148,7 +149,6 @@ exclude = """
 
 [tool.ruff]
 line-length = 80
-# Exclude a variety of commonly ignored directories.
 exclude = [
     ".git",
     ".mypy_cache",

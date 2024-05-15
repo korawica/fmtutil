@@ -27,6 +27,7 @@ from fmtutil.utils import bytes2str, can_int, itself, remove_pad, scache
 DictStr: TypeAlias = dict[str, str]
 String: TypeAlias = Union[str, bytes]
 TupleInt: TypeAlias = tuple[int, ...]
+TupleStr: TypeAlias = tuple[str, ...]
 
 
 @dataclass
