@@ -18,10 +18,10 @@
 * [FormatterGroup Object](#formattergroup-object)
 * [Usecase](#usecase)
 
-This **Formatter Utility Objects** package was created for `parse` and `format`
-any string values that match a format pattern string with Python regular
-expression. This package be the co-pylot project for stating to my
-**Python Software Developer** role.
+This **Formatter** package was created for `parse` and `format` any string values
+that match a format pattern string with Python regular expression.
+This package be the co-pylot project for stating to my **Python Software Developer**
+way.
 
 :dart: First objective of this project is include necessary formatter objects for
 any data components package which mean we can `parse` any complicate names on
@@ -33,20 +33,30 @@ data source and ingest the right names to in-house or data target.
 pip install -U fmtutil
 ```
 
+**Dependency supported**:
+
+| Python Version  | Installation                        |
+|-----------------|-------------------------------------|
+| `== 3.8`        | `pip install "fmtutil>=0.4,<0.5.0"` |
+| `>=3.9,<3.13`   | `pip install -U fmtutil`            |
+
+
 For example, we want to get filename with the format like, `filename_20220101.csv`,
 on the file system storage, and we want to incremental ingest the latest file with
 date **2022-03-25** date. So we will implement `Datetime` object and parse
 that filename to it,
 
 ```python
-Datetime.parse('filename_20220101.csv', 'filename_%Y%m%d.csv').value == datetime.today()
+assert (
+    Datetime.parse('filename_20220101.csv', 'filename_%Y%m%d.csv').value
+    == datetime.datetime(2022, 1, 1, 0)
+)
 ```
 
 The above example is :yawning_face: **NOT SURPRISE!!!** for us because Python
-already provide build-in package `datetime` to parse by `{dt}.strptime` and
-format by `{dt}.strftime` with any datetime string value. This package will the
-special thing when we group more than one formatter objects together as
-`Naming`, `Version`, and `Datetime`.
+already provide the build-in `datetime` to parse by `datetime.strptime` and
+format by `{dt}.strftime`. This package will be the special thing when we group
+more than one format-able objects together as `Naming`, `Version`, and `Datetime`.
 
 **For complex filename format like**:
 
@@ -65,13 +75,6 @@ better package than this project.
 > this_date = Datetime.parse('20220101', '%Y%m%d')
 > assert this_date.valid('any_files_20220101.csv', 'any_files_%Y%m%d.csv')
 > ```
-
-**Dependency supported**:
-
-| Python Version  | Installation                        |
-|-----------------|-------------------------------------|
-| `== 3.8`        | `pip install "fmtutil>=0.4,<0.5.0"` |
-| `>=3.9,<3.13`   | `pip install -U fmtutil`            |
 
 ## Formatter Objects
 

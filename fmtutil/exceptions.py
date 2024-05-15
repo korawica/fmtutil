@@ -33,20 +33,20 @@ class FormatterArgumentError(FormatterError):
 
     Examples:
         >>> FormatterArgumentError(
-        ...     argument='demo',
+        ...     arg='demo',
         ...     message='does not support',
         ... )
         FormatterArgumentError("with 'demo', does not support")
 
-    :param argument: An argument of this error that raise to client
-    :type argument: str | tuple
+    :param arg: An argument of this error that raise to client
+    :type arg: str | tuple
     :param message: A string message of this error
     :type message: str
     """
 
     def __init__(
         self,
-        argument: str | tuple[str, ...],
+        arg: str | tuple[str, ...],
         message: str,
     ) -> None:
         """Main Initialization that merge the argument and message input values
@@ -54,19 +54,15 @@ class FormatterArgumentError(FormatterError):
 
             `__class__` with `argument`, `message`
         """
-        _argument: str
-        if isinstance(argument, tuple):
-            _last_arg: str = str(argument[-1])
-            _argument = (
-                (
-                    ", ".join(f"{x!r}" for x in argument[:-1])
-                    + f", and {_last_arg!r}"
-                )
-                if len(argument) > 1
+        if isinstance(arg, tuple):
+            _last_arg: str = str(arg[-1])
+            _argument: str = (
+                (", ".join(f"{x!r}" for x in arg[:-1]) + f", and {_last_arg!r}")
+                if len(arg) > 1
                 else f"{_last_arg!r}"
             )
         else:
-            _argument = f"{argument!r}"
+            _argument = f"{arg!r}"
         super().__init__(f"with {_argument}, {message}")
 
 
