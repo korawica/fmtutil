@@ -32,7 +32,7 @@ from typing import (
 )
 
 from dateutil.relativedelta import relativedelta
-from typing_extensions import TypeAlias
+from typing_extensions import Self, TypeAlias
 
 from .__type import (
     DictStr,
@@ -183,7 +183,7 @@ class SlotLevel:
         self,
         numbers: int | TupleInt | None = None,
         strict: bool = True,
-    ) -> SlotLevel:
+    ) -> Self:
         """Update boolean value in ``self.slot`` from False to True.
 
         :param numbers: updated numbers of this SlotLevel object.
@@ -194,7 +194,7 @@ class SlotLevel:
 
         :raises FormatterValueError: if updated number does not exist in range.
 
-        :rtype: SlotLevel
+        :rtype: Self
         :returns: Self that was updated level
         """
         _numbers: Union[int, TupleInt] = numbers or (0,)
@@ -306,10 +306,10 @@ class Formatter(BaseFormatter):
             this sub-formatter object.
 
     .. class-methods::
-        * from_value: Formatter
+        * from_value: Self
             An instance of formatter that was use ``cls.parse`` method from any
             correct string value with the ``cls.base_fmt`` value.
-        * parse: Formatter
+        * parse: Self
             An instance of formatter that parse from a bytes or string value by
             a format string or base format string if it None.
         * gen_format: str
@@ -379,7 +379,7 @@ class Formatter(BaseFormatter):
         base_config_value: ClassVar[Any | None] = None
 
     def __init_subclass__(
-        cls: FormatterType,
+        cls: type[Self],
         /,
         level: int | None = None,
         fmt: str | None = None,
@@ -412,7 +412,7 @@ class Formatter(BaseFormatter):
     def from_value(
         cls,
         value: Any,
-    ) -> Formatter:
+    ) -> Self:
         """Passer the value to this formatter that will pass this value to
         ``cls.formatter`` method and map with the base format string value
         before parse by ``cls.parse``.
@@ -420,7 +420,7 @@ class Formatter(BaseFormatter):
         :param value: An any value that able to pass to `cls.formatter` method.
         :type value: Any
 
-        :rtype: Formatter
+        :rtype: Self
         :returns: An instance of formatter that was use ``cls.parse`` method
             from any correct string value with the ``cls.base_fmt`` value.
         """
@@ -439,7 +439,7 @@ class Formatter(BaseFormatter):
         fmt: str | None = None,
         *,
         strict: bool = False,
-    ) -> Formatter:
+    ) -> Self:
         """Parse bytes or string value with its format to this formatter object.
         This method generates the value for itself data that can be formatted
         to another format string values.
@@ -457,7 +457,7 @@ class Formatter(BaseFormatter):
         :raises FormatterValueError: if value does not match with regular
             expression format string.
 
-        :rtype: Formatter
+        :rtype: Self
         :returns: An instance of formatter that parse from a bytes or string
             value by a format string or base format string if it None.
         """
@@ -819,8 +819,8 @@ class Formatter(BaseFormatter):
             level and checker condition are Ture together.
 
         :rtype: bool
-        :returns: A boolean value from slot of ``self.level`` with an input level
-            integer.
+        :returns: A boolean value from slot of ``self.level`` with an input
+            level integer.
         """
         if (sl := self.level.slot[(level - 1)]) and checker:
             raise FormatterValueError(
@@ -1037,8 +1037,8 @@ class Serial(Formatter, fmt="%n"):
         :type serial: int | str | float | None(=None)
 
         :rtype: ReturnFormattersType
-        :returns: A generated mapping values of all format string pattern of this
-            serial formatter object.
+        :returns: A generated mapping values of all format string pattern of
+            this serial formatter object.
         """
         _value: int = cls.prepare_value(serial)
         return {
@@ -1469,8 +1469,8 @@ class Datetime(Formatter, level=10, fmt="%Y-%m-%d %H:%M:%S.%f"):
         :type dt: str | datetime | date | None(=None)
 
         :rtype: ReturnFormattersType
-        :returns: A generated mapping values of all format string pattern of this
-            datetime formatter object.
+        :returns: A generated mapping values of all format string pattern of
+            this datetime formatter object.
         """
         _dt: datetime = cls.prepare_value(dt)
         return {
@@ -1669,8 +1669,8 @@ class Datetime(Formatter, level=10, fmt="%Y-%m-%d %H:%M:%S.%f"):
         :type value: str
 
         :rtype: str
-        :returns: A validated week string value from week year number with Monday
-            string value.
+        :returns: A validated week string value from week year number with
+            Monday string value.
         """
         _this_year: datetime = datetime.strptime(
             f"{self.year}-W{value}-{self.week}", "%Y-W%W-%w"
@@ -1700,8 +1700,8 @@ class Datetime(Formatter, level=10, fmt="%Y-%m-%d %H:%M:%S.%f"):
         :type value: str
 
         :rtype: str
-        :returns: A validated week string value from week year number with Sunday
-            string value.
+        :returns: A validated week string value from week year number with
+            Sunday string value.
         """
         _this_year: datetime = datetime.strptime(
             f"{self.year}-W{value}-{self.week}", "%Y-W%U-%w"
@@ -1995,8 +1995,8 @@ class Version(Formatter, level=4, fmt="%m_%n_%c"):
         :type version: str | __version.VerPackage | None(=None)
 
         :rtype: ReturnFormattersType
-        :returns: A generated mapping values of all format string pattern of this
-            version formatter object.
+        :returns: A generated mapping values of all format string pattern of
+            this version formatter object.
         """
         _version: VerPackage = cls.prepare_value(version)
         return {
@@ -2448,8 +2448,8 @@ class Naming(Formatter, level=5, fmt="%n"):
         :type nm: str | list[str] | None(=None)
 
         :rtype: ReturnFormattersType
-        :returns: A generated mapping values of all format string pattern of this
-            naming formatter object.
+        :returns: A generated mapping values of all format string pattern of
+            this naming formatter object.
         """
         _value: list[str] = cls.prepare_value(nm)
         return {
@@ -2953,8 +2953,8 @@ class Storage(Formatter, fmt="%b"):
         :type storage: int | None
 
         :rtype: ReturnFormattersType
-        :returns: A generated mapping values of all format string pattern of this
-            storage formatter object.
+        :returns: A generated mapping values of all format string pattern of
+            this storage formatter object.
         """
         size: Decimal = Storage.prepare_value(storage)
         return {
@@ -3212,7 +3212,7 @@ class Constant(Formatter, fmt="%%"):
         fmt: str | None = None,
         *,
         strict: bool = False,
-    ) -> Formatter:
+    ) -> Self:
         """Parse bytes or string value with its format to this formatter object.
         This method generates the value for itself data that can be formatted
         to another format string values.
@@ -3226,7 +3226,7 @@ class Constant(Formatter, fmt="%%"):
 
         :raises NotImplementedError: If an input fmt value does not pass.
 
-        :rtype: Formatter
+        :rtype: Self
         :returns: An instance of formatter that parse from a bytes or string
             value by a format string or base format string if it None.
         """
@@ -3374,7 +3374,8 @@ def dict2const(
     :type base_fmt: str | None(=None)
 
     :rtype: ConstantType
-    :returns: A constant object that construct from an input fmt and name values.
+    :returns: A constant object that construct from an input fmt and name
+        values.
     """
     _base_fmt: str = base_fmt or "".join(fmt.keys())
 
@@ -3488,7 +3489,8 @@ def make_const(
         a constant object.
 
     :rtype: ConstantType
-    :returns: A constant object that construct from an input fmt and name values.
+    :returns: A constant object that construct from an input fmt and name
+        values.
     """
     base_fmt: str | None = None
     _fmt: DictStr
@@ -3575,7 +3577,7 @@ Comparator: TypeAlias = Callable[["FormatterGroup", "FormatterGroup"], bool]
 
 def comparison(operator: Comparator) -> Comparator:
     @wraps(operator)
-    def wrapper(self: FormatterGroup, other) -> bool:
+    def wrapper(self: FormatterGroup, other: Any) -> bool:
         if not (
             issubclass(other.__class__, FormatterGroup)
             and (self.__class__.__name__ == other.__class__.__name__)
@@ -3609,16 +3611,16 @@ class FormatterGroup:
         * __parse: ReturnParseType
             A mapping of fmt, value, and props keys that passing from searching
             step with `re` module.
-        * parse: FormatterGroup
+        * parse: Self
             An instance of formatter group that parse from a bytes or string
             value by a format string.
         * gen_format: Tuple[str, ReturnGroupGenFormatType]
             A tuple of group naming and format string value that change format
             string to regular expression string for complied to the `re` module.
-        * from_formatter: FormatterGroup
+        * from_formatter: Self
             An instance of formatter group that was pass formats value directly
             to its formatter object.
-        * from_value: FormatterGroup
+        * from_value: Self
             An instance of formatter group that was use ``cls.from_value``
             method from any formatter object and its value.
 
@@ -3632,7 +3634,7 @@ class FormatterGroup:
         * format: [str] -> str
             A string value that was formatted and filled by an input format
             string pattern.
-        * adjust: [Dict[str, Any]] -> FormatterGroup
+        * adjust: [Dict[str, Any]] -> Self
             Adjust any formatter instance in ``self.groups`` of this formatter
             group.
         * to_const: list[str] | None -> FormatterGroupType
@@ -3663,7 +3665,7 @@ class FormatterGroup:
     def from_formats(
         cls,
         formats: dict[str, DictStr],
-    ) -> FormatterGroup:
+    ) -> Self:
         """Passer the formats to this formatter group directly to its formatter
         object.
 
@@ -3674,7 +3676,7 @@ class FormatterGroup:
         :raises FormatterGroupValueError: If any group naming from an input
             formats does not exist in ``cls.base_groups`` value.
 
-        :rtype: FormatterGroup
+        :rtype: Self
         :returns: An instance of formatter group that was pass formats value
             directly to its formatter object.
         """
@@ -3692,7 +3694,7 @@ class FormatterGroup:
     def from_value(
         cls,
         values: dict[str, Any],
-    ) -> FormatterGroup:
+    ) -> Self:
         """Passer the value to this formatter group that will pass this value to
         ``cls.from_value`` method of its formatter.
 
@@ -3703,7 +3705,7 @@ class FormatterGroup:
         :raises FormatterGroupValueError: If any group naming from an input
             formats does not exist in ``cls.base_groups`` value.
 
-        :rtype: FormatterGroup
+        :rtype: Self
         :returns: An instance of formatter group that was use ``cls.from_value``
             method from any formatter object and its value.
         """
@@ -3722,7 +3724,7 @@ class FormatterGroup:
         cls,
         value: String,
         fmt: str,
-    ) -> FormatterGroup:
+    ) -> Self:
         """Parse bytes or string value with its format to this formatter object.
         This method generates the value for itself data that can be formatted
         to another format string values.
@@ -3733,7 +3735,7 @@ class FormatterGroup:
             pattern like `{group-name:fmt-str}`.
         :type fmt: str
 
-        :rtype: FormatterGroup
+        :rtype: Self
         :returns: An instance of formatter group that parse from a bytes or
             string value by a format string.
         """
@@ -3946,11 +3948,11 @@ class FormatterGroup:
         return ", ".join(v.string for v in self.groups.values())
 
     @comparison
-    def __eq__(self, other: FormatterGroup) -> bool:
+    def __eq__(self, other: Self) -> bool:
         return all(self.groups[g] == other.groups[g] for g in self.base_groups)
 
     @comparison
-    def __gt__(self, other: FormatterGroup) -> bool:
+    def __gt__(self, other: Self) -> bool:
         return any(
             self.groups[g].__gt__(other.groups[g]) for g in self.base_groups
         ) and all(
@@ -3958,14 +3960,14 @@ class FormatterGroup:
         )
 
     @comparison
-    def __lt__(self, other: FormatterGroup) -> bool:
+    def __lt__(self, other: Self) -> bool:
         return any(
             self.groups[g].__lt__(other.groups[g]) for g in self.base_groups
         ) and all(
             not self.groups[g].__gt__(other.groups[g]) for g in self.base_groups
         )
 
-    def adjust(self, values: dict[str, Any]) -> FormatterGroup:  # no cov
+    def adjust(self, values: dict[str, Any]) -> Self:  # no cov
         """Adjust value to any formatter instance in ``self.groups`` of this
         formatter group.
 

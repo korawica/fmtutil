@@ -4,6 +4,13 @@
 # license information.
 # ------------------------------------------------------------------------------
 """
+Note:
+        This file is assert of formatter value that will passing for generate
+    any formatter object. I will use it instead create sub-class form Formatter
+    class for simple and scalable usage.
+
+        I will start define the concept but it does not fit will my creation
+    flow. It will be finish on the major version 2.0
 Migration Note:
 
 *   I will improve the scalable of the Formatter object that able to transform

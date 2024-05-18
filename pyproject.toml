@@ -1,9 +1,5 @@
 [build-system]
-requires = [
-    "hatchling>=1.8.0",
-    # This plug-in support for py-version >= 3.9
-    # "hatch-semver",
-]
+requires = ["hatchling>=1.8.0"]
 build-backend = "hatchling.build"
 
 [project]
@@ -55,7 +51,7 @@ fmtutil = "fmtutil.__main__:main"
 
 [tool.shelf.version]
 version = "./fmtutil/__about__.py"
-changelog = "./docs/en/docs/CHANGELOG.md"
+changelog = "./CHANGELOG.md"
 
 [tool.shelf.git]
 commit_prefix_force_fix = true
@@ -128,6 +124,7 @@ exclude = [
 
 [tool.black]
 line-length = 80
+preview = true
 target-version = ['py39']
 exclude = """
 (

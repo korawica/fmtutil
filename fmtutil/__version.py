@@ -2,7 +2,7 @@
 # This file license under the BSD-3 License of the ``python-semver`` package and
 # BSD and Apache-2.0 Licenses of the ``packaging`` package the provide by PyPA.
 # ------------------------------------------------------------------------------
-# references:
+# References:
 # * [GitHub: Python - semver](https://github.com/python-semver/python-semver)
 # * [GitHub: PYPA - Packaging](https://github.com/pypa/packaging)
 # ------------------------------------------------------------------------------
@@ -24,7 +24,7 @@ from typing import (
     get_args,
 )
 
-from typing_extensions import TypeAlias
+from typing_extensions import Self, TypeAlias
 
 from .__type import (
     Inf,
@@ -274,7 +274,7 @@ class BaseVersion:
         """Return iter(self)."""
         yield from self.to_tuple()
 
-    def bump_major(self) -> BaseVersion:
+    def bump_major(self) -> Self:
         """Raise the major part of the version, return a new object
         but leave self untouched.
 
@@ -282,7 +282,7 @@ class BaseVersion:
         """
         return self.__class__(self.major + 1)
 
-    def bump_minor(self) -> BaseVersion:
+    def bump_minor(self) -> Self:
         """Raise the minor part of the version, return a new object
         but leave self untouched.
 
@@ -290,7 +290,7 @@ class BaseVersion:
         """
         return self.__class__(self.major, self.minor + 1)
 
-    def bump_patch(self) -> BaseVersion:
+    def bump_patch(self) -> Self:
         """Raise the patch part of the version, return a new object
         but leave self untouched.
 
@@ -308,7 +308,7 @@ class BaseVersion:
         :returns: The return value is negative if ver1 < ver2,
             zero if ver1 == ver2 and strictly positive if ver1 > ver2
         """
-        cls: type[BaseVersion] = type(self)
+        cls: type[Self] = type(self)
         if isinstance(other, get_args(String)):
             other = cls.parse(other)
         elif isinstance(other, dict):
@@ -328,13 +328,13 @@ class BaseVersion:
     def next_version(
         self,
         part: str,
-    ) -> BaseVersion:
+    ) -> Self:
         """Determines next version, preserving natural order.
 
         :param part: an one of "major", "minor", "patch" part of version.
         :type part: str
 
-        :rtype: BaseVersion
+        :rtype: Self
         :returns: A new object with the appropriate part raised
         """
         valid_parts: TupleStr = self.__class__.__slots__
@@ -421,7 +421,7 @@ class BaseVersion:
         return hash(self.to_tuple())
 
     @classmethod
-    def extract_wildcard(cls, expr: str) -> tuple[BaseVersion, BaseVersion]:
+    def extract_wildcard(cls, expr: str) -> tuple[Self, Self]:
         """Extract version instance from an input wildcard version value.
 
         :param expr: An expression string value of version wildcard.
@@ -435,10 +435,10 @@ class BaseVersion:
         if expr == "*":
             return cls.parse("0.0.0"), Inf
         try:
-            base_expr: BaseVersion = cls.parse(
+            base_expr: Self = cls.parse(
                 expr.replace("*", "0"), optional_minor_and_patch=True
             )
-            upper_expr: BaseVersion = cls.parse(
+            upper_expr: Self = cls.parse(
                 increment(expr.replace("*", "").rstrip(".")),
                 optional_minor_and_patch=True,
             )
@@ -556,11 +556,11 @@ class BaseVersion:
 
     @classmethod
     def parse(
-        cls: type[BaseVersion],
+        cls: type[Self],
         version: String,
         *,
         optional_minor_and_patch: bool = False,
-    ) -> BaseVersion:
+    ) -> Self:
         """Parse version string to a Version instance.
 
         :param version: A version string that want to parse.
@@ -588,7 +588,7 @@ class BaseVersion:
 
         return cls(**match.groupdict())
 
-    def replace(self, **parts: int | str | None) -> BaseVersion:
+    def replace(self, **parts: int | str | None) -> Self:
         """Replace one or more parts of a version and return a new instance.
 
         :param parts: the parts to be updated. Valid keys are:
@@ -781,6 +781,7 @@ class VersionPackage(BaseVersion):
     def __extract_local(
         local: str | None,
     ) -> tuple[Union[str, int], ...] | None:
+        """Extract a pair of local layer from full string local."""
         if local is not None:
             return tuple(
                 part.lower() if not part.isdigit() else int(part)
@@ -803,10 +804,10 @@ class VersionPackage(BaseVersion):
         """Return the version number of dev part if it was set."""
         return self._extract_letter(self.dev)[1] if self.dev else None
 
-    def bump_pre(self, token: str | None = "rc") -> VersionPackage:
+    def bump_pre(self, token: str | None = "rc") -> Self:
         """Raise the pre part of the packaging version, return a new object.
 
-        :rtype: VersionPackage
+        :rtype: Self
         :returns: A new object with the raised pre part.
         """
         cls = type(self)
@@ -826,10 +827,10 @@ class VersionPackage(BaseVersion):
             pre,
         )
 
-    def bump_post(self) -> VersionPackage:
+    def bump_post(self) -> Self:
         """Raise the post part of the packaging version, return a new object.
 
-        :rtype: VersionPackage
+        :rtype: Self
         :returns: A new object with the raised post part.
         """
         post: str = increment(self.post or "post0")
@@ -842,10 +843,10 @@ class VersionPackage(BaseVersion):
             post,
         )
 
-    def bump_dev(self) -> VersionPackage:
+    def bump_dev(self) -> Self:
         """Raise the dev part of the packaging version, return a new object.
 
-        :rtype: VersionPackage
+        :rtype: Self
         :returns: A new object with the raised dev part.
         """
         dev: str = increment(self.dev or "dev0")
@@ -859,10 +860,10 @@ class VersionPackage(BaseVersion):
             dev,
         )
 
-    def bump_local(self) -> VersionPackage:
+    def bump_local(self) -> Self:
         """Raise the local part of the packaging version, return a new object.
 
-        :rtype: VersionPackage
+        :rtype: Self
         :returns: A new object with the raised local part.
         """
         local: str = increment(self.local or "local0")
@@ -877,7 +878,7 @@ class VersionPackage(BaseVersion):
             local,
         )
 
-    def next_version(self, part: str, pre_token: str = "a") -> VersionPackage:
+    def next_version(self, part: str, pre_token: str = "a") -> Self:
         """Return the next Packaging version.
 
         :param part: a part that want to generate the next version.
@@ -885,7 +886,7 @@ class VersionPackage(BaseVersion):
         :param pre_token: a pre kind token string value.
         :type pre_token: str(='a')
 
-        :rtype: VersionPackage
+        :rtype: Self
         :returns: A new object with replace the new part of an input part value.
         """
         cls = type(self)
@@ -929,16 +930,16 @@ class VersionPackage(BaseVersion):
 
     @classmethod
     def parse(
-        cls: type[VersionPackage],
+        cls: type[Self],
         version: String,
         optional_minor_and_patch: bool = False,
-    ) -> VersionPackage:
+    ) -> Self:
         """Return the Packaging version that parsing from an any string value.
 
         :param version: an any string value that want to parse.
         :param optional_minor_and_patch: a optional flag.
 
-        :rtype: VersionPackage
+        :rtype: Self
         :return: the Packaging version that parsing from an any string value.
         """
         if isinstance(version, bytes):
@@ -1029,7 +1030,7 @@ class VersionSemver(BaseVersion):
         self.pre: str | None = None if pre is None else str(pre)
         self.build: str | None = None if build is None else str(build)
 
-    def bump_pre(self, token: str | None = "rc") -> VersionSemver:
+    def bump_pre(self, token: str | None = "rc") -> Self:
         """Raise the pre part of the version, return a new object but leave
         self untouched.
 
@@ -1049,11 +1050,13 @@ class VersionSemver(BaseVersion):
         pre = increment(pre)
         return self.__class__(self.major, self.minor, self.patch, pre)
 
-    def bump_build(self, token: str | None = "build") -> VersionSemver:
+    def bump_build(self, token: str | None = "build") -> Self:
         """Raise the build part of the version, return a new object but leave
         self untouched.
 
         :param token: defaults to ``'build'``
+
+        :rtype: Self
         :returns: new :class:`Version` object with the raised build part.
             The original object is not modified.
         """
@@ -1070,11 +1073,13 @@ class VersionSemver(BaseVersion):
         build = increment(build)
         return cls(self.major, self.minor, self.patch, self.pre, build)
 
-    def next_version(self, part: str, pre_token: str = "rc") -> VersionSemver:
+    def next_version(self, part: str, pre_token: str = "rc") -> Self:
         """Determines next version, preserving natural order.
 
         :param part: One of "major", "minor", "patch", or "pre"
         :param pre_token: prefix string of pre, defaults to 'rc'
+
+        :rtype: Self
         :returns: new object with the appropriate part raised
         """
         cls = type(self)
@@ -1111,7 +1116,7 @@ class VersionSemver(BaseVersion):
     def __hash__(self) -> int:
         return hash(self.to_tuple()[:4])
 
-    def finalize_version(self) -> VersionSemver:
+    def finalize_version(self) -> Self:
         """Remove any pre-release and build metadata from the version.
 
         :returns: a new instance with the finalized version string.
@@ -1120,11 +1125,11 @@ class VersionSemver(BaseVersion):
 
     @classmethod
     def parse(
-        cls: type[VersionSemver],
+        cls: type[Self],
         version: String,
         *,
         optional_minor_and_patch: bool = False,
-    ) -> VersionSemver:
+    ) -> Self:
         if isinstance(version, bytes):
             version = str(version, "utf-8", "strict")
         elif not isinstance(version, get_args(String)):
@@ -1182,7 +1187,9 @@ class VersionSemver(BaseVersion):
 
         The algorithm does *not* check patches.
 
+        :param other: A version semver object that want to compatible check
         :rtype: bool
+        :returns: Return True if an other version semver object is compatible.
         """
         if not isinstance(other, VersionSemver):
             raise TypeError(f"Expected a Version type but got {type(other)}")

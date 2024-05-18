@@ -189,6 +189,9 @@ except FormatterError:
 >>> 'The value of %s is special'
 ```
 
+All formatter object can convert itself to constant formatter object for frozen
+parsing value to constant by `.to_const()`.
+
 > [!NOTE]
 > This package already implement the environment constant object,
 > `fmtutil.EnvConst`. \

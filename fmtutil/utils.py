@@ -50,12 +50,12 @@ FMT_STR_OTAN_MAP: dict[str, str] = {
 concat: Callable[[list[str] | Iterable[str]], str] = "".join
 
 
-def itself(x: Any = None) -> Any:
+def itself(x: Any = None) -> Any:  # pragma: no cover.
     """Return itself value"""
     return x
 
 
-def default(value: Any) -> Callable[[], Any]:
+def default(value: Any) -> Callable[[], Any]:  # pragma: no cover.
     """Return wrapper function of value"""
     return lambda: value
 
