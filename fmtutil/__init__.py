@@ -3,6 +3,7 @@
 # Licensed under the MIT License. See LICENSE in the project root for
 # license information.
 # ------------------------------------------------------------------------------
+import logging
 
 from .__about__ import (
     __version__,
@@ -44,6 +45,8 @@ from .formatter import (
     make_const,
     make_group,
 )
+
+logging.getLogger(__name__)
 
 __all__ = (
     "Formatter",
