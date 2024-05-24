@@ -51,7 +51,7 @@ fmtutil = "fmtutil.__main__:main"
 
 [tool.shelf.version]
 version = "./fmtutil/__about__.py"
-changelog = "./CHANGELOG.md"
+changelog = "./docs/CHANGELOG.md"
 
 [tool.shelf.git]
 commit_prefix_force_fix = true
