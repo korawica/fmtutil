@@ -9,7 +9,11 @@ from typing import (
     get_args,
 )
 
-from .__type import String
+try:
+    from .__type import String
+except ImportError:
+    from __type import String
+
 
 FMT_STR_MAP: dict[str, str] = {
     "-": "minus",
@@ -172,3 +176,31 @@ def float2decimal(value: float, precision: int = 15) -> Decimal:
 def scache(cache_num: int) -> str:
     """Return cache suffix string"""
     return f"__{cache_num}" if cache_num > 0 else ""
+
+
+def escape_fmt_group(value: str) -> str:
+    """Escape value of format group before format
+
+    Examples:
+        >>> escape_fmt_group(
+        ...     "+file_{datetime:%Y-%m-%d %H:%M:%S}_{naming:%n_%e}.json"
+        ... ).replace('\\\\', '?')  # Replace because doc-string issue!
+        '?+file_{datetime:%Y-%m-%d %H:%M:%S}_{naming:%n_%e}?.json'
+
+        >>> escape_fmt_group(
+        ...     "+file_{datetime:%Y-%m-%d %H:%M:%S}_{naming:%n_%e}\\.json"
+        ... ).replace('\\\\', '?')  # Replace because doc-string issue!
+        '?+file_{datetime:%Y-%m-%d %H:%M:%S}_{naming:%n_%e}???.json'
+    """
+    rs: str = value
+    revert: dict[str, str] = {}
+    for i, s in enumerate(
+        re.finditer(r"(?P<found>{\w+:?([^{}]+)?})", value), start=1
+    ):
+        found: str = s.group("found")
+        rs = rs.replace(found, f"<ESCAPE{i:03d}>")
+        revert[f"<ESCAPE{i:03d}>"] = found
+    rs = re.escape(rs)
+    for rv in revert:
+        rs = rs.replace(rv, revert[rv])
+    return rs
