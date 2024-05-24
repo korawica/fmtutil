@@ -70,6 +70,8 @@ __all__ = (
     "FormatterValueError",
     "FormatterGroupArgumentError",
     "FormatterGroupValueError",
+    "ReturnFormattersType",
+    "ReturnPrioritiesType",
     "Ver",
     "VerPackage",
     "VerSemver",
