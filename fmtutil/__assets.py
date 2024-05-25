@@ -33,7 +33,7 @@ from datetime import datetime
 from functools import lru_cache, partial, total_ordering
 from typing import Any, Callable, ClassVar, Optional, Union
 
-from typing_extensions import Self, TypeAlias
+from typing_extensions import Self, TypeAlias, TypeVar
 
 from fmtutil.exceptions import (
     FormatterArgumentError,
@@ -43,6 +43,7 @@ from fmtutil.exceptions import (
 from fmtutil.formatter import ConstantType, SlotLevel, dict2const
 from fmtutil.utils import bytes2str, can_int, itself, remove_pad, scache
 
+T = TypeVar("T")
 DictStr: TypeAlias = dict[str, str]
 String: TypeAlias = Union[str, bytes]
 TupleInt: TypeAlias = tuple[int, ...]
@@ -219,13 +220,15 @@ class Formatter(ABC):
             f"'{self.config.default_fmt}')>"
         )
 
-    def __eq__(self, other: Formatter) -> bool:
-        if isinstance(other, self.__class__):
-            return self.value == other.value
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+        return self.value == other.value
 
-    def __lt__(self, other: Formatter) -> bool:
-        if isinstance(other, self.__class__):
-            return self.value.__lt__(other.value)
+    def __lt__(self, other: object) -> bool:
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+        return self.value.__lt__(other.value)
 
     @property
     @abstractmethod
@@ -554,30 +557,29 @@ class Formatter(ABC):
             "sub-formatter class."
         )
 
-    def __add__(self, other: Any) -> Formatter:
-        if not isinstance(other, Formatter):
+    def __add__(self, other: Any) -> Self:
+        if not isinstance(other, self.__class__):
             try:
                 return self.__class__.from_value(value=self.value + other)
             except FormatterValueError:
                 return NotImplemented
         return self.__class__.from_value(value=self.value + other.value)
 
-    def __radd__(self, other: Any) -> Formatter:
+    def __sub__(self, other: Any) -> Self:
+        if not isinstance(other, self.__class__):
+            try:
+                return self.__class__.from_value(value=(self.value - other))
+            except FormatterValueError:
+                return NotImplemented
+        return self.__class__.from_value(value=(self.value - other.value))
+
+    def __radd__(self, other: Any) -> Self:
         return self.__add__(other)
 
-    def __sub__(self, other: Any) -> Formatter:
-        try:
-            if not isinstance(other, Formatter):
-                return self.__class__.from_value(value=(self.value - other))
-            return self.__class__.from_value(value=(self.value - other.value))
-        except FormatterValueError:
+    def __rsub__(self, other: T) -> T:
+        if not isinstance(other, type(self.value)):
             return NotImplemented
-
-    def __rsub__(self, other: Any) -> Any:
-        try:
-            return other - self.value
-        except (TypeError, FormatterValueError):
-            return NotImplemented
+        return other - self.value
 
     def __format__(self, fmt_spec: str) -> str:
         """Format a formatter object with any formatter setting value."""

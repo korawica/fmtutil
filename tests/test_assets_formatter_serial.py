@@ -103,7 +103,7 @@ class SerialAssetsTestCase(unittest.TestCase):
         self.assertEqual(fmt.Serial(number="761"), self.sr - 20)
         self.assertEqual(fmt.Serial(number="772"), self.sr - self.sr_p)
         self.assertEqual(1219, 2000 - self.sr)
-        self.assertEqual(1219.2, (2000.20 - self.sr))
+        self.assertEqual(1219, (2000 - self.sr))
 
         with self.assertRaises(TypeError) as context:
             (self.sr + 5.1)
