@@ -570,7 +570,7 @@ class Formatter(BaseFormatter):
         :returns: A dict of format string, and it's regular expression string
             value that was generated from values of ``cls.formatter``.
 
-            Example:
+            Examples:
                 {
                     "%n": "(?P<normal>...)",
                     "%N": "(?P<normal_upper>...)",

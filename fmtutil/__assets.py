@@ -30,7 +30,7 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
-from functools import partial
+from functools import lru_cache, partial
 from typing import Any, Callable, ClassVar, Optional, Union
 
 from typing_extensions import Self, TypeAlias
@@ -40,7 +40,7 @@ from fmtutil.exceptions import (
     FormatterKeyError,
     FormatterValueError,
 )
-from fmtutil.formatter import SlotLevel
+from fmtutil.formatter import ConstantType, SlotLevel, dict2const
 from fmtutil.utils import bytes2str, can_int, itself, remove_pad, scache
 
 DictStr: TypeAlias = dict[str, str]
@@ -153,8 +153,21 @@ SERIAL_CONF = ConfigFormat(default_fmt="%n")
 
 
 class Formatter(ABC):
-    """The New Formatter object that will be the abstract parent class for any
-    formatter sub-class object.
+    """The Asset Formatter object that will be the abstract parent class for any
+    formatter sub-class object with the asset construction.
+
+        Formatter object for inherit to any formatter subclass that define
+    format and parse method. The base class will implement necessary
+    properties and method for subclass that should implement or enhance such
+    as `the cls.formatter()` method or the `cls.priorities` property.
+
+    .. class attributes::
+        * asset: dict[str, Format]
+            A asset mapping with format string and Format object.
+        * config: ConfigFormat
+            A ConfigFormat object for this sub-class formatter.
+        * level: int
+            The maximum level of slot level of this instance.
     """
 
     asset: ClassVar[dict[str, Format]]
@@ -185,18 +198,54 @@ class Formatter(ABC):
             )
 
     @abstractmethod
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, level: SlotLevel | None = None, **kwargs):
+        self.slot: SlotLevel = level or SlotLevel(self.level)
         raise NotImplementedError(
             "Formatter should implement ``self.__init__`` for validate "
             "incoming parsing values"
         )
+
+    def __hash__(self) -> int:
+        return hash(self.str)
+
+    def __str__(self) -> str:
+        return self.str
+
+    def __repr__(self) -> str:
+        return (
+            f"<{self.__class__.__name__}"
+            f".parse('{self.str}', "
+            f"'{self.config.default_fmt}')>"
+        )
+
+    @property
+    @abstractmethod
+    def str(self) -> str:  # pragma: no cover
+        """Return a standard string value that define by property of this
+        formatter object.
+
+        :rtype: str
+        """
+        raise NotImplementedError(
+            "Please implement ``str`` property for this sub-formatter class"
+        )
+
+    @classmethod
+    def from_value(cls, value: Any):
+        raise NotImplementedError
 
     @classmethod
     def parse(
         cls,
         value: String,
         fmt: Optional[str] = None,
+        *,
+        strict: bool = False,
     ) -> Self:
+        """Parse bytes or string value with its format to this formatter object.
+        This method generates the value for itself data that can be formatted
+        to another format string values.
+        """
         _fmt: str = fmt or cls.config.default_fmt
         _value: str = bytes2str(value)
 
@@ -209,8 +258,9 @@ class Formatter(ABC):
         _fmt = cls.gen_format(_fmt)
         if _search := re.search(rf"^{_fmt}$", _value):
             return cls(
-                **cls.__before_parsing(
-                    cls.__validate_format(_search.groupdict())
+                **cls.__init_parsing(
+                    cls.__validate_format(_search.groupdict()),
+                    set_strict_mode=strict,
                 )
             )
 
@@ -227,10 +277,13 @@ class Formatter(ABC):
         suffix: Optional[str] = None,
         alias: bool = True,
     ) -> str:
+        """Generate format string value that combine from any matching of
+        format name with format regular expression value that able to search.
+        """
         _cache: dict[str, int] = defaultdict(int)
         _prefix: str = prefix or ""
         _suffix: str = suffix or ""
-        regexes = cls._regex()
+        regexes = cls.regex()
         for fmt_match in re.finditer(r"(%?%[-+!*]?[A-Za-z])", fmt):
             fmt_str: str = fmt_match.group()
             if fmt_str.startswith("%%"):
@@ -275,7 +328,14 @@ class Formatter(ABC):
         return fmt
 
     @classmethod
-    def _regex(cls) -> DictStr:
+    @lru_cache(maxsize=None)
+    def regex(cls) -> DictStr:
+        """Return a dict of format string, and it's regular expression value
+        that was generated from values of ``cls.asset``. This class-method
+        was wrapped with ``lru_cache`` function for more frequency getting this
+        ``cls.regex()`` value because the value does not change depend on the
+        formatter class.
+        """
         results: DictStr = {}
         pre_results: DictStr = {}
         for f, props in cls.asset.items():
@@ -322,11 +382,12 @@ class Formatter(ABC):
         return results
 
     @classmethod
-    def __before_parsing(
+    def __init_parsing(
         cls,
-        parsing: dict[str, str],
+        parsing: DictStr,
         set_strict_mode: bool = False,
     ) -> dict[str, Any]:
+        """Initialize after parsing value from ``cls.parse``."""
         # NOTE: This function was migrated from __init__ method.
         restruct_asset_values: dict[str, Format] = {
             v.alias: v
@@ -361,6 +422,25 @@ class Formatter(ABC):
             "Please implement ``value`` property for sub-formatter object"
         )
 
+    def values(self, value: Any | None = None) -> DictStr:
+        """Return a dict of format string, and it's string value that was passed
+        an input value to `cls.formatter` method.
+
+        :rtype: DictStr
+        :returns: A dict of format string, and it's string value that was passed
+            an input value to `cls.formatter` method.
+
+            Example:
+                {
+                    "%n": "normal-value",
+                    "%N": "NORMAL-UPPER-VALUE",
+                    ...
+                }
+        """
+        return {
+            f: fmt.fmt(value or self.value) for f, fmt in self.asset.items()
+        }
+
     def format(self, fmt: str) -> str:
         """Return a string value that was formatted and filled by an input
         format string pattern.
@@ -387,6 +467,61 @@ class Formatter(ABC):
                 ) from err
         return fmt.replace("[ESCAPE]", "%")
 
+    def valid(self, value: str, fmt: str) -> bool:
+        """Return a True value if the value from ``cls.parse`` of a string
+        value, and a format string pattern is valid with ``self.value``.
+
+        :param value: A string value that want to parse with a format string.
+        :type value: str
+        :param fmt: A format string pattern.
+        :type fmt: str
+        """
+        return self.value.__eq__(
+            self.__class__.parse(value, fmt).value,
+        )
+
+    def _sub_validate(self, level: int, checker: bool, error: str) -> bool:
+        """Return True if validate condition does not raise the Error.
+
+        :param level: A level number that check for slot exists.
+        :type level: int
+        :param checker: A validate result.
+        :type checker: bool
+        :param error: An error statement that raise from FormatterValueError
+        :type error: str
+
+        :raises FormatterValueError: If a slot of ``self.level`` with an input
+            level and checker condition are Ture together.
+
+        :rtype: bool
+        :returns: A boolean value from slot of ``self.level`` with an input
+            level integer.
+        """
+        if (sl := self.slot.slot[(level - 1)]) and checker:
+            raise FormatterValueError(
+                f"Parsing value does not valid with {error}."
+            )
+        return not sl
+
+    def to_const(self) -> ConstantType:
+        """Convert this formatter instance to Constant object that have class
+        name with ``f'{self.__class__.__name__}Const'`` with ``self.values()``.
+
+        :rtype: ConstantType
+        :returns: A Constant object that create from constant of ``self.values``
+            and has class name with ``f'{self.__class__.__name__}Const'`` with
+            ``self.values()``.
+        """
+        return dict2const(
+            self.values(),
+            name=f"{self.__class__.__name__}Const",
+            base_fmt=self.config.default_fmt,
+        )
+
+    def __format__(self, fmt_spec: str) -> str:
+        """Format a formatter object with any formatter setting value."""
+        return self.format(fmt_spec)
+
 
 class Serial(Formatter, asset=SERIAL_ASSET, config=SERIAL_CONF):
     """Serial Formatter object that build from SERIAL_ASSET value."""
@@ -399,6 +534,10 @@ class Serial(Formatter, asset=SERIAL_ASSET, config=SERIAL_CONF):
                 f"Serial formatter does not support for, {number!r}."
             )
         self.number: int = prepare
+
+    @property
+    def str(self) -> str:
+        return str(self.number)
 
     @property
     def value(self) -> int:
@@ -504,6 +643,10 @@ class Datetime(Formatter, asset=DATETIME_ASSET, config=DATETIME_CONF, level=10):
             second=self.second,
             microsecond=self.microsecond,
         )
+
+    @property
+    def str(self) -> str:
+        return str(self.dt)
 
     @property
     def value(self) -> datetime:
