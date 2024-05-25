@@ -35,7 +35,11 @@ from typing import Any, Callable, ClassVar, Optional, Union
 
 from typing_extensions import Self, TypeAlias
 
-from fmtutil.exceptions import FormatterArgumentError, FormatterValueError
+from fmtutil.exceptions import (
+    FormatterArgumentError,
+    FormatterKeyError,
+    FormatterValueError,
+)
 from fmtutil.formatter import SlotLevel
 from fmtutil.utils import bytes2str, can_int, itself, remove_pad, scache
 
@@ -48,7 +52,7 @@ TupleStr: TypeAlias = tuple[str, ...]
 @dataclass
 class BaseFormat:
     alias: str
-    fmt: Callable[[str], str]
+    fmt: Callable[[str], partial[[], str]]
 
 
 @dataclass
@@ -352,6 +356,39 @@ class Formatter(ABC):
                 level.update(value.level)
         return rs
 
+    @property
+    @abstractmethod
+    def value(self) -> Any:  # pragma: no cover
+        raise NotImplementedError(
+            "Please implement ``value`` property for sub-formatter object"
+        )
+
+    def format(self, fmt: str) -> str:
+        """Return a string value that was formatted and filled by an input
+        format string pattern.
+
+        :param fmt: A format string value for mapping with formatter.
+        :type fmt: str
+
+        :raises KeyError: if it has any format pattern does not found in
+            `cls.formatter`.
+
+        :rtype: str
+        :returns: A string value that was formatted from format string pattern.
+        """
+        fmt = fmt.replace("%%", "[ESCAPE]")
+        for _fmt_match in re.finditer(r"(%[-+!*]?[A-Za-z])", fmt):
+            _fmt_str: str = _fmt_match.group(0)
+            try:
+                _value = self.asset[_fmt_str].fmt(self.value)
+                fmt = fmt.replace(_fmt_str, _value())
+            except KeyError as err:
+                raise FormatterKeyError(
+                    f"the format: {_fmt_str!r} does not support for "
+                    f"{self.__class__.__name__!r}"
+                ) from err
+        return fmt.replace("[ESCAPE]", "%")
+
 
 class Serial(Formatter, asset=SERIAL_ASSET, config=SERIAL_CONF):
 
@@ -368,7 +405,7 @@ class Serial(Formatter, asset=SERIAL_ASSET, config=SERIAL_CONF):
         self.number: int = prepare
 
     @property
-    def value(self):
+    def value(self) -> int:
         return self.number
 
 
@@ -377,7 +414,7 @@ DATETIME_ASSET: dict[str, Format] = {
         {
             "alias": "normal",
             "cregex": "%Y%m%d_%H%M%S",
-            "fmt": lambda x: partial(x.strftime("%Y%m%d_%H%M%S")),
+            "fmt": lambda x: partial(x.strftime, "%Y%m%d_%H%M%S"),
         }
     ),
     "%Y": parsing_format(
@@ -451,6 +488,7 @@ class Datetime(Formatter, asset=DATETIME_ASSET, config=DATETIME_CONF, level=10):
         minute: int = 0,
         second: int = 0,
         microsecond: int = 0,
+        level: SlotLevel | None = None,
     ):
         self.year = int(year or 1990)
         self.month = int(month or 1)
@@ -459,7 +497,8 @@ class Datetime(Formatter, asset=DATETIME_ASSET, config=DATETIME_CONF, level=10):
         self.minute: int = int(minute)
         self.second: int = int(second)
         self.microsecond: int = int(microsecond)
-        self.dt = datetime(
+        self.slot: SlotLevel = level
+        self.dt: datetime = datetime(
             year=self.year,
             month=self.month,
             day=self.day,
@@ -470,30 +509,28 @@ class Datetime(Formatter, asset=DATETIME_ASSET, config=DATETIME_CONF, level=10):
         )
 
     @property
-    def value(self):
+    def value(self) -> datetime:
         return self.dt
 
 
 def demo_number_formating():
-    # Step 01: Initialize serial formatter with asset + config params.
-
-    # Step 02: Generate format from string and Parsing with specific format.
     print(Serial.gen_format("This is a number `%n` but extra `%b`"))
     serial_instance = Serial.parse("Number: 20240101", fmt="Number: %n")
     assert 20240101 == serial_instance.value
     assert isinstance(serial_instance.value, int)
 
-    # # Step Final: Parse and format.
-    # serial_proxy = serial.parse("Number: 20240101", fmt="Number: %n")
-    # print(serial_proxy.format("This is format number: %n"))
+    print(serial_instance.format("%b"))
+    assert "1001101001101011011100101" == serial_instance.format("%b")
 
 
 def demo_datetime_formating():
-    # print(dt_format.regex)
     print(Datetime.gen_format("This is a datetime %Y%m and special %n"))
     dt_instance = Datetime.parse("date: 20240101", fmt="date: %Y%m%d")
     assert datetime(2024, 1, 1) == dt_instance.value
     assert isinstance(dt_instance.value, datetime)
+
+    print(dt_instance.format("%n"))
+    assert "2024" == dt_instance.format("%Y")
 
 
 if __name__ == "__main__":
