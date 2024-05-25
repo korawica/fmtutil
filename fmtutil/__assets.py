@@ -25,13 +25,13 @@ Migration Note:
 """
 from __future__ import annotations
 
-import inspect
 import re
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass, field
+from datetime import datetime
 from functools import partial
-from typing import Any, Callable, ClassVar, Optional, Protocol, Union
+from typing import Any, Callable, ClassVar, Optional, Union
 
 from typing_extensions import Self, TypeAlias
 
@@ -70,7 +70,6 @@ Format = Union[CommonFormat, CombineFormat]
 @dataclass
 class ConfigFormat:
     default_fmt: str
-    proxy: type[BaseProxy]
     validator: Callable[[Any], Any] = field(default_factory=itself)
 
 
@@ -148,37 +147,7 @@ SERIAL_ASSET: dict[str, Format] = {
 }
 
 
-class BaseProxyProtocol(Protocol): ...
-
-
-class BaseProxy:
-
-    def receive(self, parsing: DictStr): ...
-
-
-class SerialProxy(BaseProxy):
-
-    def __init__(
-        self,
-        number: int | str | float | None,
-    ):
-        if number is None:
-            self.number: int = 0
-        if not can_int(number) or ((prepare := int(float(number))) < 0):
-            raise FormatterValueError(
-                f"Serial formatter does not support for value, {number!r}."
-            )
-        self.number: int = prepare
-
-    @classmethod
-    def receive(cls, parsing: DictStr):
-        return cls(**parsing)
-
-
-SERIAL_CONF = ConfigFormat(
-    default_fmt="%n",
-    proxy=SerialProxy,
-)
+SERIAL_CONF = ConfigFormat(default_fmt="%n")
 
 
 class Formatter(ABC):
@@ -214,7 +183,11 @@ class Formatter(ABC):
             )
 
     @abstractmethod
-    def __init__(self, *args, **kwargs): ...
+    def __init__(self, *args, **kwargs):
+        raise NotImplementedError(
+            "Formatter should implement ``self.__init__`` for validate "
+            "incoming parsing values"
+        )
 
     @classmethod
     def parse(
@@ -354,29 +327,30 @@ class Formatter(ABC):
     ) -> dict[str, Any]:
         # NOTE: This function was migrated from __init__ method.
         restruct_asset_values: dict[str, Format] = {
-            v.alias: v for v in cls.asset.values()
+            v.alias: v
+            for v in cls.asset.values()
+            if not isinstance(v, CombineFormat)
         }
 
-        rs: dict[str, Any] = defaultdict(lambda: None)
+        rs: dict[str, Any] = {}
         level = SlotLevel(level=cls.level)
-        args: list[str] = [
-            k for k in inspect.signature(cls.__init__).parameters if k != "self"
-        ]
         for name, value in restruct_asset_values.items():
             attr = name.split("_", maxsplit=1)[0]
 
-            if getter := rs[attr]:
+            if getter := rs.get(attr):
                 if not set_strict_mode:
                     continue
-                elif getter != value.parse(parsing[name]):
-                    raise ValueError
+                elif name in parsing and getter != (
+                    p := value.parse(parsing[name])
+                ):
+                    raise FormatterValueError(
+                        f"Parsing duplicate values do not equal, {getter} and "
+                        f"{p}, in ``self.{attr}`` with strict mode."
+                    )
             elif name in parsing:
                 rs[attr] = value.parse(parsing[name])
                 level.update(value.level)
-
-            if name not in args:
-                print(name)
-        return dict(rs)
+        return rs
 
 
 class Serial(Formatter, asset=SERIAL_ASSET, config=SERIAL_CONF):
@@ -392,6 +366,10 @@ class Serial(Formatter, asset=SERIAL_ASSET, config=SERIAL_CONF):
                 f"Serial formatter does not support for, {number!r}."
             )
         self.number: int = prepare
+
+    @property
+    def value(self):
+        return self.number
 
 
 DATETIME_ASSET: dict[str, Format] = {
@@ -456,33 +434,44 @@ DATETIME_ASSET: dict[str, Format] = {
             "level": 0,
         }
     ),
-    "_": parsing_format(
-        {
-            "alias": "",
-            "regex": "",
-            "fmt": lambda x: x,
-            "parse": lambda x: x,
-            "level": 0,
-        }
-    ),
 }
 
 
-DATETIME_CONF = ConfigFormat(
-    default_fmt="%Y-%m-%d %H:%M:%S",
-    proxy=BaseProxy,
-)
+DATETIME_CONF = ConfigFormat(default_fmt="%Y-%m-%d %H:%M:%S")
 
 
-class Datetime(
-    Formatter,
-    asset=DATETIME_ASSET,
-    config=DATETIME_CONF,
-    level=10,
-):
+class Datetime(Formatter, asset=DATETIME_ASSET, config=DATETIME_CONF, level=10):
+
     def __init__(
         self,
-    ): ...
+        year: int | None = None,
+        month: int | None = None,
+        day: int | None = None,
+        hour: int = 0,
+        minute: int = 0,
+        second: int = 0,
+        microsecond: int = 0,
+    ):
+        self.year = int(year or 1990)
+        self.month = int(month or 1)
+        self.day = int(day or 1)
+        self.hour: int = int(hour)
+        self.minute: int = int(minute)
+        self.second: int = int(second)
+        self.microsecond: int = int(microsecond)
+        self.dt = datetime(
+            year=self.year,
+            month=self.month,
+            day=self.day,
+            hour=self.hour,
+            minute=self.minute,
+            second=self.second,
+            microsecond=self.microsecond,
+        )
+
+    @property
+    def value(self):
+        return self.dt
 
 
 def demo_number_formating():
@@ -491,7 +480,8 @@ def demo_number_formating():
     # Step 02: Generate format from string and Parsing with specific format.
     print(Serial.gen_format("This is a number `%n` but extra `%b`"))
     serial_instance = Serial.parse("Number: 20240101", fmt="Number: %n")
-    print(serial_instance)
+    assert 20240101 == serial_instance.value
+    assert isinstance(serial_instance.value, int)
 
     # # Step Final: Parse and format.
     # serial_proxy = serial.parse("Number: 20240101", fmt="Number: %n")
@@ -501,8 +491,12 @@ def demo_number_formating():
 def demo_datetime_formating():
     # print(dt_format.regex)
     print(Datetime.gen_format("This is a datetime %Y%m and special %n"))
+    dt_instance = Datetime.parse("date: 20240101", fmt="date: %Y%m%d")
+    assert datetime(2024, 1, 1) == dt_instance.value
+    assert isinstance(dt_instance.value, datetime)
 
 
 if __name__ == "__main__":
     demo_number_formating()
+    print("-" * 140)
     demo_datetime_formating()
