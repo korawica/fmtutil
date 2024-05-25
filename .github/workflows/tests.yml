@@ -63,7 +63,7 @@ jobs:
           uv venv
           uv pip install -U pip
           uv pip install -e .
-          uv pip install "pytest>=7.4.3,<8.0.0"
+          uv pip install pytest
 
       - name: Use Python virtual environment
         run: |
@@ -79,4 +79,5 @@ jobs:
 
       - name: Test with Pytest
         run: |
+          echo "Start functional testing with pytest"
           pytest -v
