@@ -29,7 +29,7 @@ import re
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import date, datetime
 from functools import lru_cache, partial, total_ordering
 from typing import Any, Callable, ClassVar, Optional, Union
 
@@ -40,7 +40,7 @@ from fmtutil.exceptions import (
     FormatterKeyError,
     FormatterValueError,
 )
-from fmtutil.formatter import ConstantType, SlotLevel, dict2const
+from fmtutil.formatter import ConstantType, dict2const
 from fmtutil.utils import bytes2str, can_int, itself, remove_pad, scache
 
 T = TypeVar("T")
@@ -200,8 +200,7 @@ class Formatter(ABC):
             )
 
     @abstractmethod
-    def __init__(self, *args, level: SlotLevel | None = None, **kwargs):
-        self.slot: SlotLevel = level or SlotLevel(self.level)
+    def __init__(self, *args, **kwargs):
         raise NotImplementedError(
             "Formatter should implement ``self.__init__`` for validate "
             "incoming parsing values"
@@ -411,16 +410,13 @@ class Formatter(ABC):
     ) -> dict[str, Any]:
         """Initialize after parsing value from ``cls.parse``."""
         # NOTE: This function was migrated from __init__ method.
-        restruct_asset_values: dict[str, Format] = {
-            v.alias: v
-            for v in cls.asset.values()
-            if not isinstance(v, CombineFormat)
-        }
-
         rs: dict[str, Any] = {}
-        level = SlotLevel(level=cls.level)
-        for name, value in restruct_asset_values.items():
-            attr = name.split("_", maxsplit=1)[0]
+        for value in cls.asset.values():
+            if isinstance(value, CombineFormat):
+                continue
+
+            name: str = value.alias
+            attr: str = name.split("_", maxsplit=1)[0]
 
             if getter := rs.get(attr):
                 if not set_strict_mode:
@@ -434,7 +430,6 @@ class Formatter(ABC):
                     )
             elif name in parsing:
                 rs[attr] = value.parse(parsing[name])
-                level.update(value.level)
         return rs
 
     @property
@@ -501,29 +496,6 @@ class Formatter(ABC):
         return self.value.__eq__(
             self.__class__.parse(value, fmt).value,
         )
-
-    def _sub_validate(self, level: int, checker: bool, error: str) -> bool:
-        """Return True if validate condition does not raise the Error.
-
-        :param level: A level number that check for slot exists.
-        :type level: int
-        :param checker: A validate result.
-        :type checker: bool
-        :param error: An error statement that raise from FormatterValueError
-        :type error: str
-
-        :raises FormatterValueError: If a slot of ``self.level`` with an input
-            level and checker condition are Ture together.
-
-        :rtype: bool
-        :returns: A boolean value from slot of ``self.level`` with an input
-            level integer.
-        """
-        if (sl := self.slot.slot[(level - 1)]) and checker:
-            raise FormatterValueError(
-                f"Parsing value does not valid with {error}."
-            )
-        return not sl
 
     def to_const(self) -> ConstantType:
         """Convert this formatter instance to Constant object that have class
@@ -705,8 +677,7 @@ class Datetime(Formatter, asset=DATETIME_ASSET, config=DATETIME_CONF, level=10):
         minute: int = 0,
         second: int = 0,
         microsecond: int = 0,
-        level: SlotLevel | None = None,
-    ):
+    ) -> None:
         self.year = int(year or 1990)
         self.month = int(month or 1)
         self.day = int(day or 1)
@@ -714,8 +685,7 @@ class Datetime(Formatter, asset=DATETIME_ASSET, config=DATETIME_CONF, level=10):
         self.minute: int = int(minute)
         self.second: int = int(second)
         self.microsecond: int = int(microsecond)
-        self.slot: SlotLevel = level
-        self.dt: datetime = datetime(
+        self.datetime: datetime = datetime(
             year=self.year,
             month=self.month,
             day=self.day,
@@ -727,14 +697,49 @@ class Datetime(Formatter, asset=DATETIME_ASSET, config=DATETIME_CONF, level=10):
 
     @property
     def str(self) -> str:
-        return str(self.dt)
+        return str(self.datetime)
 
     @property
     def value(self) -> datetime:
-        return self.dt
+        return self.datetime
 
     @staticmethod
-    def prepare_value(value: Any) -> Any: ...
+    def prepare_value(value: str | datetime | date | None) -> datetime:
+        """Prepare value before passing to convert logic in the formatter
+        method that define by property of this formatter object. Return
+        ``datetime.now()`` if an input value does not pass.
+
+        :param value: A value that want to prepare before passing to this
+            datetime formatter.
+        :type value: str | datetime | date | None
+
+        :raises FormatterValueError: If an input value does be
+            ``datetime.datetime`` or ``datetime.date``.
+
+        :rtype: datetime
+        :returns: A prepared datetime value.
+        """
+
+        if value is None:
+            return datetime.now()
+        if not isinstance(
+            value,
+            (
+                str,
+                datetime,
+                date,
+            ),
+        ):
+            raise FormatterValueError(
+                f"Datetime formatter does not support for value, {value!r}."
+            )
+        elif isinstance(value, str):
+            return datetime.fromisoformat(value)
+        return (
+            value
+            if isinstance(value, datetime)
+            else datetime(value.year, value.month, value.day)
+        )
 
 
 __all__ = (
@@ -742,6 +747,8 @@ __all__ = (
     "Serial",
     "SERIAL_ASSET",
     "SERIAL_CONF",
+    "DATETIME_ASSET",
+    "DATETIME_CONF",
     "Datetime",
 )
 
