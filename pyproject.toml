@@ -64,10 +64,9 @@ path = "fmtutil/__about__.py"
 [tool.hatch.build.targets.sdist]
 exclude = [
     "/.github",
+    "/.pre-commit-config.yaml",
     "/docs",
     "/tests",
-    "/.pre-commit-config.yaml",
-    "/fmtutil/__assets.py",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -119,7 +118,6 @@ warn_unreachable = true
 warn_unused_ignores = false
 exclude = [
     '__version\.py$',
-    '__assets\.py$',
 ]
 
 [tool.black]
