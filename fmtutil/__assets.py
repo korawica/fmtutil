@@ -30,7 +30,7 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
-from functools import lru_cache, partial
+from functools import lru_cache, partial, total_ordering
 from typing import Any, Callable, ClassVar, Optional, Union
 
 from typing_extensions import Self, TypeAlias
@@ -152,6 +152,7 @@ SERIAL_ASSET: dict[str, Format] = {
 SERIAL_CONF = ConfigFormat(default_fmt="%n")
 
 
+@total_ordering
 class Formatter(ABC):
     """The Asset Formatter object that will be the abstract parent class for any
     formatter sub-class object with the asset construction.
@@ -218,6 +219,14 @@ class Formatter(ABC):
             f"'{self.config.default_fmt}')>"
         )
 
+    def __eq__(self, other: Formatter) -> bool:
+        if isinstance(other, self.__class__):
+            return self.value == other.value
+
+    def __lt__(self, other: Formatter) -> bool:
+        if isinstance(other, self.__class__):
+            return self.value.__lt__(other.value)
+
     @property
     @abstractmethod
     def str(self) -> str:  # pragma: no cover
@@ -232,7 +241,17 @@ class Formatter(ABC):
 
     @classmethod
     def from_value(cls, value: Any):
-        raise NotImplementedError
+        """Passer the value to this formatter that will pass this value to
+        ``cls.formatter`` method and map with the base format string value
+        before parse by ``cls.parse``."""
+
+        fmt_filter = [
+            (k, fmt.fmt(cls.prepare_value(value))())
+            for k, fmt in cls.asset.items()
+            if k in re.findall("(%[-+!*]?[A-Za-z])", cls.config.default_fmt)
+        ]
+        fmts, values = zip(*fmt_filter)
+        return cls.parse(value="_".join(values), fmt="_".join(fmts))
 
     @classmethod
     def parse(
@@ -258,7 +277,7 @@ class Formatter(ABC):
         _fmt = cls.gen_format(_fmt)
         if _search := re.search(rf"^{_fmt}$", _value):
             return cls(
-                **cls.__init_parsing(
+                **cls.__init_parsing__(
                     cls.__validate_format(_search.groupdict()),
                     set_strict_mode=strict,
                 )
@@ -382,7 +401,7 @@ class Formatter(ABC):
         return results
 
     @classmethod
-    def __init_parsing(
+    def __init_parsing__(
         cls,
         parsing: DictStr,
         set_strict_mode: bool = False,
@@ -438,7 +457,7 @@ class Formatter(ABC):
                 }
         """
         return {
-            f: fmt.fmt(value or self.value) for f, fmt in self.asset.items()
+            f: fmt.fmt(value or self.value)() for f, fmt in self.asset.items()
         }
 
     def format(self, fmt: str) -> str:
@@ -518,6 +537,48 @@ class Formatter(ABC):
             base_fmt=self.config.default_fmt,
         )
 
+    @staticmethod
+    @abstractmethod
+    def prepare_value(value: Any) -> Any:
+        """Prepare value before passing to convert logic in the formatter
+        method that define by property of this formatter object.
+
+        :param value: A value that want to prepare before passing to formatter.
+        :type value: Any
+
+        :rtype: Any
+        :returns: A prepared value with defined logic.
+        """
+        raise NotImplementedError(
+            "Please implement ``prepare_value`` static method for this "
+            "sub-formatter class."
+        )
+
+    def __add__(self, other: Any) -> Formatter:
+        if not isinstance(other, Formatter):
+            try:
+                return self.__class__.from_value(value=self.value + other)
+            except FormatterValueError:
+                return NotImplemented
+        return self.__class__.from_value(value=self.value + other.value)
+
+    def __radd__(self, other: Any) -> Formatter:
+        return self.__add__(other)
+
+    def __sub__(self, other: Any) -> Formatter:
+        try:
+            if not isinstance(other, Formatter):
+                return self.__class__.from_value(value=(self.value - other))
+            return self.__class__.from_value(value=(self.value - other.value))
+        except FormatterValueError:
+            return NotImplemented
+
+    def __rsub__(self, other: Any) -> Any:
+        try:
+            return other - self.value
+        except (TypeError, FormatterValueError):
+            return NotImplemented
+
     def __format__(self, fmt_spec: str) -> str:
         """Format a formatter object with any formatter setting value."""
         return self.format(fmt_spec)
@@ -526,14 +587,8 @@ class Formatter(ABC):
 class Serial(Formatter, asset=SERIAL_ASSET, config=SERIAL_CONF):
     """Serial Formatter object that build from SERIAL_ASSET value."""
 
-    def __init__(self, number: int | str | float | None) -> None:
-        if number is None:
-            self.number: int = 0
-        if not can_int(number) or ((prepare := int(float(number))) < 0):
-            raise FormatterValueError(
-                f"Serial formatter does not support for, {number!r}."
-            )
-        self.number: int = prepare
+    def __init__(self, number: int | str | float | None = None) -> None:
+        self.number: int = self.prepare_value(number)
 
     @property
     def str(self) -> str:
@@ -542,6 +597,30 @@ class Serial(Formatter, asset=SERIAL_ASSET, config=SERIAL_CONF):
     @property
     def value(self) -> int:
         return self.number
+
+    @staticmethod
+    def prepare_value(value: int | str | float | None) -> int:
+        """Prepare value before passing to convert logic in the formatter
+        method that define by property of this formatter object. Return 0 if an
+        input value does not pass.
+
+        :param value: A value that want to prepare before passing to this
+            serial formatter.
+        :type value: int | str | float | None
+
+        :raises FormatterValueError: If an input value does not able cast to
+            integer, or it's value less than 0.
+
+        :rtype: int
+        :returns: A prepared positive integer value.
+        """
+        if value is None:
+            return 0
+        if not can_int(value) or ((prepare := int(float(value))) < 0):
+            raise FormatterValueError(
+                f"Serial formatter does not support for, {value!r}."
+            )
+        return prepare
 
 
 DATETIME_ASSET: dict[str, Format] = {
@@ -652,6 +731,9 @@ class Datetime(Formatter, asset=DATETIME_ASSET, config=DATETIME_CONF, level=10):
     def value(self) -> datetime:
         return self.dt
 
+    @staticmethod
+    def prepare_value(value: Any) -> Any: ...
+
 
 __all__ = (
     "Formatter",
@@ -670,6 +752,8 @@ def demo_number_formating():
 
     print(serial_instance.format("%b"))
     assert "1001101001101011011100101" == serial_instance.format("%b")
+
+    print(serial_instance.values())
 
 
 def demo_datetime_formating():

@@ -1,0 +1,169 @@
+# ------------------------------------------------------------------------------
+# Copyright (c) 2022 Korawich Anuttra. All rights reserved.
+# Licensed under the MIT License. See LICENSE in the project root for
+# license information.
+# ------------------------------------------------------------------------------
+"""
+Test the Asset Serial formatter object.
+"""
+import unittest
+
+import fmtutil.__assets as fmt
+from fmtutil.exceptions import FormatterKeyError
+
+
+class SerialAssetsTestCase(unittest.TestCase):
+    def setUp(self) -> None:
+        # NOTE: Change init step from ``fmt.Serial({"number": "781"})``
+        self.sr = fmt.Serial(number=781)
+        self.sr_default: fmt.Formatter = fmt.Serial()
+        self.sr_p: fmt.Formatter = fmt.Serial.parse("009", "%p")
+        self.sr_p2: fmt.Formatter = fmt.Serial.parse("00001101", "%b")
+
+    def test_serial_from_value(self):
+        self.assertEqual(52, fmt.Serial.from_value("52").value)
+        self.assertEqual(1, fmt.Serial.from_value("1.00").value)
+        self.assertEqual(43, fmt.Serial.from_value(43.00).value)
+
+    def test_serial_regex(self):
+        self.assertDictEqual(
+            {
+                "%n": "(?P<number>[0-9]*)",
+                "%p": "(?P<number_pad>[0-9]{3})",
+                "%b": "(?P<number_binary>[0-1]{8})",
+                "%c": "(?P<number_comma>\\d{1,3}(?:,\\d{3})*)",
+                "%u": "(?P<number_underscore>\\d{1,3}(?:_\\d{3})*)",
+            },
+            fmt.Serial.regex(),
+        )
+
+    def test_serial_formatter_raise(self):
+        with self.assertRaises(fmt.FormatterValueError) as context:
+            fmt.Serial.from_value(1.23)
+        self.assertIn(
+            "Serial formatter does not support for, 1.23.",
+            str(context.exception),
+        )
+
+        with self.assertRaises(fmt.FormatterValueError) as context:
+            fmt.Serial.from_value("a")
+        self.assertIn(
+            "Serial formatter does not support for, 'a'.",
+            str(context.exception),
+        )
+
+    def test_serial_properties(self):
+        self.assertEqual("<Serial.parse('781', '%n')>", self.sr.__repr__())
+        self.assertEqual(hash(self.sr.str), self.sr.__hash__())
+
+        self.assertEqual(9, self.sr_p.value)
+        self.assertEqual("9", self.sr_p.str)
+
+        self.assertEqual(13, self.sr_p2.value)
+        self.assertEqual("13", self.sr_p2.str)
+
+        self.assertEqual(0, self.sr_default.value)
+        self.assertEqual("0", self.sr_default.str)
+
+    def test_serial_gen_format(self):
+        self.assertEqual(
+            "This is normal number (?P<number>[0-9]*) and except %n",
+            fmt.Serial.gen_format("This is normal number %n and except %%n"),
+        )
+
+    def test_serial_format(self):
+        self.assertEqual("00001001", self.sr_p.format("%b"))
+        self.assertEqual("009", self.sr_p.format("%p"))
+
+        self.assertEqual("00001101", self.sr_p2.format("%b"))
+        self.assertEqual("013", self.sr_p2.format("%p"))
+
+        self.assertEqual("00000000", self.sr_default.format("%b"))
+        self.assertEqual("000", self.sr_default.format("%p"))
+
+        with self.assertRaises(FormatterKeyError) as context:
+            self.sr_default.format("%Z")
+        self.assertIn(
+            "the format: '%Z' does not support for 'Serial'",
+            str(context.exception),
+        )
+
+    def test_serial_order(self):
+        self.assertLessEqual(self.sr_p, self.sr_p2)
+        self.assertLess(self.sr_p, self.sr_p2)
+        self.assertNotEqual(self.sr_p, self.sr_p2)
+        self.assertFalse(self.sr_p >= self.sr_p2)
+        self.assertFalse(self.sr_p > self.sr_p2)
+
+    def test_serial_operation(self):
+        self.assertEqual(fmt.Serial(number="790"), self.sr + self.sr_p)
+        self.assertEqual(fmt.Serial(number="786"), self.sr + 5)
+        self.assertEqual(fmt.Serial(number="786"), 5 + self.sr)
+
+        self.assertEqual(fmt.Serial(number="761"), self.sr - 20)
+        self.assertEqual(fmt.Serial(number="772"), self.sr - self.sr_p)
+        self.assertEqual(1219, 2000 - self.sr)
+        self.assertEqual(1219.2, (2000.20 - self.sr))
+
+        with self.assertRaises(TypeError) as context:
+            (self.sr + 5.1)
+        self.assertEqual(
+            "unsupported operand type(s) for +: 'Serial' and 'float'",
+            str(context.exception),
+        )
+
+        with self.assertRaises(TypeError) as context:
+            (self.sr + "1.0")
+        self.assertEqual(
+            "unsupported operand type(s) for +: 'int' and 'str'",
+            str(context.exception),
+        )
+
+        with self.assertRaises(TypeError) as context:
+            (self.sr + "a")
+        self.assertEqual(
+            "unsupported operand type(s) for +: 'int' and 'str'",
+            str(context.exception),
+        )
+
+        with self.assertRaises(TypeError) as context:
+            (5.1 + self.sr)
+        self.assertEqual(
+            "unsupported operand type(s) for +: 'float' and 'Serial'",
+            str(context.exception),
+        )
+
+        with self.assertRaises(TypeError) as context:
+            ("1.0" + self.sr)
+        self.assertEqual(
+            "unsupported operand type(s) for +: 'int' and 'str'",
+            str(context.exception),
+        )
+
+        with self.assertRaises(TypeError) as context:
+            ("a" + self.sr)
+        self.assertEqual(
+            "unsupported operand type(s) for +: 'int' and 'str'",
+            str(context.exception),
+        )
+
+        with self.assertRaises(TypeError) as context:
+            (self.sr - 800)
+        self.assertEqual(
+            "unsupported operand type(s) for -: 'Serial' and 'int'",
+            str(context.exception),
+        )
+
+        with self.assertRaises(TypeError) as context:
+            (self.sr - 20.5)
+        self.assertEqual(
+            "unsupported operand type(s) for -: 'Serial' and 'float'",
+            str(context.exception),
+        )
+
+        with self.assertRaises(TypeError) as context:
+            ("234" - self.sr)
+        self.assertEqual(
+            "unsupported operand type(s) for -: 'str' and 'Serial'",
+            str(context.exception),
+        )
