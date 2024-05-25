@@ -27,13 +27,13 @@ from __future__ import annotations
 
 import inspect
 import re
+from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import datetime
 from functools import partial
 from typing import Any, Callable, ClassVar, Optional, Protocol, Union
 
-from typing_extensions import TypeAlias
+from typing_extensions import Self, TypeAlias
 
 from fmtutil.exceptions import FormatterArgumentError, FormatterValueError
 from fmtutil.formatter import SlotLevel
@@ -181,7 +181,7 @@ SERIAL_CONF = ConfigFormat(
 )
 
 
-class Formatter:
+class Formatter(ABC):
     """The New Formatter object that will be the abstract parent class for any
     formatter sub-class object.
     """
@@ -213,12 +213,15 @@ class Formatter:
                 "of a new formatter object"
             )
 
+    @abstractmethod
+    def __init__(self, *args, **kwargs): ...
+
     @classmethod
     def parse(
         cls,
         value: String,
         fmt: Optional[str] = None,
-    ) -> DictStr:
+    ) -> Self:
         _fmt: str = fmt or cls.config.default_fmt
         _value: str = bytes2str(value)
 
@@ -230,7 +233,11 @@ class Formatter:
 
         _fmt = cls.gen_format(_fmt)
         if _search := re.search(rf"^{_fmt}$", _value):
-            return cls.__validate_format(_search.groupdict())
+            return cls(
+                **cls.__before_parsing(
+                    cls.__validate_format(_search.groupdict())
+                )
+            )
 
         raise FormatterValueError(
             f"value {_value!r} does not match with format {_fmt!r}"
@@ -339,27 +346,12 @@ class Formatter:
                 )
         return results
 
-
-class Serial(Formatter, asset=SERIAL_ASSET, config=SERIAL_CONF):
-
-    def __init__(
-        self,
-        number: int | str | float | None,
-    ) -> None:
-        if number is None:
-            self.number: int = 0
-        if not can_int(number) or ((prepare := int(float(number))) < 0):
-            raise FormatterValueError(
-                f"Serial formatter does not support for, {number!r}."
-            )
-        self.number: int = prepare
-
     @classmethod
-    def prepare_parsing(
+    def __before_parsing(
         cls,
         parsing: dict[str, str],
         set_strict_mode: bool = False,
-    ):
+    ) -> dict[str, Any]:
         # NOTE: This function was migrated from __init__ method.
         restruct_asset_values: dict[str, Format] = {
             v.alias: v for v in cls.asset.values()
@@ -384,7 +376,22 @@ class Serial(Formatter, asset=SERIAL_ASSET, config=SERIAL_CONF):
 
             if name not in args:
                 print(name)
-        return cls(**dict(rs))
+        return dict(rs)
+
+
+class Serial(Formatter, asset=SERIAL_ASSET, config=SERIAL_CONF):
+
+    def __init__(
+        self,
+        number: int | str | float | None,
+    ) -> None:
+        if number is None:
+            self.number: int = 0
+        if not can_int(number) or ((prepare := int(float(number))) < 0):
+            raise FormatterValueError(
+                f"Serial formatter does not support for, {number!r}."
+            )
+        self.number: int = prepare
 
 
 DATETIME_ASSET: dict[str, Format] = {
@@ -468,8 +475,14 @@ DATETIME_CONF = ConfigFormat(
 
 
 class Datetime(
-    datetime, Formatter, asset=DATETIME_ASSET, config=DATETIME_CONF
-): ...
+    Formatter,
+    asset=DATETIME_ASSET,
+    config=DATETIME_CONF,
+    level=10,
+):
+    def __init__(
+        self,
+    ): ...
 
 
 def demo_number_formating():
@@ -477,9 +490,7 @@ def demo_number_formating():
 
     # Step 02: Generate format from string and Parsing with specific format.
     print(Serial.gen_format("This is a number `%n` but extra `%b`"))
-    serial_proxy = Serial.parse("Number: 20240101", fmt="Number: %n")
-    print(serial_proxy)
-    serial_instance = Serial.prepare_parsing(serial_proxy)
+    serial_instance = Serial.parse("Number: 20240101", fmt="Number: %n")
     print(serial_instance)
 
     # # Step Final: Parse and format.
