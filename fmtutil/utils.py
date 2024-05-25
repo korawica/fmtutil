@@ -174,22 +174,35 @@ def float2decimal(value: float, precision: int = 15) -> Decimal:
 
 
 def scache(cache_num: int) -> str:
-    """Return cache suffix string"""
+    """Return cache suffix string
+
+    Examples:
+        >>> scache(1)
+        '__1'
+        >>> scache(-1)
+        ''
+        >>> scache(0)
+        '__0'
+    """
+    if not isinstance(cache_num, int):
+        raise TypeError(f"Can not cache with type: {type(cache_num)}")
     return f"__{cache_num}" if cache_num > 0 else ""
 
 
 def escape_fmt_group(value: str) -> str:
-    """Escape value of format group before format
+    """Escape regex string value of format group before format
 
     Examples:
-        >>> escape_fmt_group(
-        ...     "+file_{datetime:%Y-%m-%d %H:%M:%S}_{naming:%n_%e}.json"
-        ... ).replace('\\\\', '?')  # Replace because doc-string issue!
-        '?+file_{datetime:%Y-%m-%d %H:%M:%S}_{naming:%n_%e}?.json'
+
+        NOTE: Replace \\ to ? because doc-string issue!
 
         >>> escape_fmt_group(
+        ...     "+file_{datetime:%Y-%m-%d %H:%M:%S}_{naming:%n_%e}.json"
+        ... ).replace('\\\\', '?')
+        '?+file_{datetime:%Y-%m-%d %H:%M:%S}_{naming:%n_%e}?.json'
+        >>> escape_fmt_group(
         ...     "+file_{datetime:%Y-%m-%d %H:%M:%S}_{naming:%n_%e}\\.json"
-        ... ).replace('\\\\', '?')  # Replace because doc-string issue!
+        ... ).replace('\\\\', '?')
         '?+file_{datetime:%Y-%m-%d %H:%M:%S}_{naming:%n_%e}???.json'
     """
     rs: str = value
@@ -204,3 +217,12 @@ def escape_fmt_group(value: str) -> str:
     for rv in revert:
         rs = rs.replace(rv, revert[rv])
     return rs
+
+
+def unescape(value: str) -> str:
+    """Unescape regex string value."""
+    return (
+        value.replace("\\\\", "<ESCAPE>")
+        .replace("\\", "")
+        .replace("<ESCAPE>", "\\")
+    )

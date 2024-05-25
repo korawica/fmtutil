@@ -37,3 +37,17 @@ class UtilsFormatEscapeTestCase(unittest.TestCase):
             "Test escape: $date.data.json",
         )
         self.assertEqual("Test escape: replace", rs)
+
+    def test_fmt_escape_utils_revert(self):
+        origin: str = (
+            r"$^(?<data>\d{3})+\w\W[A-Z]\{datetime:%Y-%m%d %H.%f}.json"
+        )
+        rs: str = utils.escape_fmt_group(origin)
+        self.assertEqual(
+            (
+                r"\$\^\(\?<data>\\d{3}\)\+\\w\\W\[A\-Z\]\\"
+                r"{datetime:%Y-%m%d %H.%f}\.json"
+            ),
+            rs,
+        )
+        self.assertEqual(origin, utils.unescape(rs))
