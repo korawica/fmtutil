@@ -16,7 +16,7 @@
   * [Storage](#storage)
   * [Constant](#constant)
 * [FormatterGroup Object](#formattergroup-object)
-* [Usecase](#usecase)
+* [Example](#example)
 
 This **Formatter** package was created for `parse` and `format` any string values
 that match a format pattern string with Python regular expression.
@@ -39,7 +39,6 @@ pip install -U fmtutil
 |-----------------|-------------------------------------|
 | `== 3.8`        | `pip install "fmtutil>=0.4,<0.5.0"` |
 | `>=3.9,<3.13`   | `pip install -U fmtutil`            |
-
 
 For example, we want to get filename with the format like, `filename_20220101.csv`,
 on the file system storage, and we want to incremental ingest the latest file with
@@ -109,8 +108,6 @@ datetime.format('New_datetime_%Y%b-%-d_%H:%M:%S')
 >>> 'New_datetime_2022Jan-1_00:01:01'
 ```
 
-[Supported Datetime formats](/docs/API.md#datetime)
-
 ### Version
 
 ```python
@@ -123,8 +120,6 @@ version.format('New_version_%m%n%c')
 ```text
 >>> 'New_version_201'
 ```
-
-[Supported Version formats](/docs/API.md#version)
 
 ### Serial
 
@@ -139,8 +134,6 @@ serial.format('Convert to binary: %b')
 >>> 'Convert to binary: 1111001010110010'
 ```
 
-[Supported Serial formats](/docs/API.md#serial)
-
 ### Naming
 
 ```python
@@ -154,8 +147,6 @@ naming.format('Camel case is %c')
 >>> 'Camel case is dataEngineer'
 ```
 
-[Supported Naming formats](/docs/API.md#naming)
-
 ### Storage
 
 ```python
@@ -168,8 +159,6 @@ storage.format('The byte size is: %b')
 ```text
 >>> 'The byte size is: 2097152000'
 ```
-
-[Supported Storage formats](/docs/API.md#storage)
 
 ### Constant
 
@@ -195,7 +184,7 @@ parsing value to constant by `.to_const()`.
 > [!NOTE]
 > This package already implement the environment constant object,
 > `fmtutil.EnvConst`. \
-> [Read more about this formats](/docs/API.md#environment-constant)
+> [Read more about the Formatter objects API](/docs/API.md#formatter-objects)
 
 ## FormatterGroup Object
 
@@ -209,8 +198,8 @@ can define a name of formatter that you want, such as `name` for `Naming`, or
 ```python
 from fmtutil import make_group, Naming, Datetime, FormatterGroupType
 
-group: FormatterGroupType = make_group({'name': Naming, 'datetime': Datetime})
-group.parse('data_engineer_in_20220101_de', fmt='{name:%s}_in_{timestamp:%Y%m%d}_{name:%a}')
+group_obj: FormatterGroupType = make_group({'name': Naming, 'datetime': Datetime})
+group_obj.parse('data_engineer_in_20220101_de', fmt='{name:%s}_in_{timestamp:%Y%m%d}_{name:%a}')
 ```
 
 ```text
@@ -226,7 +215,7 @@ group.parse('data_engineer_in_20220101_de', fmt='{name:%s}_in_{timestamp:%Y%m%d}
 from fmtutil import FormatterGroup
 from datetime import datetime
 
-group_01: FormatterGroup = group({'name': 'data engineer', 'datetime': datetime(2022, 1, 1)})
+group_01: FormatterGroup = group_obj({'name': 'data engineer', 'datetime': datetime(2022, 1, 1)})
 group_01.format('{name:%c}_{timestamp:%Y_%m_%d}')
 ```
 
@@ -234,15 +223,13 @@ group_01.format('{name:%c}_{timestamp:%Y_%m_%d}')
 >>> dataEngineer_2022_01_01
 ```
 
-## Usecase
+## Example
 
 If you have multi-format filenames on the data source directory, and you want to
 dynamic getting max datetime on these filenames to your app, you can use a
 formatter group.
 
 ```python
-from typing import List
-
 from fmtutil import (
   make_group, Naming, Datetime, FormatterGroup, FormatterGroupType, FormatterArgumentError,
 )
@@ -254,7 +241,7 @@ fmt_group: FormatterGroupType = make_group({
     "timestamp": Datetime,
 })
 
-rs: List[FormatterGroup] = []
+rs: list[FormatterGroup] = []
 for file in (
     'googleMap_20230101.json',
     'googleMap_20230103.json',
@@ -277,9 +264,10 @@ repr(max(rs).groups['timestamp'])
 ```
 
 > [!TIP]
-> The above example will convert the `name`, Naming instance, to Constant
-> instance before passing to the formatter group because it does not want
-> to dynamic this naming format when find any filenames in target path.
+> The above **Example** will convert the `name`, **Naming** instance, to **Constant**
+> instance before passing to the **Formatter Group** because it does not want
+> to dynamic parsing this format when find any matching filenames at destination
+> path.
 
 ## License
 

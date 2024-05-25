@@ -10,6 +10,7 @@
   - [Naming](#naming)
   - [Storage](#storage)
   - [EnvConst](#environment-constant)
+- [Formatter Group Object](#formatter-group-object)
 
 ## SlotLevel Object
 
@@ -279,3 +280,5 @@ implement from subclass.
 %c  : poc
 %C  : POC
 ```
+
+## Formatter Group Object
