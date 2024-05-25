@@ -4080,6 +4080,7 @@ __all__ = (
     "Datetime",
     "Version",
     "Naming",
+    "SlotLevel",
     "Storage",
     "ConstantType",
     "Constant",

@@ -9,8 +9,13 @@ Note:
     any formatter object. I will use it instead create sub-class form Formatter
     class for simple and scalable usage.
 
+        It will use the Pydantic BaseModel class instead the origin object for
+    fast validate the asset value and able to create a new formatter object with
+    changing the asset field.
+
         I will start define the concept but it does not fit will my creation
     flow. It will be finish on the major version 2.0
+
 Migration Note:
 
 *   I will improve the scalable of the Formatter object that able to transform
@@ -20,15 +25,18 @@ Migration Note:
 """
 from __future__ import annotations
 
+import inspect
 import re
 from collections import defaultdict
 from dataclasses import dataclass, field
+from datetime import datetime
 from functools import partial
-from typing import Any, Callable, Optional, Protocol, Union
+from typing import Any, Callable, ClassVar, Optional, Protocol, Union
 
 from typing_extensions import TypeAlias
 
 from fmtutil.exceptions import FormatterArgumentError, FormatterValueError
+from fmtutil.formatter import SlotLevel
 from fmtutil.utils import bytes2str, can_int, itself, remove_pad, scache
 
 DictStr: TypeAlias = dict[str, str]
@@ -173,104 +181,37 @@ SERIAL_CONF = ConfigFormat(
 )
 
 
-DATETIME_ASSET: dict[str, Format] = {
-    "%n": parsing_format(
-        {
-            "alias": "normal",
-            "cregex": "%Y%m%d_%H%M%S",
-            "fmt": lambda x: partial(x.strftime("%Y%m%d_%H%M%S")),
-        }
-    ),
-    "%Y": parsing_format(
-        {
-            "alias": "year",
-            "regex": r"\d{4}",
-            "fmt": lambda x: partial(x.strftime, "%Y"),
-            "parse": lambda x: x,
-            "level": 10,
-        }
-    ),
-    "%m": parsing_format(
-        {
-            "alias": "month_pad",
-            "regex": "01|02|03|04|05|06|07|08|09|10|11|12",
-            "fmt": lambda x: partial(x.strftime, "%m"),
-            "parse": lambda x: x,
-            "level": 9,
-        }
-    ),
-    "%d": parsing_format(
-        {
-            "alias": "day_pad",
-            "regex": "[0-3][0-9]",
-            "fmt": lambda x: partial(x.strftime, "%d"),
-            "parse": lambda x: x,
-            "level": 8,
-        }
-    ),
-    "%H": parsing_format(
-        {
-            "alias": "hour_pad",
-            "regex": "[0-2][0-9]",
-            "fmt": lambda x: partial(x.strftime, "%H"),
-            "parse": lambda x: x,
-            "level": 0,
-        }
-    ),
-    "%M": parsing_format(
-        {
-            "alias": "minute_pad",
-            "regex": "[0-6][0-9]",
-            "fmt": lambda x: partial(x.strftime, "%M"),
-            "parse": lambda x: x,
-            "level": 0,
-        }
-    ),
-    "%S": parsing_format(
-        {
-            "alias": "second_pad",
-            "regex": "[0-6][0-9]",
-            "fmt": lambda x: partial(x.strftime, "%S"),
-            "parse": lambda x: x,
-            "level": 0,
-        }
-    ),
-    "_": parsing_format(
-        {
-            "alias": "",
-            "regex": "",
-            "fmt": lambda x: x,
-            "parse": lambda x: x,
-            "level": 0,
-        }
-    ),
-}
-
-
-DATETIME_CONF = ConfigFormat(
-    default_fmt="%Y-%m-%d %H:%M:%S",
-    proxy=BaseProxy,
-)
-
-
 class Formatter:
-    asset: dict[str, Format]
-    config: ConfigFormat
+    """The New Formatter object that will be the abstract parent class for any
+    formatter sub-class object.
+    """
+
+    asset: ClassVar[dict[str, Format]]
+    config: ClassVar[ConfigFormat]
+    level: ClassVar[int]
 
     def __init_subclass__(
         cls,
         /,
+        level: int = 1,
         asset: dict[str, Format] | None = None,
         config: ConfigFormat | None = None,
         **kwargs,
     ) -> None:
-        cls.asset = asset or cls.asset
-        cls.config = config or cls.config
+        cls.level: int = level
+        cls.asset: dict[str, Format] = asset or cls.asset
+        cls.config: ConfigFormat = config or cls.config
 
         if cls.asset is None:
-            raise NotImplementedError
+            raise NotImplementedError(
+                "Should define the `asset` class variable for create a new "
+                "formatter object"
+            )
         if cls.config is None:
-            raise NotImplementedError
+            raise NotImplementedError(
+                "Should define the `config` class variable for default values "
+                "of a new formatter object"
+            )
 
     @classmethod
     def parse(
@@ -383,9 +324,7 @@ class Formatter:
         return results
 
     @staticmethod
-    def __validate_format(
-        formats: DictStr | None = None,
-    ) -> DictStr:
+    def __validate_format(formats: DictStr | None = None) -> DictStr:
         results: DictStr = {}
         _formats: DictStr = formats or {}
         for fmt in _formats:
@@ -411,12 +350,126 @@ class Serial(Formatter, asset=SERIAL_ASSET, config=SERIAL_CONF):
             self.number: int = 0
         if not can_int(number) or ((prepare := int(float(number))) < 0):
             raise FormatterValueError(
-                f"Serial formatter does not support for value, {number!r}."
+                f"Serial formatter does not support for, {number!r}."
             )
         self.number: int = prepare
 
+    @classmethod
+    def prepare_parsing(
+        cls,
+        parsing: dict[str, str],
+        set_strict_mode: bool = False,
+    ):
+        # NOTE: This function was migrated from __init__ method.
+        restruct_asset_values: dict[str, Format] = {
+            v.alias: v for v in cls.asset.values()
+        }
 
-class Datetime(Formatter, asset=DATETIME_ASSET, config=DATETIME_CONF): ...
+        rs: dict[str, Any] = defaultdict(lambda: None)
+        level = SlotLevel(level=cls.level)
+        args: list[str] = [
+            k for k in inspect.signature(cls.__init__).parameters if k != "self"
+        ]
+        for name, value in restruct_asset_values.items():
+            attr = name.split("_", maxsplit=1)[0]
+
+            if getter := rs[attr]:
+                if not set_strict_mode:
+                    continue
+                elif getter != value.parse(parsing[name]):
+                    raise ValueError
+            elif name in parsing:
+                rs[attr] = value.parse(parsing[name])
+                level.update(value.level)
+
+            if name not in args:
+                print(name)
+        return cls(**dict(rs))
+
+
+DATETIME_ASSET: dict[str, Format] = {
+    "%n": parsing_format(
+        {
+            "alias": "normal",
+            "cregex": "%Y%m%d_%H%M%S",
+            "fmt": lambda x: partial(x.strftime("%Y%m%d_%H%M%S")),
+        }
+    ),
+    "%Y": parsing_format(
+        {
+            "alias": "year",
+            "regex": r"\d{4}",
+            "fmt": lambda x: partial(x.strftime, "%Y"),
+            "parse": lambda x: x,
+            "level": 10,
+        }
+    ),
+    "%m": parsing_format(
+        {
+            "alias": "month_pad",
+            "regex": "01|02|03|04|05|06|07|08|09|10|11|12",
+            "fmt": lambda x: partial(x.strftime, "%m"),
+            "parse": lambda x: x,
+            "level": 9,
+        }
+    ),
+    "%d": parsing_format(
+        {
+            "alias": "day_pad",
+            "regex": "[0-3][0-9]",
+            "fmt": lambda x: partial(x.strftime, "%d"),
+            "parse": lambda x: x,
+            "level": 8,
+        }
+    ),
+    "%H": parsing_format(
+        {
+            "alias": "hour_pad",
+            "regex": "[0-2][0-9]",
+            "fmt": lambda x: partial(x.strftime, "%H"),
+            "parse": lambda x: x,
+            "level": 0,
+        }
+    ),
+    "%M": parsing_format(
+        {
+            "alias": "minute_pad",
+            "regex": "[0-6][0-9]",
+            "fmt": lambda x: partial(x.strftime, "%M"),
+            "parse": lambda x: x,
+            "level": 0,
+        }
+    ),
+    "%S": parsing_format(
+        {
+            "alias": "second_pad",
+            "regex": "[0-6][0-9]",
+            "fmt": lambda x: partial(x.strftime, "%S"),
+            "parse": lambda x: x,
+            "level": 0,
+        }
+    ),
+    "_": parsing_format(
+        {
+            "alias": "",
+            "regex": "",
+            "fmt": lambda x: x,
+            "parse": lambda x: x,
+            "level": 0,
+        }
+    ),
+}
+
+
+DATETIME_CONF = ConfigFormat(
+    default_fmt="%Y-%m-%d %H:%M:%S",
+    proxy=BaseProxy,
+)
+
+
+class Datetime(
+    datetime, Formatter, asset=DATETIME_ASSET, config=DATETIME_CONF
+): ...
 
 
 def demo_number_formating():
@@ -426,6 +479,8 @@ def demo_number_formating():
     print(Serial.gen_format("This is a number `%n` but extra `%b`"))
     serial_proxy = Serial.parse("Number: 20240101", fmt="Number: %n")
     print(serial_proxy)
+    serial_instance = Serial.prepare_parsing(serial_proxy)
+    print(serial_instance)
 
     # # Step Final: Parse and format.
     # serial_proxy = serial.parse("Number: 20240101", fmt="Number: %n")
