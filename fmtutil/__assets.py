@@ -52,8 +52,11 @@ TupleStr: TypeAlias = tuple[str, ...]
 
 @dataclass
 class BaseFormat:
+    """Base Format Dataclass for the Asset mapping value with any format string
+    matching."""
+
     alias: str
-    fmt: Callable[[str], partial[[], str]]
+    fmt: Callable[[str], Callable[[], str]]
 
 
 @dataclass
@@ -78,7 +81,7 @@ class ConfigFormat:
     validator: Callable[[Any], Any] = field(default_factory=itself)
 
 
-def parsing_format(value: dict[str, Any]) -> Format:
+def asset_format(value: dict[str, Any]) -> Format:
     """Parsing any mapping value to Format dataclass."""
     if "regex" in value.keys() and "cregex" in value.keys():
         raise ValueError("Format does not support for getting all regex keys.")
@@ -87,70 +90,6 @@ def parsing_format(value: dict[str, Any]) -> Format:
     elif "cregex" in value.keys():
         return CombineFormat(**value)
     raise ValueError("Format does not have any regex key, `regex` or `cregex`.")
-
-
-SERIAL_MAX_PADDING: int = 3
-SERIAL_MAX_BINARY: int = 8
-
-
-def to_padding(value: str) -> str:
-    return value.rjust(SERIAL_MAX_PADDING, "0") if value else ""
-
-
-def to_binary(value: str) -> str:
-    return f"{int(value):0{str(SERIAL_MAX_BINARY)}b}" if value else ""
-
-
-SERIAL_ASSET: dict[str, Format] = {
-    "%n": parsing_format(
-        {
-            "alias": "number",
-            "regex": r"[0-9]*",
-            "fmt": lambda x: partial(itself, str(x)),
-            "parse": lambda x: x,
-            "level": 1,
-        }
-    ),
-    "%p": parsing_format(
-        {
-            "alias": "number_pad",
-            "regex": rf"[0-9]{{{SERIAL_MAX_PADDING}}}",
-            "fmt": lambda x: partial(to_padding, str(x)),
-            "parse": lambda x: remove_pad(x),
-            "level": 1,
-        }
-    ),
-    "%b": parsing_format(
-        {
-            "alias": "number_binary",
-            "regex": rf"[0-1]{{{SERIAL_MAX_BINARY}}}",
-            "fmt": lambda x: partial(to_binary, str(x)),
-            "parse": lambda x: str(int(x, 2)),
-            "level": 1,
-        }
-    ),
-    "%c": parsing_format(
-        {
-            "alias": "number_comma",
-            "regex": r"\d{1,3}(?:,\d{3})*",
-            "fmt": lambda x: partial(itself, f"{x:,}"),
-            "parse": lambda x: x.replace(",", ""),
-            "level": 1,
-        }
-    ),
-    "%u": parsing_format(
-        {
-            "alias": "number_underscore",
-            "regex": r"\d{1,3}(?:_\d{3})*",
-            "fmt": lambda x: partial(itself, f"{x:_}"),
-            "parse": lambda x: x.replace("_", ""),
-            "level": 1,
-        }
-    ),
-}
-
-
-SERIAL_CONF = ConfigFormat(default_fmt="%n")
 
 
 @total_ordering
@@ -177,21 +116,27 @@ class Formatter(ABC):
     level: ClassVar[int]
 
     def __init_subclass__(
-        cls,
+        cls: type[Self],
         /,
         level: int = 1,
         asset: dict[str, Format] | None = None,
         config: ConfigFormat | None = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
-        cls.level: int = level
-        cls.asset: dict[str, Format] = asset or cls.asset
-        cls.config: ConfigFormat = config or cls.config
+        super().__init_subclass__(**kwargs)
+        cls.level: int = level  # type: ignore
+        cls.asset: dict[str, Format] = asset or cls.asset  # type: ignore
+        cls.config: ConfigFormat = config or cls.config  # type: ignore
 
         if cls.asset is None:
             raise NotImplementedError(
                 "Should define the `asset` class variable for create a new "
                 "formatter object"
+            )
+        elif all(isinstance(fmt, dict) for fmt in cls.asset.values()):
+            raise FormatterValueError(
+                "Please convert asset value to Format type with "
+                "``asset_format`` func"
             )
         if cls.config is None:
             raise NotImplementedError(
@@ -200,49 +145,48 @@ class Formatter(ABC):
             )
 
     @abstractmethod
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         raise NotImplementedError(
             "Formatter should implement ``self.__init__`` for validate "
             "incoming parsing values"
         )
 
     def __hash__(self) -> int:
-        return hash(self.str)
+        """Return the hashed ``self.str`` attribute."""
+        return hash(self.string)
 
     def __str__(self) -> str:
-        return self.str
+        """Return the ``self.str`` attribute that is the abstractmethod."""
+        return self.string
 
     def __repr__(self) -> str:
         return (
             f"<{self.__class__.__name__}"
-            f".parse('{self.str}', "
+            f".parse('{self.string}', "
             f"'{self.config.default_fmt}')>"
         )
 
-    def __eq__(self, other: object) -> bool:
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, self.__class__):
             return NotImplemented
-        return self.value == other.value
+        return self.value == other.value  # type: ignore
 
-    def __lt__(self, other: object) -> bool:
+    def __lt__(self, other: Any) -> bool:
         if not isinstance(other, self.__class__):
             return NotImplemented
-        return self.value.__lt__(other.value)
+        return self.value.__lt__(other.value)  # type: ignore
 
     @property
-    @abstractmethod
-    def str(self) -> str:  # pragma: no cover
-        """Return a standard string value that define by property of this
-        formatter object.
+    def string(self) -> str:
+        """Return a string of ``self.value`` property that define with abstract
+        property of this formatter object.
 
         :rtype: str
         """
-        raise NotImplementedError(
-            "Please implement ``str`` property for this sub-formatter class"
-        )
+        return str(self.value)
 
     @classmethod
-    def from_value(cls, value: Any):
+    def from_value(cls, value: Any) -> Self:
         """Passer the value to this formatter that will pass this value to
         ``cls.formatter`` method and map with the base format string value
         before parse by ``cls.parse``."""
@@ -434,7 +378,7 @@ class Formatter(ABC):
 
     @property
     @abstractmethod
-    def value(self) -> Any:  # pragma: no cover
+    def value(self) -> Any:  # pragma: no cover  # type: ignore
         raise NotImplementedError(
             "Please implement ``value`` property for sub-formatter object"
         )
@@ -493,7 +437,7 @@ class Formatter(ABC):
         :param fmt: A format string pattern.
         :type fmt: str
         """
-        return self.value.__eq__(
+        return self.value.__eq__(  # type: ignore
             self.__class__.parse(value, fmt).value,
         )
 
@@ -551,11 +495,75 @@ class Formatter(ABC):
     def __rsub__(self, other: T) -> T:
         if not isinstance(other, type(self.value)):
             return NotImplemented
-        return other - self.value
+        return other - self.value  # type: ignore
 
     def __format__(self, fmt_spec: str) -> str:
         """Format a formatter object with any formatter setting value."""
         return self.format(fmt_spec)
+
+
+SERIAL_MAX_PADDING: int = 3
+SERIAL_MAX_BINARY: int = 8
+
+
+def to_padding(value: str) -> str:
+    return value.rjust(SERIAL_MAX_PADDING, "0") if value else ""
+
+
+def to_binary(value: str) -> str:
+    return f"{int(value):0{str(SERIAL_MAX_BINARY)}b}" if value else ""
+
+
+SERIAL_ASSET: dict[str, Format] = {
+    "%n": asset_format(
+        {
+            "alias": "number",
+            "regex": r"[0-9]*",
+            "fmt": lambda x: partial(itself, str(x)),
+            "parse": lambda x: x,
+            "level": 1,
+        }
+    ),
+    "%p": asset_format(
+        {
+            "alias": "number_pad",
+            "regex": rf"[0-9]{{{SERIAL_MAX_PADDING}}}",
+            "fmt": lambda x: partial(to_padding, str(x)),
+            "parse": lambda x: remove_pad(x),
+            "level": 1,
+        }
+    ),
+    "%b": asset_format(
+        {
+            "alias": "number_binary",
+            "regex": rf"[0-1]{{{SERIAL_MAX_BINARY}}}",
+            "fmt": lambda x: partial(to_binary, str(x)),
+            "parse": lambda x: str(int(x, 2)),
+            "level": 1,
+        }
+    ),
+    "%c": asset_format(
+        {
+            "alias": "number_comma",
+            "regex": r"\d{1,3}(?:,\d{3})*",
+            "fmt": lambda x: partial(itself, f"{x:,}"),
+            "parse": lambda x: x.replace(",", ""),
+            "level": 1,
+        }
+    ),
+    "%u": asset_format(
+        {
+            "alias": "number_underscore",
+            "regex": r"\d{1,3}(?:_\d{3})*",
+            "fmt": lambda x: partial(itself, f"{x:_}"),
+            "parse": lambda x: x.replace("_", ""),
+            "level": 1,
+        }
+    ),
+}
+
+
+SERIAL_CONF = ConfigFormat(default_fmt="%n")
 
 
 class Serial(Formatter, asset=SERIAL_ASSET, config=SERIAL_CONF):
@@ -565,7 +573,7 @@ class Serial(Formatter, asset=SERIAL_ASSET, config=SERIAL_CONF):
         self.number: int = self.prepare_value(number)
 
     @property
-    def str(self) -> str:
+    def string(self) -> str:
         return str(self.number)
 
     @property
@@ -598,14 +606,14 @@ class Serial(Formatter, asset=SERIAL_ASSET, config=SERIAL_CONF):
 
 
 DATETIME_ASSET: dict[str, Format] = {
-    "%n": parsing_format(
+    "%n": asset_format(
         {
             "alias": "normal",
             "cregex": "%Y%m%d_%H%M%S",
             "fmt": lambda x: partial(x.strftime, "%Y%m%d_%H%M%S"),
         }
     ),
-    "%Y": parsing_format(
+    "%Y": asset_format(
         {
             "alias": "year",
             "regex": r"\d{4}",
@@ -614,7 +622,7 @@ DATETIME_ASSET: dict[str, Format] = {
             "level": 10,
         }
     ),
-    "%m": parsing_format(
+    "%m": asset_format(
         {
             "alias": "month_pad",
             "regex": "01|02|03|04|05|06|07|08|09|10|11|12",
@@ -623,7 +631,7 @@ DATETIME_ASSET: dict[str, Format] = {
             "level": 9,
         }
     ),
-    "%d": parsing_format(
+    "%d": asset_format(
         {
             "alias": "day_pad",
             "regex": "[0-3][0-9]",
@@ -632,7 +640,7 @@ DATETIME_ASSET: dict[str, Format] = {
             "level": 8,
         }
     ),
-    "%H": parsing_format(
+    "%H": asset_format(
         {
             "alias": "hour_pad",
             "regex": "[0-2][0-9]",
@@ -641,7 +649,7 @@ DATETIME_ASSET: dict[str, Format] = {
             "level": 0,
         }
     ),
-    "%M": parsing_format(
+    "%M": asset_format(
         {
             "alias": "minute_pad",
             "regex": "[0-6][0-9]",
@@ -650,7 +658,7 @@ DATETIME_ASSET: dict[str, Format] = {
             "level": 0,
         }
     ),
-    "%S": parsing_format(
+    "%S": asset_format(
         {
             "alias": "second_pad",
             "regex": "[0-6][0-9]",
@@ -672,19 +680,25 @@ class Datetime(Formatter, asset=DATETIME_ASSET, config=DATETIME_CONF, level=10):
         self,
         year: int | None = None,
         month: int | None = None,
+        week: int | None = None,
+        weeks: str | None = None,
         day: int | None = None,
         hour: int = 0,
         minute: int = 0,
         second: int = 0,
         microsecond: int = 0,
+        locale: str | None = None,
     ) -> None:
         self.year = int(year or 1990)
         self.month = int(month or 1)
+        self.week = None
+        self.weeks = None
         self.day = int(day or 1)
         self.hour: int = int(hour)
         self.minute: int = int(minute)
         self.second: int = int(second)
         self.microsecond: int = int(microsecond)
+        self.locale = None
         self.datetime: datetime = datetime(
             year=self.year,
             month=self.month,
@@ -696,7 +710,7 @@ class Datetime(Formatter, asset=DATETIME_ASSET, config=DATETIME_CONF, level=10):
         )
 
     @property
-    def str(self) -> str:
+    def string(self) -> str:
         return str(self.datetime)
 
     @property
@@ -753,7 +767,7 @@ __all__ = (
 )
 
 
-def demo_number_formating():
+def demo_number_formating() -> None:
     print(Serial.gen_format("This is a number `%n` but extra `%b`"))
     serial_instance = Serial.parse("Number: 20240101", fmt="Number: %n")
     assert 20240101 == serial_instance.value
@@ -765,7 +779,7 @@ def demo_number_formating():
     print(serial_instance.values())
 
 
-def demo_datetime_formating():
+def demo_datetime_formating() -> None:
     print(Datetime.gen_format("This is a datetime %Y%m and special %n"))
     dt_instance = Datetime.parse("date: 20240101", fmt="date: %Y%m%d")
     assert datetime(2024, 1, 1) == dt_instance.value

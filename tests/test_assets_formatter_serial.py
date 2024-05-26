@@ -54,16 +54,16 @@ class SerialAssetsTestCase(unittest.TestCase):
 
     def test_serial_properties(self):
         self.assertEqual("<Serial.parse('781', '%n')>", self.sr.__repr__())
-        self.assertEqual(hash(self.sr.str), self.sr.__hash__())
+        self.assertEqual(hash(self.sr.string), self.sr.__hash__())
 
         self.assertEqual(9, self.sr_p.value)
-        self.assertEqual("9", self.sr_p.str)
+        self.assertEqual("9", self.sr_p.string)
 
         self.assertEqual(13, self.sr_p2.value)
-        self.assertEqual("13", self.sr_p2.str)
+        self.assertEqual("13", self.sr_p2.string)
 
         self.assertEqual(0, self.sr_default.value)
-        self.assertEqual("0", self.sr_default.str)
+        self.assertEqual("0", self.sr_default.string)
 
     def test_serial_gen_format(self):
         self.assertEqual(
