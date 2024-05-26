@@ -40,7 +40,10 @@ from fmtutil.exceptions import (
     FormatterKeyError,
     FormatterValueError,
 )
-from fmtutil.formatter import ConstantType, dict2const
+from fmtutil.formatter import (
+    ConstantType,
+    dict2const,
+)
 from fmtutil.utils import bytes2str, can_int, itself, remove_pad, scache
 
 T = TypeVar("T")
@@ -303,11 +306,22 @@ class Formatter(ABC):
         """
         results: DictStr = {}
         pre_results: DictStr = {}
-        for f, props in cls.asset.items():
-            if isinstance(props, CommonFormat):
-                results[f] = f"(?P<{props.alias}>{props.regex})"
-            elif isinstance(props, CombineFormat):
-                pre_results[f] = props.cregex
+        for f, fmt in cls.asset.items():
+            if isinstance(fmt, CommonFormat):
+                fmt_regex: str = fmt.regex
+                # TODO: Implement this for dynamic config
+                # for conf in re.finditer(r'conf\.(?P<var>[A-Z_]+)', fmt_regex):
+                #     var: str = conf.group('var')
+                #     if conf_var := getattr(cls.config, var):
+                #         fmt_regex = fmt_regex.replace(conf.group(0), conf_var)
+                #     else:
+                #         raise FormatterArgumentError(
+                #             "config",
+                #             "does not found {var} that set on config"
+                #         )
+                results[f] = f"(?P<{fmt.alias}>{fmt_regex})"
+            elif isinstance(fmt, CombineFormat):
+                pre_results[f] = fmt.cregex
             else:
                 raise FormatterValueError(
                     "formatter does not contain `regex` or `cregex` "
@@ -365,6 +379,8 @@ class Formatter(ABC):
             if getter := rs.get(attr):
                 if not set_strict_mode:
                     continue
+
+                # NOTE: Start strict mode
                 elif name in parsing and getter != (
                     p := value.parse(parsing[name])
                 ):
@@ -536,6 +552,8 @@ SERIAL_ASSET: dict[str, Format] = {
     "%b": asset_format(
         {
             "alias": "number_binary",
+            # TODO: Change this value:
+            #   ... "regex": rf"[0-1]{conf.SERIAL_MAX_BINARY}",
             "regex": rf"[0-1]{{{SERIAL_MAX_BINARY}}}",
             "fmt": lambda x: partial(to_binary, str(x)),
             "parse": lambda x: str(int(x, 2)),
@@ -622,6 +640,33 @@ DATETIME_ASSET: dict[str, Format] = {
             "level": 10,
         }
     ),
+    # "": asset_format(
+    #     {
+    #         "alias": "year_cut_pad",
+    #         "regex": r"",
+    #         "fmt": "",
+    #         "parse": lambda x: f"19{x}",
+    #         "level": 10,
+    #     }
+    # ),
+    # "": asset_format(
+    #     {
+    #         "alias": "year_cut",
+    #         "regex": r"",
+    #         "fmt": "",
+    #         "parse": lambda x: f"19{x}",
+    #         "level": 10,
+    #     }
+    # ),
+    # "": asset_format(
+    #     {
+    #         "alias": "month",
+    #         "regex": r"",
+    #         "fmt": "",
+    #         "parse": lambda x: x.rjust(2, "0"),
+    #         "level": 9,
+    #     }
+    # ),
     "%m": asset_format(
         {
             "alias": "month_pad",
@@ -631,6 +676,33 @@ DATETIME_ASSET: dict[str, Format] = {
             "level": 9,
         }
     ),
+    # "": asset_format(
+    #     {
+    #         "alias": "month_short",
+    #         "regex": r"",
+    #         "fmt": "",
+    #         "parse": lambda x: MONTHS[x],
+    #         "level": 9,
+    #     }
+    # ),
+    # "": asset_format(
+    #     {
+    #         "alias": "month_full",
+    #         "regex": r"",
+    #         "fmt": "",
+    #         "parse": lambda x: MONTHS[x[:3]],
+    #         "level": 9,
+    #     }
+    # ),
+    # "": asset_format(
+    #     {
+    #         "alias": "day",
+    #         "regex": r"",
+    #         "fmt": "",
+    #         "parse": lambda x: x.rjust(2, "0"),
+    #         "level": 8,
+    #     }
+    # ),
     "%d": asset_format(
         {
             "alias": "day_pad",
@@ -640,6 +712,24 @@ DATETIME_ASSET: dict[str, Format] = {
             "level": 8,
         }
     ),
+    # "": asset_format(
+    #     {
+    #         "alias": "day_year",
+    #         "regex": r"",
+    #         "fmt": "",
+    #         "parse": lambda x: x.rjust(2, "0"),
+    #         "level": (8, 9),
+    #     }
+    # ),
+    # "": asset_format(
+    #     {
+    #         "alias": "day_year_pad",
+    #         "regex": r"",
+    #         "fmt": "",
+    #         "parse": lambda x: x.rjust(2, "0"),
+    #         "level": (8, 9),
+    #     }
+    # ),
     "%H": asset_format(
         {
             "alias": "hour_pad",
@@ -691,14 +781,14 @@ class Datetime(Formatter, asset=DATETIME_ASSET, config=DATETIME_CONF, level=10):
     ) -> None:
         self.year = int(year or 1990)
         self.month = int(month or 1)
-        self.week = None
-        self.weeks = None
+        self.week = week
+        self.weeks = weeks
         self.day = int(day or 1)
         self.hour: int = int(hour)
         self.minute: int = int(minute)
         self.second: int = int(second)
         self.microsecond: int = int(microsecond)
-        self.locale = None
+        self.locale = locale
         self.datetime: datetime = datetime(
             year=self.year,
             month=self.month,
@@ -793,3 +883,6 @@ if __name__ == "__main__":
     demo_number_formating()
     print("-" * 140)
     demo_datetime_formating()
+    # import inspect
+    # func = lambda x, conf: x + conf
+    # print(inspect.signature(func))
