@@ -2,6 +2,39 @@
 
 ## Latest Changes
 
+## 1.0.7
+
+### :sparkles: Features
+
+- :dart: feat: imgrate prepare_value function for Datetime. (_2024-05-26_)
+- :dart: feat: transfer attributes and methods from origin formatter obj. (_2024-05-25_)
+- :dart: feat: update importer for __asset objs. (_2024-05-25_)
+- :dart: feat: add format method on assert module. (_2024-05-25_)
+- :dart: feat: remove proxy obj and implement init instead. (_2024-05-25_)
+- :dart: feat: add prepare_parsing cls method for receive parsing data. (_2024-05-25_)
+- :dart: feat: add unescape regex on utils func. (_2024-05-25_)
+
+### :black_nib: Code Changes
+
+- :construction: refactored: ⬆ bump pypa/gh-action-pypi-publish from 1.8.14 to 1.9.0 (_2024-07-01_)
+- :art: style: add type hint for mypy. (_2024-05-26_)
+- :test_tube: tests: add test cases for the assets formatter obj on Serial. (_2024-05-26_)
+- :construction: refactored: migrate prepare method to abstract class. (_2024-05-25_)
+
+### :card_file_box: Documents
+
+- :page_facing_up: docs: add more format asset for datetime. (_2024-05-26_)
+- :page_facing_up: docs: update readme docs and remove link of any formatter obj. (_2024-05-25_)
+- :page_facing_up: docs: changelog does not valid with old setting. (_2024-05-25_)
+
+### :bug: Fix Bugs
+
+- :gear: fixed: fix type of operator property on assets formatter obj. (_2024-05-26_)
+
+### :package: Build & Workflow
+
+- :toolbox: build: remove fix version of pytest on tests workflow. (_2024-05-25_)
+
 ## 1.0.6
 
 ### :sparkles: Features
