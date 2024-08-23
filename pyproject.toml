@@ -16,7 +16,7 @@ authors = [
     { name = "korawica", email = "korawich.anu@gmail.com" },
 ]
 classifiers = [
-    "Topic :: Formatter",
+    "Topic :: Utilities",
     "Natural Language :: English",
     "Development Status :: 5 - Production/Stable",
     "Operating System :: OS Independent",
