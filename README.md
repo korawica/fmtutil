@@ -18,10 +18,9 @@
 * [FormatterGroup Object](#formattergroup-object)
 * [Example](#example)
 
-This **Formatter** package was created for `parse` and `format` any string values
-that match a format pattern string with Python regular expression.
-This package be the co-pylot project for stating to my **Python Software Developer**
-way.
+Lightweight formatter objects, this fmtutil package was created for `parse`
+and `format` any string values that match a format pattern which created base on
+Python regular expression.
 
 :dart: First objective of this project is include necessary formatter objects for
 any data components package which mean we can `parse` any complicate names on
