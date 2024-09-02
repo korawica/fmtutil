@@ -1,17 +1,5 @@
 # API Documents
 
-**Table of Contents**:
-
-- [SlotLevel Object](#slotlevel-object)
-- [Formatter Objects](#formatter-objects)
-  - [Datetime](#datetime)
-  - [Version](#version)
-  - [Serial](#serial)
-  - [Naming](#naming)
-  - [Storage](#storage)
-  - [EnvConst](#environment-constant)
-- [Formatter Group Object](#formatter-group-object)
-
 ## SlotLevel Object
 
 ```text
@@ -46,13 +34,6 @@ Static-methods:
 ```
 
 ## Formatter Objects
-
-- [Datetime](#datetime)
-- [Version](#version)
-- [Serial](#serial)
-- [Naming](#naming)
-- [Storage](#storage)
-- [EnvConst](#environment-constant)
 
 ```text
 Formatter object for inherit to any formatter subclass that define
@@ -280,5 +261,3 @@ implement from subclass.
 %c  : poc
 %C  : POC
 ```
-
-## Formatter Group Object
