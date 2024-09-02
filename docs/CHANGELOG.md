@@ -2,6 +2,27 @@
 
 ## Latest Changes
 
+## 1.0.8
+
+### :black_nib: Code Changes
+
+- :construction: refactored: 📦 bump types-python-dateutil from 2.9.0.20240316 to 2.9.0.20240821 (_2024-09-01_)
+- :construction: refactored: ⬆ bump pypa/gh-action-pypi-publish from 1.9.0 to 1.10.0 (_2024-09-01_)
+
+### :card_file_box: Documents
+
+- :page_facing_up: docs: implement mkdocs-material to this project. (_2024-09-02_)
+- :page_facing_up: docs: update docs on installation tipic readme. (_2024-08-23_)
+- :page_facing_up: docs: update readme docs and package desc. (_2024-08-23_)
+
+### :bug: Fix Bugs
+
+- :gear: fixed: fixed topic value on classifiers package. (_2024-08-23_)
+
+### :package: Build & Workflow
+
+- :toolbox: build: add env attach to docs workflow. (_2024-09-02_)
+
 ## 1.0.7
 
 ### :sparkles: Features
