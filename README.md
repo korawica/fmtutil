@@ -23,10 +23,10 @@ pip install -U fmtutil
 
 **Dependency supported**:
 
-| Python Version  | Installation                        | Support Fixed Bug  |
-|-----------------|-------------------------------------|--------------------|
-| `== 3.8`        | `pip install "fmtutil>=0.4,<0.5.0"` | :x:                |
-| `>=3.9,<3.13`   | `pip install -U fmtutil`            | :heavy_check_mark: |
+| Python Version | Installation                        | Support Fixed Bug  |
+|----------------|-------------------------------------|--------------------|
+| `== 3.8`       | `pip install "fmtutil>=0.4,<0.5.0"` | :x:                |
+| `>=3.9,<3.14`  | `pip install -U fmtutil`            | :heavy_check_mark: |
 
 For example, we want to get filename with the format like, `filename_20220101.csv`,
 on the file system storage, and we want to incremental ingest the latest file with
