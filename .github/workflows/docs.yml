@@ -36,6 +36,18 @@ jobs:
           uv pip install -e .[docs]
           uv pip install pillow cairosvg
 
+      - name: Use Python virtual environment
+        run: |
+          echo "$GITHUB_WORKSPACE/.venv/bin" >> $GITHUB_PATH
+          echo "VIRTUAL_ENV=$GITHUB_WORKSPACE/.venv" >> $GITHUB_ENV
+
+      - name: Check git is working
+        run: |
+          git config --global user.email "korawica@github.actions"
+          git config --global user.name "Testing Git on Travis CI"
+          git --version
+          git config --list
+
       - name: Deploy GitHub Page
         env:
           CI: true
