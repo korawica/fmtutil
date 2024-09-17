@@ -1,11 +1,8 @@
-# docs: https://github.com/marketplace/actions/python-coverage-comment
 name: ci
 
 on:
-  # pull_request:
+  workflow_dispatch:
   push:
-    # branches:
-    #   - 'main'
     tags:
       - 'v*.*.*'
 
@@ -41,7 +38,7 @@ jobs:
           uv venv
           uv pip install -U pip
           uv pip install -e .[dev]
-          uv pip install "coverage[toml]" pytest
+          uv pip install -U "coverage[toml]" pytest
 
       - name: Use Python virtual environment
         run: |
@@ -49,37 +46,28 @@ jobs:
           echo "VIRTUAL_ENV=$GITHUB_WORKSPACE/.venv" >> $GITHUB_ENV
 
       - name: Run coverage and produce a .coverage file
-        run: |
-          mkdir coverage
-          coverage run -m pytest --disable-pytest-warnings
         env:
           COVERAGE_FILE: coverage/.coverage.${{ runner.os }}-py${{ matrix.python-version }}
           CONTEXT: ${{ runner.os }}-py${{ matrix.python-version }}
-
-      - run: ls -al
+        run: |
+          mkdir coverage
+          echo $COVERAGE_FILE
+          coverage run -m pytest --disable-pytest-warnings
+          ls -al ./coverage
 
       - name: Store coverage file
-        # FIXED: Revert version of upload-artifact from 4 to 3
-        # https://github.com/actions/upload-artifact/issues/478
         uses: actions/upload-artifact@v4
         with:
           name: coverage-${{ matrix.python-version }}
           path: coverage
+          include-hidden-files: true
 
   coverage:
-    # This make sure the workflow is skipped without any alert.
-    # if: ${{ false }}
     name: coverage
     needs: [build]
     runs-on: ubuntu-latest
     permissions:
-      # Gives the action the necessary permissions for publishing new
-      # comments in pull requests.
       pull-requests: write
-
-      # Gives the action the necessary permissions for pushing data to the
-      # python-coverage-comment-action branch, and for editing existing
-      # comments (to avoid publishing multiple comments in the same PR)
       contents: write
     steps:
       - uses: actions/checkout@v4
@@ -101,8 +89,8 @@ jobs:
           curl -LsSf https://astral.sh/uv/install.sh | sh
           uv venv
           uv pip install -U pip
-          uv pip install "coverage[toml]"
-          uv pip install "pytest>=7.4.3,<8.0.0"
+          uv pip install -U "coverage[toml]"
+          uv pip install -U "pytest>=7.4.3,<8.0.0"
           echo "$GITHUB_WORKSPACE/.venv/bin" >> $GITHUB_PATH
           echo "VIRTUAL_ENV=$GITHUB_WORKSPACE/.venv" >> $GITHUB_ENV
 
@@ -122,40 +110,12 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-      - run: |
-          ls -al
-          cat .gitignore
-
-#      - name: Coverage comment
-#        id: coverage_comment
-#        uses: py-cov-action/python-coverage-comment-action@v3
-#        with:
-#          GITHUB_TOKEN: ${{ secrets.ACTIONS_TOKEN }}
-#          ANNOTATE_MISSING_LINES: true
-#          ANNOTATION_TYPE: warning
-#          COMMENT_ARTIFACT_NAME: coverage-comment-action
-#          COMMENT_FILENAME: coverage-comment-action.txt
-#          COVERAGE_DATA_BRANCH: coverage
-
-#      - name: Store Pull Request comment to be posted
-#        # FIXED: Revert version of upload-artifact from 4 to 3
-#        # https://github.com/actions/upload-artifact/issues/478
-#        uses: actions/upload-artifact@v4
-#        if: steps.coverage_comment.outputs.COMMENT_FILE_WRITTEN == 'true'
-#        with:
-#          name: coverage-comment-action
-#          path: coverage-comment-action.txt
-
       - name: Store coverage HTML
-        # FIXED: Revert version of upload-artifact from 4 to 3
-        # https://github.com/actions/upload-artifact/issues/478
         uses: actions/upload-artifact@v4
         with:
           name: coverage-html
           path: htmlcov
 
-  # This job does nothing and is only used for the branch protection
-  # docs: https://github.com/marketplace/actions/alls-green
   check:
     if: always()
     needs:
