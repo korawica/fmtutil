@@ -68,6 +68,7 @@ exclude = [
     "/.pre-commit-config.yaml",
     "/docs",
     "/tests",
+    "/fmtutil/__assets.py",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -78,9 +79,7 @@ branch = true
 concurrency = ["thread", "multiprocessing"]
 parallel = true
 context = '${CONTEXT}'
-source = [
-    "fmtutil",
-]
+source = ["fmtutil"]
 omit = [
     "tests/perfs/",
     "scripts/",

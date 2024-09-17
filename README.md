@@ -1,4 +1,4 @@
-# _Formatter Utility_
+# Formatter
 
 [![test](https://github.com/korawica/fmtutil/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/korawica/fmtutil/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/gh/korawica/fmtutil/branch/main/graph/badge.svg?token=J2MN63IFT0)](https://codecov.io/gh/korawica/fmtutil)
@@ -15,7 +15,7 @@ Python regular expression.
 any data components package which mean we can `parse` any complicate names on
 data source and ingest the right names to in-house or data target.
 
-## Installation
+## :round_pushpin: Installation
 
 ```shell
 pip install -U fmtutil
@@ -27,6 +27,8 @@ pip install -U fmtutil
 |----------------|-------------------------------------|--------------------|
 | `== 3.8`       | `pip install "fmtutil>=0.4,<0.5.0"` | :x:                |
 | `>=3.9,<3.14`  | `pip install -U fmtutil`            | :heavy_check_mark: |
+
+## :beers: Getting Started
 
 For example, we want to get filename with the format like, `filename_20220101.csv`,
 on the file system storage, and we want to incremental ingest the latest file with
@@ -45,7 +47,7 @@ already provide the build-in `datetime` to parse by `datetime.strptime` and
 format by `{dt}.strftime`. This package will be the special thing when we group
 more than one format-able objects together as `Naming`, `Version`, and `Datetime`.
 
-**For complex filename format like**:
+**For complex filename format like** :triumph::
 
 ```text
 {filename:%s}_{datetime:%Y_%m_%d}.{version:%m.%n.%c}.csv
@@ -63,7 +65,7 @@ better package than this project.
 > assert this_date.valid('any_files_20220101.csv', 'any_files_%Y%m%d.csv')
 > ```
 
-## Usage
+## :tada: Usage
 
 If you have multi-format filenames on the data source directory, and you want to
 dynamic getting max datetime on these filenames to your app, you can use a
