@@ -2,6 +2,28 @@
 
 ## Latest Changes
 
+## 1.0.9
+
+### :card_file_box: Documents
+
+- :page_facing_up: docs: update emoji on readme. (_2024-09-17_)
+- :page_facing_up: docs: update readme for support python 3.13. (_2024-09-02_)
+
+### :bug: Fix Bugs
+
+- :gear: fixed: add id on step setup python version. (_2024-09-17_)
+- :gear: fixed: add allow-prereleases flag for testing python 3.13. (_2024-09-02_)
+
+### :package: Build & Workflow
+
+- :toolbox: build: add link to package docs on issue config. (_2024-09-17_)
+- :toolbox: build: update test workflow. (_2024-09-17_)
+
+### :postbox: Dependencies
+
+- :pushpin: deps: update pre-commit hook of clishelf to 0.2.6. (_2024-09-17_)
+- :pushpin: deps: add support for python version 3.13. (_2024-09-02_)
+
 ## 1.0.8
 
 ### :black_nib: Code Changes
