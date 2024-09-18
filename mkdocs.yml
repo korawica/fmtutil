@@ -55,6 +55,7 @@ extra:
 plugins:
   - tags
   - search
+  - awesome-pages
 
 markdown_extensions:
   - attr_list

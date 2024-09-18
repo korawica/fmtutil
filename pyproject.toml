@@ -45,6 +45,7 @@ dev = [
 ]
 docs = [
     "mkdocs-material",
+    "mkdocs-awesome-pages-plugin",
 ]
 
 [project.scripts]
