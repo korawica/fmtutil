@@ -104,7 +104,7 @@ parsing value to constant by `.to_const()`.
 
     This package already implement the environment constant object,
     `fmtutil.EnvConst`. \
-    [Read more about the Formatter objects API](./api.md#formatter-objects)
+    [Read more about the Formatter objects API](./features/formatters/formatter.md)
 
 ## FormatterGroup Object
 
