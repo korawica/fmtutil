@@ -2,6 +2,33 @@
 
 ## Latest Changes
 
+## 1.0.10
+
+### :black_nib: Code Changes
+
+- :test_tube: tests: fixed datetime object parser for python 3.13. (_2024-09-20_)
+- :test_tube: tests: add note and todo comments on __asset file. (_2024-09-20_)
+
+### :card_file_box: Documents
+
+- :page_facing_up: docs: update examples documents and readme. (_2024-09-20_)
+- :page_facing_up: docs: update documents and split contents. (_2024-09-20_)
+
+### :bug: Fix Bugs
+
+- :gear: fixed: change tag regex format on push event in docs workflow. (_2024-09-18_)
+- :gear: fixed: ci workflow push artifact does not include hidden file by default. (_2024-09-17_)
+
+### :package: Build & Workflow
+
+- :toolbox: build: change workflow name from ci to coverage. (_2024-09-17_)
+
+### :postbox: Dependencies
+
+- :pushpin: deps: add all on optional deps for optional relativedelta. (_2024-09-20_)
+- :pushpin: deps: remove dev on optional deps. (_2024-09-20_)
+- :pushpin: deps: add mkdocs-awesome-pages-plugin package for docs building. (_2024-09-18_)
+
 ## 1.0.9
 
 ### :card_file_box: Documents
