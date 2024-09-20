@@ -5,10 +5,8 @@ theme:
     - navigation.indexes
     - navigation.instant
     - navigation.instant.prefetch
-#    - navigation.tabs
     - navigation.sections
     - navigation.footer
-#    - navigation.top
     - search.suggest
     - search.highlight
     - search.share
@@ -65,7 +63,10 @@ nav:
           - Serial: features/formatters/serial.md
           - Storage: features/formatters/storage.md
           - Constant: features/formatters/constant.md
-  - Examples: example.md
+      - Formatter Group: features/formatter_group.md
+  - Examples:
+      - Examples: examples/example.md
+      - Search Files: examples/search_files.md
 
 plugins:
   - awesome-pages
