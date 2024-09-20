@@ -6,6 +6,7 @@
 """
 Test the Datetime formatter object.
 """
+import sys
 import unittest
 from datetime import date, datetime, timedelta
 
@@ -235,10 +236,16 @@ class DatetimeTestCase(unittest.TestCase):
             datetime.strptime("12", "%m"),
             fmt.Datetime.parse("12", "%m").value,
         )
-        self.assertEqual(
-            datetime.strptime("31", "%d"),
-            fmt.Datetime.parse("31", "%d").value,
-        )
+        if sys.version_info >= (3, 13):
+            self.assertEqual(
+                datetime.strptime("190031", "%Y%d"),
+                fmt.Datetime.parse("190031", "%Y%d").value,
+            )
+        else:
+            self.assertEqual(
+                datetime.strptime("31", "%d"),
+                fmt.Datetime.parse("31", "%d").value,
+            )
         self.assertEqual(
             datetime.strptime("12", "%H"),
             fmt.Datetime.parse("12", "%H").value,
