@@ -11,7 +11,7 @@ from __future__ import annotations
 
 
 class BaseError(Exception):
-    """Base Error Object that use for catch any errors statement of
+    """Base Error exception class that use for catch any errors statement of
     all step in this package.
     """
 
@@ -63,7 +63,7 @@ class FormatterArgumentError(FormatterError):
             )
         else:
             _argument = f"{arg!r}"
-        super().__init__(f"with {_argument}, {message}")
+        super().__init__(f"({_argument}): {message}")
 
 
 class FormatterGroupValueError(FormatterValueError):

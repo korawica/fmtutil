@@ -392,7 +392,7 @@ class TypeConstructFormatterTestCase(unittest.TestCase):
             self.cst_with_type_cls_raise02.regex()
         self.assertIn(
             (
-                "with 'format', format cregex string that contain %Z regex "
+                "('format'): format cregex string that contain %Z regex "
                 "does not found."
             ),
             str(context.exception),

@@ -11,7 +11,7 @@ data source and ingest the right names to in-house or data target.
 ## :round_pushpin: Installation
 
 ```shell
-pip install -U fmtutil
+pip install -U fmtutil[all]
 ```
 
 **Python version supported**:
@@ -25,6 +25,7 @@ pip install -U fmtutil
 
     This package has one dependency package, `python-dateutil`, this package use
     for support add and sub datetime value on the Datetime formatter only.
+    If you do not want to install this package, you can use `pip install -U fmtutil`.
 
 ## :beers: Getting Started
 

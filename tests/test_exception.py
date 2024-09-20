@@ -23,7 +23,7 @@ class ExceptionsTestCase(unittest.TestCase):
             ),
         )
         respec: str = (
-            "with 'timestamp', order file object does not have `timestamp` "
+            "('timestamp'): order file object does not have `timestamp` "
             "in name formatter"
         )
         self.assertEqual(str(result), respec)
@@ -37,7 +37,7 @@ class ExceptionsTestCase(unittest.TestCase):
             ),
         )
         respec: str = (
-            "with 'timestamp', and 'serial', order file object does not have "
+            "('timestamp', and 'serial'): order file object does not have "
             "`timestamp` and `serial` in name formatter"
         )
         self.assertEqual(str(result), respec)

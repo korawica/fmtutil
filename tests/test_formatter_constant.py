@@ -84,7 +84,7 @@ class ConstantTestCase(unittest.TestCase):
             fmt.make_const(name="DemoConst")
         self.assertIn(
             (
-                "with 'formatter', The Constant constructor function must pass "
+                "('formatter'): The Constant constructor function must pass "
                 "formatter nor fmt arguments."
             ),
             str(context.exception),
@@ -92,7 +92,7 @@ class ConstantTestCase(unittest.TestCase):
         with self.assertRaises(fmt.FormatterArgumentError) as context:
             fmt.make_const(formatter={"%n": "normal"})
         self.assertIn(
-            "with 'name', The Constant want name arguments",
+            "('name'): The Constant want name arguments",
             str(context.exception),
         )
 

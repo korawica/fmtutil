@@ -216,7 +216,7 @@ class DatetimeTestCase(unittest.TestCase):
             fmt.Datetime.parse("20231212", "%y%m%d%s")
         self.assertIn(
             (
-                "with 'fmt', The format string, '%s', does not exists in "
+                "('fmt'): The format string, '%s', does not exists in "
                 "``cls.regex``."
             ),
             str(context.exception),

@@ -86,7 +86,7 @@ class FormatterGroupTestCase(unittest.TestCase):
             )
         self.assertIn(
             (
-                "with 'group', Make group constructor function want group with "
+                "('group'): Make group constructor function want group with "
                 "type, Dict[str, FormatterType], not instance of 'Naming'."
             ),
             str(context.exception),
@@ -287,7 +287,7 @@ class FormatterGroupTestCase(unittest.TestCase):
             )
         self.assertIn(
             (
-                r"with 'format', 'data_engineer_in_20220101_de' does not "
+                r"('format'): 'data_engineer_in_20220101_de' does not "
                 r"match with the format: '^(?P<name>"
                 r"(?P<name___strings_snake>[a-z0-9]+(?:_[a-z0-9]+)*))_in_"
                 r"(?P<datetime>(?P<datetime___year>\d{4})"
@@ -321,7 +321,7 @@ class FormatterGroupTestCase(unittest.TestCase):
             self.gp2.format("{datetime:%Y_%m_%d_%H%M%S_%K}_v{version:%f}.csv")
         self.assertIn(
             (
-                "with 'format', the format: '%K' does not support for "
+                "('format'): the format: '%K' does not support for "
                 "'Datetime' in {datetime:%Y_%m_%d_%H%M%S_%K}"
             ),
             str(context.exception),

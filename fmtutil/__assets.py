@@ -22,6 +22,11 @@ Migration Note:
     coding from Python to Rust.
 *   Change the initialize process of Formatter object that using dynamic self
     attributes to fixing attribute with dynamic asset instead.
+
+Tasks:
+
+- [ ] Prepare base class formatter object for dynamic any asset format.
+- [ ] Create the formatter group that support with above formatter object.
 """
 from __future__ import annotations
 
@@ -40,6 +45,8 @@ from fmtutil.exceptions import (
     FormatterKeyError,
     FormatterValueError,
 )
+
+# TODO: Remove this import.
 from fmtutil.formatter import (
     ConstantType,
     dict2const,
@@ -81,6 +88,7 @@ Format = Union[CommonFormat, CombineFormat]
 @dataclass
 class ConfigFormat:
     default_fmt: str
+    # TODO: This validator use instead prepare_value method.
     validator: Callable[[Any], Any] = field(default_factory=itself)
 
 
@@ -303,6 +311,8 @@ class Formatter(ABC):
         was wrapped with ``lru_cache`` function for more frequency getting this
         ``cls.regex()`` value because the value does not change depend on the
         formatter class.
+
+        :rtype: DictStr
         """
         results: DictStr = {}
         pre_results: DictStr = {}
@@ -310,7 +320,10 @@ class Formatter(ABC):
             if isinstance(fmt, CommonFormat):
                 fmt_regex: str = fmt.regex
                 # TODO: Implement this for dynamic config
-                # for conf in re.finditer(r'conf\.(?P<var>[A-Z_]+)', fmt_regex):
+                # for conf in re.finditer(
+                #     rf'conf\.(?P<var>{cls.__name__.upper()}_[A-Z_]+)',
+                #     fmt_regex,
+                # ):
                 #     var: str = conf.group('var')
                 #     if conf_var := getattr(cls.config, var):
                 #         fmt_regex = fmt_regex.replace(conf.group(0), conf_var)
@@ -518,6 +531,9 @@ class Formatter(ABC):
         return self.format(fmt_spec)
 
 
+# TODO: The below config and prepare value functions should not use outside or
+#   not? I think the config data should define on the SERIAL_CONF object only
+#   and the assert can get this value inside the Serial object when it use.
 SERIAL_MAX_PADDING: int = 3
 SERIAL_MAX_BINARY: int = 8
 
@@ -585,7 +601,9 @@ SERIAL_CONF = ConfigFormat(default_fmt="%n")
 
 
 class Serial(Formatter, asset=SERIAL_ASSET, config=SERIAL_CONF):
-    """Serial Formatter object that build from SERIAL_ASSET value."""
+    """Serial Formatter object that build from SERIAL_ASSET and SERIAL_CONF
+    values.
+    """
 
     def __init__(self, number: int | str | float | None = None) -> None:
         self.number: int = self.prepare_value(number)
@@ -851,9 +869,9 @@ __all__ = (
     "Serial",
     "SERIAL_ASSET",
     "SERIAL_CONF",
+    "Datetime",
     "DATETIME_ASSET",
     "DATETIME_CONF",
-    "Datetime",
 )
 
 
