@@ -22,7 +22,7 @@ data source and ingest the right names to in-house or data target.
 pip install -U fmtutil
 ```
 
-**Dependency supported**:
+**Python version supported**:
 
 | Python Version | Installation                        | Support Fixed Bug  |
 |----------------|-------------------------------------|--------------------|

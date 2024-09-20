@@ -29,9 +29,7 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
-    "python-dateutil>=2.8.2,<3.0.0",
     "typing-extensions",
-    "types-python-dateutil==2.9.0.20240821",
 ]
 dynamic = ["version"]
 
@@ -40,6 +38,10 @@ Homepage = "https://github.com/korawica/fmtutil/"
 "Source Code" = "https://github.com/korawica/fmtutil/"
 
 [project.optional-dependencies]
+all = [
+    "python-dateutil>=2.8.2,<3.0.0",
+    "types-python-dateutil==2.9.0.20240821",
+]
 docs = [
     "mkdocs-material",
     "mkdocs-awesome-pages-plugin",

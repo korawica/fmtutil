@@ -8,18 +8,25 @@ Python regular expression.
 any data components package which mean we can `parse` any complicate names on
 data source and ingest the right names to in-house or data target.
 
-## Installation
+## :round_pushpin: Installation
 
 ```shell
 pip install -U fmtutil
 ```
 
-**Dependency supported**:
+**Python version supported**:
 
 | Python Version  | Installation                        | Support Fixed Bug  |
 |-----------------|-------------------------------------|--------------------|
 | `== 3.8`        | `pip install "fmtutil>=0.4,<0.5.0"` | :x:                |
 | `>=3.9,<3.13`   | `pip install -U fmtutil`            | :heavy_check_mark: |
+
+!!! note
+
+    This package has one dependency package, `python-dateutil`, this package use
+    for support add and sub datetime value on the Datetime formatter only.
+
+## :beers: Getting Started
 
 For example, we want to get filename with the format like, `filename_20220101.csv`,
 on the file system storage, and we want to incremental ingest the latest file with

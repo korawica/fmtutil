@@ -9,7 +9,10 @@ Test the Datetime formatter object.
 import unittest
 from datetime import date, datetime, timedelta
 
-from dateutil.relativedelta import relativedelta
+try:
+    from dateutil.relativedelta import relativedelta
+except ImportError:
+    relativedelta = None
 
 import fmtutil.formatter as fmt
 
@@ -350,7 +353,7 @@ class DatetimeTestCase(unittest.TestCase):
         # 2022-12-30 00:00:43 + 10 days
         self.assertEqual(
             datetime(2023, 1, 9, 0, 0, 43),
-            (self.dt + relativedelta(days=10)).value,
+            (self.dt + timedelta(days=10)).value,
         )
 
         # 2022-12-30 00:00:43 + 10 days
@@ -359,11 +362,12 @@ class DatetimeTestCase(unittest.TestCase):
             (self.dt + timedelta(days=2, hours=10)).value,
         )
 
-        # 2022-12-30 00:00:43 + 1 years + 1 months
-        self.assertEqual(
-            datetime(2024, 1, 30, 0, 0, 43),
-            (relativedelta(years=1, months=1) + self.dt).value,
-        )
+        if relativedelta is not None:
+            # 2022-12-30 00:00:43 + 1 years + 1 months
+            self.assertEqual(
+                datetime(2024, 1, 30, 0, 0, 43),
+                (relativedelta(years=1, months=1) + self.dt).value,
+            )
 
         self.assertEqual(timedelta(days=349, seconds=43), (self.dt - self.dt2))
 

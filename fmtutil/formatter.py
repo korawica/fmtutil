@@ -31,8 +31,12 @@ from typing import (
     final,  # docs: https://github.com/python/mypy/issues/9953
 )
 
-from dateutil.relativedelta import relativedelta
 from typing_extensions import Self, TypeAlias
+
+try:
+    from dateutil.relativedelta import relativedelta
+except ImportError:
+    relativedelta = None
 
 from .__type import (
     DictStr,
@@ -1781,7 +1785,14 @@ class Datetime(Formatter, level=10, fmt="%Y-%m-%d %H:%M:%S.%f"):
         return dt
 
     def __add__(self, other: Any) -> Formatter:
-        if isinstance(other, (relativedelta, timedelta)):
+        if isinstance(
+            other,
+            (
+                timedelta
+                if relativedelta is None
+                else (relativedelta, timedelta)
+            ),
+        ):
             return self.__class__.from_value(self.value + other)
         return NotImplemented
 
@@ -1789,7 +1800,14 @@ class Datetime(Formatter, level=10, fmt="%Y-%m-%d %H:%M:%S.%f"):
         self,
         other: Any,
     ) -> Union[Formatter, timedelta]:
-        if isinstance(other, (relativedelta, timedelta)):
+        if isinstance(
+            other,
+            (
+                timedelta
+                if relativedelta is None
+                else (relativedelta, timedelta)
+            ),
+        ):
             return self.__class__.from_value(self.value - other)
         elif isinstance(other, self.__class__):
             return self.value - other.value
