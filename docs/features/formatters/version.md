@@ -1,5 +1,20 @@
 # Version
 
+!!! example
+
+    ```python
+    from fmtutil import Version
+
+    version = Version.parse(value='Version_2_0_1', fmt='Version_%m_%n_%c')
+    version.format('New_version_%m%n%c')
+    ```
+
+    ```text
+    >>> 'New_version_201'
+    ```
+
+## API
+
 **Formatter Mapping**:
 
 ```text

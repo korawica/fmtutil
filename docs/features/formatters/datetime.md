@@ -1,5 +1,20 @@
 # Datetime
 
+!!! example
+
+    ```python
+    from fmtutil import Datetime
+
+    datetime = Datetime.parse(value='Datetime_20220101_000101', fmt='Datetime_%Y%m%d_%H%M%S')
+    datetime.format('New_datetime_%Y%b-%-d_%H:%M:%S')
+    ```
+
+    ```text
+    >>> 'New_datetime_2022Jan-1_00:01:01'
+    ```
+
+## API
+
 **Formatter Mapping**:
 
 ```text

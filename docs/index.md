@@ -27,7 +27,7 @@ pip install -U fmtutil[all]
     for support add and sub datetime value on the Datetime formatter only.
     If you do not want to install this package, you can use `pip install -U fmtutil`.
 
-## :beers: Getting Started
+## :beers: Introduction
 
 For example, we want to get filename with the format like, `filename_20220101.csv`,
 on the file system storage, and we want to incremental ingest the latest file with
@@ -41,20 +41,24 @@ assert (
 )
 ```
 
-The above example is :yawning_face: **NOT SURPRISE!!!** for us because Python
-already provide the build-in `datetime` to parse by `datetime.strptime` and
-format by `{dt}.strftime`. This package will be the special thing when we group
-more than one format-able objects together as `Naming`, `Version`, and `Datetime`.
+The above example is :yawning_face: **NOT SURPRISE!!!** for you right?
+Because the Python already provide the build-in `datetime` to parse by `datetime.strptime`
+and format by `{dt}.strftime` :banana:.
 
-**For complex filename format like**:
+This package will be the special thing when we group more than one format-able
+objects together as `Naming`, `Version`, and `Datetime`.
+For a complex filename format like :triumph:;
 
 ```text
 {filename:%s}_{datetime:%Y_%m_%d}.{version:%m.%n.%c}.csv
 ```
 
-From above filename format string, the `datetime` package does not enough for
-this scenario right? but you can handle by your hard-code object or create the
-better package than this project.
+!!! warning
+
+    **Disclaimer**: The above filename format, the `datetime` package that already
+    build-in in Python does not enough for this scenario :snake: but you can handle by your
+    code function or create the better package than this project :dash:.
+
 
 !!! note
 
@@ -65,3 +69,23 @@ better package than this project.
     this_date = Datetime.parse('20220101', '%Y%m%d')
     assert this_date.valid('any_files_20220101.csv', 'any_files_%Y%m%d.csv')
     ```
+
+## :dart: Next Step
+
+I will change formatter object construction from changing with inside method to
+assert design. The code already implement and testing stage at file `__assets.py`.
+
+That mean, you can create any formatter object by dynamic asset changed strategy.
+
+```python
+class Datetime(Formatter, asset=DATETIME_ASSET, config=DATETIME_CONF, level=10):
+    """Datetime Formatter object."""
+    ...
+```
+
+## :speech_balloon: Contribute
+
+I do not think this project will go around the world because it has specific propose
+and you can create by your coding without this project dependency for long term
+solution. So, on this time, you can open [the GitHub issue on this project :raised_hands:](https://github.com/korawica/fmtutil/issues)
+for fix bug or request new feature if you want it.

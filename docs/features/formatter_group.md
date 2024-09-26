@@ -1,5 +1,50 @@
 # Formatter Group
 
+The **FormatterGroup** object, `FormatterGroup`, which is the grouping of needed
+mapping formatter objects and its alias formatter object ref name together. You
+can define a name of formatter that you want, such as `name` for `Naming`, or
+`timestamp` for `Datetime`.
+
+!!! example
+
+    Define a formatter group object;
+
+    ```python
+    from fmtutil import make_group, Naming, Datetime, FormatterGroupType
+
+    group_obj: FormatterGroupType = make_group({'name': Naming, 'datetime': Datetime})
+
+    ```
+
+    **Parse**:
+
+    ```python
+    group_obj.parse('data_engineer_in_20220101_de', fmt='{name:%s}_in_{timestamp:%Y%m%d}_{name:%a}')
+    ```
+
+    ```text
+    >>> {
+    >>>     'name': Naming.parse('data engineer', '%n'),
+    >>>     'timestamp': Datetime.parse('2022-01-01 00:00:00.000000', '%Y-%m-%d %H:%M:%S.%f')
+    >>> }
+    ```
+
+    **Format**:
+
+    ```python
+    from fmtutil import FormatterGroup
+    from datetime import datetime
+
+    group_01: FormatterGroup = group_obj({'name': 'data engineer', 'datetime': datetime(2022, 1, 1)})
+    group_01.format('{name:%c}_{timestamp:%Y_%m_%d}')
+    ```
+
+    ```text
+    >>> dataEngineer_2022_01_01
+    ```
+
+## API
+
 ```text
 Group of Formatters with dynamic group naming like 'timestamp' for
 Datetime, 'name' for Naming. This class will use for ``make_group``

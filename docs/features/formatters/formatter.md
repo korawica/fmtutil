@@ -1,5 +1,19 @@
 # Formatter
 
+The main purpose is **Formatter Objects** for `parse` and `format` with string
+value, such as `Datetime`, `Version`, and `Serial` formatter objects. These objects
+were used for parse any filename with put the format string value.
+
+The formatter able to enhancement any format value from sting value, like in
+`Datetime`, for `%B` value that was designed for month shortname (`Jan`,
+`Feb`, etc.) that does not support in build-in `datetime` package.
+
+!!! important
+
+    The main usage of this formatter object is `parse` and `format` method.
+
+## API
+
 ```text
 Formatter object for inherit to any formatter subclass that define
 format and parse method. The base class will implement necessary

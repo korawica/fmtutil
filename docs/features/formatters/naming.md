@@ -1,5 +1,20 @@
 # Naming
 
+!!! example
+
+    ```python
+    from fmtutil import Naming
+
+    naming = Naming.parse(value='de is data engineer', fmt='%a is %n')
+    naming.format('Camel case is %c')
+    ```
+
+    ```text
+    >>> 'Camel case is dataEngineer'
+    ```
+
+## API
+
 **Formatter Mapping**:
 
 ```text

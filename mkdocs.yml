@@ -53,6 +53,7 @@ extra:
 nav:
   - index.md
   - Changelogs: CHANGELOG.md
+  - Error Handler: error_handler.md
   - Features:
       - Slot Level: features/slot_level.md
       - Formatters:
@@ -65,7 +66,6 @@ nav:
           - Constant: features/formatters/constant.md
       - Formatter Group: features/formatter_group.md
   - Examples:
-      - Examples: examples/example.md
       - Search Files: examples/search_files.md
 
 plugins:

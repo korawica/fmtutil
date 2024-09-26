@@ -1,5 +1,20 @@
 # Serial
 
+!!! example
+
+    ```python
+    from fmtutil import Serial
+
+    serial = Serial.parse(value='Serial_62130', fmt='Serial_%n')
+    serial.format('Convert to binary: %b')
+    ```
+
+    ```text
+    >>> 'Convert to binary: 1111001010110010'
+    ```
+
+## API
+
 **Formatter Mapping**:
 
 ```text
