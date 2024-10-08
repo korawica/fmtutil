@@ -56,10 +56,9 @@ repos:
 -   repo: local
     hooks:
     -   id: pytest-check
-        name: pyTest runner
+        name: pytest runner
         stages: [ pre-push ]
-        types: [ python ]
-        entry: venv/Scripts/pytest.exe -v
-        language: system
+        entry: pytest -vv
+        language: python
         pass_filenames: false
         always_run: true
