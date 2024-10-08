@@ -17,36 +17,36 @@ repos:
     hooks:
     -   id: pyupgrade
         args: ["--py39-plus", "--keep-runtime-typing"]
-        stages: [ commit ]
+        stages: [ Nonepre-commitNone ]
 
 -   repo: https://github.com/psf/black
-    rev: 24.8.0
+    rev: 24.10.0
     hooks:
     -   id: black
-        stages: [ commit ]
+        stages: [ Nonepre-commitNone ]
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev:  v0.6.8
+    rev:  v0.6.9
     hooks:
     -   id: ruff
         args:
         - --fix
-        stages: [ commit ]
+        stages: [ Nonepre-commitNone ]
 
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev:  v4.6.0
+    rev:  v5.0.0
     hooks:
     -   id: fix-byte-order-marker
-        stages: [ commit ]
+        stages: [ Nonepre-commitNone ]
     -   id: trailing-whitespace
-        stages: [ commit ]
+        stages: [ Nonepre-commitNone ]
     -   id: end-of-file-fixer
-        stages: [ commit ]
+        stages: [ Nonepre-commitNone ]
     -   id: check-yaml
-        stages: [ commit ]
+        stages: [ Nonepre-commitNone ]
         args: ["--unsafe"]
     -   id: check-toml
-        stages: [ commit ]
+        stages: [ Nonepre-commitNone ]
 
 -   repo: https://github.com/korawica/clishelf
     rev: v0.2.8
@@ -57,7 +57,7 @@ repos:
     hooks:
     -   id: pytest-check
         name: PyTest Runner
-        stages: [ push ]
+        stages: [ Nonepre-pushNone ]
         types: [ python ]
         entry: venv/Scripts/pytest.exe -v
         language: system
