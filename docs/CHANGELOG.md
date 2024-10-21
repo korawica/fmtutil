@@ -2,6 +2,30 @@
 
 ## Latest Changes
 
+## 1.0.11
+
+### :black_nib: Code Changes
+
+- :construction: refactored: ⬆ bump pypa/gh-action-pypi-publish from 1.10.1 to 1.10.2 (_2024-10-01_)
+- :fast_forward: merge: branch 'main' of https://github.com/korawica/fmtutil. (_2024-09-25_)
+- :construction: refactored: ⬆ bump pypa/gh-action-pypi-publish from 1.10.0 to 1.10.1 (_2024-09-20_)
+- :construction: refactored: 📦 bump types-python-dateutil from 2.9.0.20240821 to 2.9.0.20240906 (_2024-09-20_)
+
+### :card_file_box: Documents
+
+- :page_facing_up: docs: update readme and document files. (_2024-09-26_)
+- :page_facing_up: docs: update info of this project on readme. (_2024-09-25_)
+
+### :bug: Fix Bugs
+
+- :gear: fixed: fixed bumpping base version do not pass as kwargs. (_2024-10-21_)
+- :gear: fixed: change hook pytest local id. (_2024-10-08_)
+- :gear: fixed: fix pre-commit config syntax for version 4.0.0. (_2024-10-08_)
+
+### :package: Build & Workflow
+
+- :toolbox: build: change syntax of local hook with pytest. (_2024-10-08_)
+
 ## 1.0.10
 
 ### :black_nib: Code Changes
