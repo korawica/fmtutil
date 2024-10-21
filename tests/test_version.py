@@ -221,6 +221,11 @@ class VersionPackageTestCase(unittest.TestCase):
             vs.VersionPackage(0, 0, 1, 1, "rc", None).bump_pre(),
         )
 
+        self.assertEqual(
+            vs.VersionPackage(major=0, minor=0, patch=0).bump_patch(),
+            vs.VersionPackage(major=0, minor=0, patch=1),
+        )
+
     def test_ver_package_order(self):
         self.assertGreater(
             vs.VersionPackage.parse("0.15.rc1"),

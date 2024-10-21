@@ -280,7 +280,7 @@ class BaseVersion:
 
         :returns: new object with the raised major part
         """
-        return self.__class__(self.major + 1)
+        return self.__class__(major=self.major + 1)
 
     def bump_minor(self) -> Self:
         """Raise the minor part of the version, return a new object
@@ -288,7 +288,7 @@ class BaseVersion:
 
         :returns: new object with the raised minor part
         """
-        return self.__class__(self.major, self.minor + 1)
+        return self.__class__(major=self.major, minor=self.minor + 1)
 
     def bump_patch(self) -> Self:
         """Raise the patch part of the version, return a new object
@@ -296,7 +296,9 @@ class BaseVersion:
 
         :returns: new object with the raised patch part
         """
-        return self.__class__(self.major, self.minor, self.patch + 1)
+        return self.__class__(
+            major=self.major, minor=self.minor, patch=self.patch + 1
+        )
 
     def compare(self, other: Comparable) -> int:
         """Compare self with this other.
@@ -976,7 +978,11 @@ class VersionPackage(BaseVersion):
         return cmp(self.__extract_tuple(), other.__extract_tuple())
 
     def is_compatible(self, other: VersionPackage) -> bool:
-        """Check the other version that compatible with this Packaging version."""
+        """Check the other version that compatible with this Packaging version.
+
+        :param other: The other version package object that want to check
+            compatible.
+        """
         if not isinstance(other, VersionPackage):
             raise TypeError(f"Expected a Version type but got {type(other)}")
 
