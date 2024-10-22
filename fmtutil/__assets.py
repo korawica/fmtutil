@@ -95,7 +95,7 @@ class ConfigFormat:
 def asset_format(value: dict[str, Any]) -> Format:
     """Parsing any mapping value to Format dataclass."""
     if "regex" in value.keys() and "cregex" in value.keys():
-        raise ValueError("Format does not support for getting all regex keys.")
+        raise ValueError("Format does not support for getting both regex keys.")
     elif "regex" in value.keys():
         return CommonFormat(**value)
     elif "cregex" in value.keys():
@@ -200,7 +200,10 @@ class Formatter(ABC):
     def from_value(cls, value: Any) -> Self:
         """Passer the value to this formatter that will pass this value to
         ``cls.formatter`` method and map with the base format string value
-        before parse by ``cls.parse``."""
+        before parse by ``cls.parse``.
+
+        :rtype: Self
+        """
 
         fmt_filter = [
             (k, fmt.fmt(cls.prepare_value(value))())

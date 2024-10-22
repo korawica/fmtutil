@@ -3,7 +3,7 @@
 # Licensed under the MIT License. See LICENSE in the project root for
 # license information.
 # ------------------------------------------------------------------------------
-from __future__ import annotations  # pragma: no cover.
+from __future__ import annotations  # pragma: no cover
 
 import datetime
 import sys

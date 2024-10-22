@@ -1,13 +1,14 @@
+# ------------------------------------------------------------------------------
+# Copyright (c) 2022 Korawich Anuttra. All rights reserved.
+# Licensed under the MIT License. See LICENSE in the project root for
+# license information.
+# ------------------------------------------------------------------------------
 from __future__ import annotations
 
 import re
 from collections.abc import Iterable
 from decimal import Decimal
-from typing import (
-    Any,
-    Callable,
-    get_args,
-)
+from typing import Any, Callable, get_args
 
 try:
     from .__type import String
@@ -169,7 +170,11 @@ def bytes2str(value: String) -> str:
 
 
 def float2decimal(value: float, precision: int = 15) -> Decimal:
-    """Convert float to decimal with default precision value."""
+    """Convert a float type value to decimal value with default precision that
+    construct with ``Decimal`` object.
+
+    :rtype: Decimal
+    """
     return Decimal(value).quantize(Decimal(10) ** -precision)
 
 
@@ -192,10 +197,9 @@ def scache(cache_num: int) -> str:
 def escape_fmt_group(value: str) -> str:
     """Escape regex string value of format group before format
 
+    Note for example, I replace \\ to ? because doc-string issue!
+
     Examples:
-
-        NOTE: Replace \\ to ? because doc-string issue!
-
         >>> escape_fmt_group(
         ...     "+file_{datetime:%Y-%m-%d %H:%M:%S}_{naming:%n_%e}.json"
         ... ).replace('\\\\', '?')
@@ -220,7 +224,11 @@ def escape_fmt_group(value: str) -> str:
 
 
 def unescape(value: str) -> str:
-    """Unescape regex string value."""
+    """Unescape regular expression string value with the special escape value.
+
+    :param value: A value that want to un-escape.
+    :rtype: str
+    """
     return (
         value.replace("\\\\", "<ESCAPE>")
         .replace("\\", "")
