@@ -2,6 +2,16 @@
 
 ## Latest Changes
 
+## 1.0.12
+
+### :black_nib: Code Changes
+
+- :construction: refactored: ⬆ bump pypa/gh-action-pypi-publish from 1.11.0 to 1.12.2 (_2024-12-01_)
+- :construction: refactored: ⬆ bump codecov/codecov-action from 4 to 5 (_2024-12-01_)
+- :construction: refactored: 📦 bump types-python-dateutil from 2.9.0.20240906 to 2.9.0.20241003 (_2024-11-01_)
+- :construction: refactored: ⬆ bump pypa/gh-action-pypi-publish from 1.10.2 to 1.11.0 (_2024-11-01_)
+- :test_tube: tests: reformated testcase for use unittest method instead. (_2024-10-22_)
+
 ## 1.0.11
 
 ### :black_nib: Code Changes
