@@ -56,6 +56,7 @@ changelog = "./docs/CHANGELOG.md"
 
 [tool.shelf.git]
 commit_prefix_force_fix = true
+commit_msg_format = "{emoji} {subject}"
 
 [tool.hatch.version]
 scheme = "standard"
