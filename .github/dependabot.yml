@@ -8,7 +8,7 @@ updates:
       time: "12:00"
       timezone: "Etc/UTC"
     commit-message:
-      prefix: ⬆
+      prefix: ":arrow_up: deps:"
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
@@ -17,4 +17,4 @@ updates:
       time: "12:00"
       timezone: "Etc/UTC"
     commit-message:
-      prefix: 📦
+      prefix: ":package: deps:"
