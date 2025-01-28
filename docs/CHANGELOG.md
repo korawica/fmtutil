@@ -2,6 +2,14 @@
 
 ## Latest Changes
 
+## 1.0.13
+
+### :black_nib: Code Changes
+
+- :pushpin: update clishelf version to 0.2.14. (_2025-01-28_)
+- :package: bump types-python-dateutil from 2.9.0.20241003 to 2.9.0.20241206 (_2025-01-02_)
+- :construction: ⬆ bump pypa/gh-action-pypi-publish from 1.12.2 to 1.12.3 (_2025-01-02_)
+
 ## 1.0.12
 
 ### :black_nib: Code Changes
