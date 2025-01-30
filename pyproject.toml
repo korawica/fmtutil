@@ -53,10 +53,11 @@ fmtutil = "fmtutil.__main__:main"
 [tool.shelf.version]
 version = "./fmtutil/__about__.py"
 changelog = "./docs/CHANGELOG.md"
+commit_subject_format = "{emoji} {subject}"
+commit_msg_format = "- {subject}"
 
 [tool.shelf.git]
 commit_prefix_force_fix = true
-commit_msg_format = "{emoji} {subject}"
 
 [tool.hatch.version]
 scheme = "standard"
