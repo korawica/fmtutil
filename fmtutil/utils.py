@@ -10,11 +10,7 @@ from collections.abc import Iterable
 from decimal import Decimal
 from typing import Any, Callable, get_args
 
-try:
-    from .__type import String
-except ImportError:
-    from __type import String
-
+from .__type import String
 
 FMT_STR_MAP: dict[str, str] = {
     "-": "minus",

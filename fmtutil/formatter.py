@@ -22,6 +22,7 @@ from decimal import Decimal
 from functools import lru_cache, partial, total_ordering, wraps
 from itertools import tee, zip_longest
 from typing import (
+    TYPE_CHECKING,
     Any,
     Callable,
     ClassVar,
@@ -31,12 +32,8 @@ from typing import (
     final,  # docs: https://github.com/python/mypy/issues/9953
 )
 
-from typing_extensions import Self, TypeAlias
-
-try:
-    from dateutil.relativedelta import relativedelta
-except ImportError:
-    relativedelta = None
+if TYPE_CHECKING:
+    from typing_extensions import Self, TypeAlias
 
 from .__type import (
     DictStr,
@@ -75,6 +72,15 @@ PriorityCallable: TypeAlias = Union[
     partial[Any],
 ]
 FormatterCallable: TypeAlias = Union[Callable[[], Any], partial[Any]]
+
+
+def lazy_relativedelta():  # pragma: no cover
+    """Lazy import relativedelta object that use when install with [all] option."""
+    try:
+        from dateutil.relativedelta import relativedelta
+    except ImportError:
+        relativedelta = None
+    return relativedelta
 
 
 class PriorityValue(TypedDict):
@@ -1789,8 +1795,8 @@ class Datetime(Formatter, level=10, fmt="%Y-%m-%d %H:%M:%S.%f"):
             other,
             (
                 timedelta
-                if relativedelta is None
-                else (relativedelta, timedelta)
+                if (delta := lazy_relativedelta()) is None
+                else (delta, timedelta)
             ),
         ):
             return self.__class__.from_value(self.value + other)
@@ -1804,8 +1810,8 @@ class Datetime(Formatter, level=10, fmt="%Y-%m-%d %H:%M:%S.%f"):
             other,
             (
                 timedelta
-                if relativedelta is None
-                else (relativedelta, timedelta)
+                if (delta := lazy_relativedelta()) is None
+                else (delta, timedelta)
             ),
         ):
             return self.__class__.from_value(self.value - other)
