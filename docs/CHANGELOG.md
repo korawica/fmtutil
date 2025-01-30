@@ -2,6 +2,17 @@
 
 ## Latest Changes
 
+## 1.0.14
+
+### :package: Build & Workflow
+
+- :toolbox: update clishelf precommit hook and config.
+
+### :postbox: Dependencies
+
+- :pushpin: move typing-extensions from require deps to test option.
+- :arrow_up: bump pypa/gh-action-pypi-publish from 1.12.3 to 1.12.4 (#117)
+
 ## 1.0.13
 
 ### :black_nib: Code Changes
