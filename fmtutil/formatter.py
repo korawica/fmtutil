@@ -2066,9 +2066,7 @@ class Version(Formatter, level=4, fmt="%m_%n_%c"):
             },
             "%p": {
                 "value": partial(itself, str(_version.v_post or "")),
-                "regex": (
-                    r"(?P<post>(?:(post|rev|r)[-_\.]?[0-9]+)|(?:-[0-9]+))"
-                ),
+                "regex": r"(?P<post>(?:(post|rev|r)[-_\.]?[0-9]+)|(?:-[0-9]+))",
             },
             "%-p": {
                 "value": partial(itself, str(_version.v_post or "")),

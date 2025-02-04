@@ -138,9 +138,7 @@ class NamingTestCase(unittest.TestCase):
                 ),
                 "%k": "(?P<strings_kebab>[a-z0-9]+(?:-[a-z0-9]+)*)",
                 "%K": "(?P<strings_kebab_upper>[A-Z0-9]+(?:-[A-Z0-9]+)*)",
-                "%-K": (
-                    "(?P<strings_train>[A-Z][a-z0-9]+(?:-[A-Z]+[a-z0-9]*)*)"
-                ),
+                "%-K": "(?P<strings_train>[A-Z][a-z0-9]+(?:-[A-Z]+[a-z0-9]*)*)",
                 "%f": "(?P<flats>[a-z0-9]+)",
                 "%F": "(?P<flats_upper>[A-Z0-9]+)",
                 "%s": "(?P<strings_snake>[a-z0-9]+(?:_[a-z0-9]+)*)",
@@ -149,9 +147,7 @@ class NamingTestCase(unittest.TestCase):
                     "(?P<strings_snake_title>[A-Z][a-z0-9]+"
                     "(?:_[A-Z]+[a-z0-9]*)*)"
                 ),
-                "%T": (
-                    "(?P<strings_train>[A-Z][a-z0-9]+(?:-[A-Z]+[a-z0-9]*)*)"
-                ),
+                "%T": "(?P<strings_train>[A-Z][a-z0-9]+(?:-[A-Z]+[a-z0-9]*)*)",
                 "%v": "(?P<vowels>[b-df-hj-np-tv-z]+)",
                 "%V": "(?P<vowels_upper>[B-DF-HJ-NP-TV-Z]+)",
                 "%n": "(?P<strings>[a-z0-9]+(?:\\s[a-z0-9]+)*)",

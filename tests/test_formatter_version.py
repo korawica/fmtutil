@@ -73,7 +73,9 @@ class VersionTestCase(unittest.TestCase):
                 "%c": "(?P<micro>\\d{1,3})",
                 "%e": "(?P<epoch>[0-9]+!)",
                 "%-e": "(?P<epoch_num>[0-9]+)",
-                "%q": "(?P<pre>(a|b|c|rc|alpha|beta|pre|preview)[-_\\.]?[0-9]+)",
+                "%q": (
+                    "(?P<pre>(a|b|c|rc|alpha|beta|pre|preview)[-_\\.]?[0-9]+)"
+                ),
                 "%p": "(?P<post>(?:(post|rev|r)[-_\\.]?[0-9]+)|(?:-[0-9]+))",
                 "%-p": "(?P<post_num>[0-9]+)",
                 "%d": "(?P<dev>dev[-_\\.]?[0-9]+)",
