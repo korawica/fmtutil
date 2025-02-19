@@ -1,0 +1,4843 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../error_handler/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.4">
+    
+    
+      
+        <title>Changelogs - Fmtutil</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.8608ea7d.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+  
+  
+    
+    
+  
+  
+  <style>:root{--md-admonition-icon--warning:url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m23 12-2.44 2.78.34 3.68-3.61.82-1.89 3.18L12 21l-3.4 1.47-1.89-3.18-3.61-.82.34-3.69L1 12l2.44-2.79-.34-3.68 3.61-.81L8.6 1.54 12 3l3.4-1.46 1.89 3.18 3.61.82-.34 3.68zm-2.67 0L18.5 9.89l.24-2.79L16 6.5l-1.42-2.43L12 5.18 9.42 4.07 8 6.5l-2.74.59.24 2.79L3.67 12l1.83 2.1-.24 2.8 2.74.6 1.42 2.43L12 18.81l2.58 1.11L16 17.5l2.74-.61-.24-2.79zM11 15h2v2h-2zm0-8h2v6h-2z"/></svg>');}</style>
+
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Work+Sans:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Work Sans";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#changelogs" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Fmtutil" class="md-header__button md-logo" aria-label="Fmtutil" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Fmtutil
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Changelogs
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="blue-grey" data-md-color-accent="lime"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/korawica/fmtutil" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M186.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1M480 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2m-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3m-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1"/></svg>
+  </div>
+  <div class="md-source__repository">
+    korawica/fmtutil
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Fmtutil" class="md-nav__button md-logo" aria-label="Fmtutil" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Fmtutil
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/korawica/fmtutil" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M186.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1M480 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2m-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3m-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1"/></svg>
+  </div>
+  <div class="md-source__repository">
+    korawica/fmtutil
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Welcome to Fmtutil
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Changelogs
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Changelogs
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#latest-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Latest Changes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1015" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.15
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.15">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1014" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.14
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.14">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1013" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.13
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.13">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1012" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.12
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.12">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1011" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.11
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.11">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documents" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1010" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.10
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.10">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documents_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#109" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.9
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.9">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#documents_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#108" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.8
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.8">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documents_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#107" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.7
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.7">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documents_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#106" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.6
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.6">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documents_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#105" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.5
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.5">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#104" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.4
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.4">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#103" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.3
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.3">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documents_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#102" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.2
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.2">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documents_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#101" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.1
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.1">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#100" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.0
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.0">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#044" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.4
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.4.4">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#043" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.3
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.4.3">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#042" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.2
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.4.2">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documents_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#041" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.1
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.4.1">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documents_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#040" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.0
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.4.0">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documents_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#030" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.0
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.3.0">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documents_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#023" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.3
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.2.3">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documents_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#022" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.2
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.2.2">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documents_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#021" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.1
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.2.1">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#020" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.0
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.2.0">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#014" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.1.4
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.1.4">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#013" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.1.3
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.1.3">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#012" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.1.2
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.1.2">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#011" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.1.1
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.1.1">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#documents_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#010" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.1.0
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.1.0">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#006" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.6
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.0.6">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_25" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#005post1" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.5.post1
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.0.5.post1">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#005post0" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.5.post0
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.0.5.post0">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_26" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#005" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.5
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.0.5">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_27" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#005_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.5
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.0.5">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_28" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#004" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.4
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.0.4">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_29" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documents_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#003post1" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.3.post1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#003" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.3
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#002" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.2
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#001" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.1
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../error_handler/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Error Handler
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Features
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Features
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/slot_level/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Slot Level
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Formatters
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_2">
+            <span class="md-nav__icon md-icon"></span>
+            Formatters
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/formatters/formatter/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Base Formatter
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/formatters/datetime/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Datetime
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/formatters/version/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Version
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/formatters/naming/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Naming
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/formatters/serial/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Serial
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/formatters/storage/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Storage
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/formatters/constant/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Constant
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/formatter_group/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Formatter Group
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Examples
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Examples
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/search_files/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Search Files
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#latest-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Latest Changes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1015" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.15
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.15">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1014" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.14
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.14">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1013" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.13
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.13">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1012" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.12
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.12">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1011" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.11
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.11">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documents" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1010" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.10
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.10">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documents_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#109" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.9
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.9">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#documents_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#108" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.8
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.8">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documents_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#107" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.7
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.7">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documents_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#106" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.6
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.6">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documents_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#105" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.5
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.5">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#104" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.4
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.4">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#103" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.3
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.3">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documents_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#102" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.2
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.2">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documents_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#101" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.1
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.1">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#100" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.0
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.0">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#044" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.4
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.4.4">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#043" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.3
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.4.3">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#042" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.2
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.4.2">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documents_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#041" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.1
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.4.1">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documents_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#040" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.0
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.4.0">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documents_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#030" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.0
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.3.0">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documents_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#023" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.3
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.2.3">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documents_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#022" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.2
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.2.2">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documents_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#021" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.1
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.2.1">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#020" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.0
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.2.0">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#014" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.1.4
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.1.4">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#013" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.1.3
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.1.3">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#012" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.1.2
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.1.2">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#011" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.1.1
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.1.1">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#documents_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#010" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.1.0
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.1.0">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#006" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.6
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.0.6">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_25" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#005post1" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.5.post1
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.0.5.post1">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#005post0" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.5.post0
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.0.5.post0">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_26" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#005" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.5
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.0.5">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_27" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#005_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.5
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.0.5">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_28" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#004" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.4
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.0.4">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-changes_29" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documents_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-bugs_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix Bugs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-workflow_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build &amp; Workflow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#003post1" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.3.post1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#003" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.3
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#002" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.2
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#001" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.0.1
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="changelogs">Changelogs</h1>
+<h2 id="latest-changes">Latest Changes</h2>
+<h2 id="1015">1.0.15</h2>
+<h3 id="build-workflow"><img alt="📦" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4e6.svg" title=":package:" /> Build &amp; Workflow</h3>
+<ul>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> move auth with oidc on publish workflow.</li>
+</ul>
+<h2 id="1014">1.0.14</h2>
+<h3 id="build-workflow_1"><img alt="📦" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4e6.svg" title=":package:" /> Build &amp; Workflow</h3>
+<ul>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> update clishelf precommit hook and config.</li>
+</ul>
+<h3 id="dependencies"><img alt="📮" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4ee.svg" title=":postbox:" /> Dependencies</h3>
+<ul>
+<li><img alt="📌" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4cc.svg" title=":pushpin:" /> move typing-extensions from require deps to test option.</li>
+<li><img alt="⬆" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2b06.svg" title=":arrow_up:" /> bump pypa/gh-action-pypi-publish from 1.12.3 to 1.12.4 (#117)</li>
+</ul>
+<h2 id="1013">1.0.13</h2>
+<h3 id="code-changes"><img alt="✒" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2712.svg" title=":black_nib:" /> Code Changes</h3>
+<ul>
+<li><img alt="📌" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4cc.svg" title=":pushpin:" /> update clishelf version to 0.2.14. (<em>2025-01-28</em>)</li>
+<li><img alt="📦" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4e6.svg" title=":package:" /> bump types-python-dateutil from 2.9.0.20241003 to 2.9.0.20241206 (<em>2025-01-02</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> ⬆ bump pypa/gh-action-pypi-publish from 1.12.2 to 1.12.3 (<em>2025-01-02</em>)</li>
+</ul>
+<h2 id="1012">1.0.12</h2>
+<h3 id="code-changes_1"><img alt="✒" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2712.svg" title=":black_nib:" /> Code Changes</h3>
+<ul>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: ⬆ bump pypa/gh-action-pypi-publish from 1.11.0 to 1.12.2 (<em>2024-12-01</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: ⬆ bump codecov/codecov-action from 4 to 5 (<em>2024-12-01</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: 📦 bump types-python-dateutil from 2.9.0.20240906 to 2.9.0.20241003 (<em>2024-11-01</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: ⬆ bump pypa/gh-action-pypi-publish from 1.10.2 to 1.11.0 (<em>2024-11-01</em>)</li>
+<li><img alt="🧪" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9ea.svg" title=":test_tube:" /> tests: reformated testcase for use unittest method instead. (<em>2024-10-22</em>)</li>
+</ul>
+<h2 id="1011">1.0.11</h2>
+<h3 id="code-changes_2"><img alt="✒" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2712.svg" title=":black_nib:" /> Code Changes</h3>
+<ul>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: ⬆ bump pypa/gh-action-pypi-publish from 1.10.1 to 1.10.2 (<em>2024-10-01</em>)</li>
+<li><img alt="⏩" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/23e9.svg" title=":fast_forward:" /> merge: branch 'main' of https://github.com/korawica/fmtutil. (<em>2024-09-25</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: ⬆ bump pypa/gh-action-pypi-publish from 1.10.0 to 1.10.1 (<em>2024-09-20</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: 📦 bump types-python-dateutil from 2.9.0.20240821 to 2.9.0.20240906 (<em>2024-09-20</em>)</li>
+</ul>
+<h3 id="documents"><img alt="🗃" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f5c3.svg" title=":card_file_box:" /> Documents</h3>
+<ul>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: update readme and document files. (<em>2024-09-26</em>)</li>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: update info of this project on readme. (<em>2024-09-25</em>)</li>
+</ul>
+<h3 id="fix-bugs"><img alt="🐛" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f41b.svg" title=":bug:" /> Fix Bugs</h3>
+<ul>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: fixed bumpping base version do not pass as kwargs. (<em>2024-10-21</em>)</li>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: change hook pytest local id. (<em>2024-10-08</em>)</li>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: fix pre-commit config syntax for version 4.0.0. (<em>2024-10-08</em>)</li>
+</ul>
+<h3 id="build-workflow_2"><img alt="📦" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4e6.svg" title=":package:" /> Build &amp; Workflow</h3>
+<ul>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> build: change syntax of local hook with pytest. (<em>2024-10-08</em>)</li>
+</ul>
+<h2 id="1010">1.0.10</h2>
+<h3 id="code-changes_3"><img alt="✒" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2712.svg" title=":black_nib:" /> Code Changes</h3>
+<ul>
+<li><img alt="🧪" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9ea.svg" title=":test_tube:" /> tests: fixed datetime object parser for python 3.13. (<em>2024-09-20</em>)</li>
+<li><img alt="🧪" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9ea.svg" title=":test_tube:" /> tests: add note and todo comments on __asset file. (<em>2024-09-20</em>)</li>
+</ul>
+<h3 id="documents_1"><img alt="🗃" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f5c3.svg" title=":card_file_box:" /> Documents</h3>
+<ul>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: update examples documents and readme. (<em>2024-09-20</em>)</li>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: update documents and split contents. (<em>2024-09-20</em>)</li>
+</ul>
+<h3 id="fix-bugs_1"><img alt="🐛" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f41b.svg" title=":bug:" /> Fix Bugs</h3>
+<ul>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: change tag regex format on push event in docs workflow. (<em>2024-09-18</em>)</li>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: ci workflow push artifact does not include hidden file by default. (<em>2024-09-17</em>)</li>
+</ul>
+<h3 id="build-workflow_3"><img alt="📦" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4e6.svg" title=":package:" /> Build &amp; Workflow</h3>
+<ul>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> build: change workflow name from ci to coverage. (<em>2024-09-17</em>)</li>
+</ul>
+<h3 id="dependencies_1"><img alt="📮" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4ee.svg" title=":postbox:" /> Dependencies</h3>
+<ul>
+<li><img alt="📌" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4cc.svg" title=":pushpin:" /> deps: add all on optional deps for optional relativedelta. (<em>2024-09-20</em>)</li>
+<li><img alt="📌" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4cc.svg" title=":pushpin:" /> deps: remove dev on optional deps. (<em>2024-09-20</em>)</li>
+<li><img alt="📌" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4cc.svg" title=":pushpin:" /> deps: add mkdocs-awesome-pages-plugin package for docs building. (<em>2024-09-18</em>)</li>
+</ul>
+<h2 id="109">1.0.9</h2>
+<h3 id="documents_2"><img alt="🗃" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f5c3.svg" title=":card_file_box:" /> Documents</h3>
+<ul>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: update emoji on readme. (<em>2024-09-17</em>)</li>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: update readme for support python 3.13. (<em>2024-09-02</em>)</li>
+</ul>
+<h3 id="fix-bugs_2"><img alt="🐛" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f41b.svg" title=":bug:" /> Fix Bugs</h3>
+<ul>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: add id on step setup python version. (<em>2024-09-17</em>)</li>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: add allow-prereleases flag for testing python 3.13. (<em>2024-09-02</em>)</li>
+</ul>
+<h3 id="build-workflow_4"><img alt="📦" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4e6.svg" title=":package:" /> Build &amp; Workflow</h3>
+<ul>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> build: add link to package docs on issue config. (<em>2024-09-17</em>)</li>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> build: update test workflow. (<em>2024-09-17</em>)</li>
+</ul>
+<h3 id="dependencies_2"><img alt="📮" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4ee.svg" title=":postbox:" /> Dependencies</h3>
+<ul>
+<li><img alt="📌" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4cc.svg" title=":pushpin:" /> deps: update pre-commit hook of clishelf to 0.2.6. (<em>2024-09-17</em>)</li>
+<li><img alt="📌" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4cc.svg" title=":pushpin:" /> deps: add support for python version 3.13. (<em>2024-09-02</em>)</li>
+</ul>
+<h2 id="108">1.0.8</h2>
+<h3 id="code-changes_4"><img alt="✒" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2712.svg" title=":black_nib:" /> Code Changes</h3>
+<ul>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: 📦 bump types-python-dateutil from 2.9.0.20240316 to 2.9.0.20240821 (<em>2024-09-01</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: ⬆ bump pypa/gh-action-pypi-publish from 1.9.0 to 1.10.0 (<em>2024-09-01</em>)</li>
+</ul>
+<h3 id="documents_3"><img alt="🗃" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f5c3.svg" title=":card_file_box:" /> Documents</h3>
+<ul>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: implement mkdocs-material to this project. (<em>2024-09-02</em>)</li>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: update docs on installation tipic readme. (<em>2024-08-23</em>)</li>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: update readme docs and package desc. (<em>2024-08-23</em>)</li>
+</ul>
+<h3 id="fix-bugs_3"><img alt="🐛" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f41b.svg" title=":bug:" /> Fix Bugs</h3>
+<ul>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: fixed topic value on classifiers package. (<em>2024-08-23</em>)</li>
+</ul>
+<h3 id="build-workflow_5"><img alt="📦" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4e6.svg" title=":package:" /> Build &amp; Workflow</h3>
+<ul>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> build: add env attach to docs workflow. (<em>2024-09-02</em>)</li>
+</ul>
+<h2 id="107">1.0.7</h2>
+<h3 id="features"><img alt="✨" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2728.svg" title=":sparkles:" /> Features</h3>
+<ul>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: imgrate prepare_value function for Datetime. (<em>2024-05-26</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: transfer attributes and methods from origin formatter obj. (<em>2024-05-25</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: update importer for __asset objs. (<em>2024-05-25</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add format method on assert module. (<em>2024-05-25</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: remove proxy obj and implement init instead. (<em>2024-05-25</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add prepare_parsing cls method for receive parsing data. (<em>2024-05-25</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add unescape regex on utils func. (<em>2024-05-25</em>)</li>
+</ul>
+<h3 id="code-changes_5"><img alt="✒" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2712.svg" title=":black_nib:" /> Code Changes</h3>
+<ul>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: ⬆ bump pypa/gh-action-pypi-publish from 1.8.14 to 1.9.0 (<em>2024-07-01</em>)</li>
+<li><img alt="🎨" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3a8.svg" title=":art:" /> style: add type hint for mypy. (<em>2024-05-26</em>)</li>
+<li><img alt="🧪" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9ea.svg" title=":test_tube:" /> tests: add test cases for the assets formatter obj on Serial. (<em>2024-05-26</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: migrate prepare method to abstract class. (<em>2024-05-25</em>)</li>
+</ul>
+<h3 id="documents_4"><img alt="🗃" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f5c3.svg" title=":card_file_box:" /> Documents</h3>
+<ul>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: add more format asset for datetime. (<em>2024-05-26</em>)</li>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: update readme docs and remove link of any formatter obj. (<em>2024-05-25</em>)</li>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: changelog does not valid with old setting. (<em>2024-05-25</em>)</li>
+</ul>
+<h3 id="fix-bugs_4"><img alt="🐛" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f41b.svg" title=":bug:" /> Fix Bugs</h3>
+<ul>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: fix type of operator property on assets formatter obj. (<em>2024-05-26</em>)</li>
+</ul>
+<h3 id="build-workflow_6"><img alt="📦" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4e6.svg" title=":package:" /> Build &amp; Workflow</h3>
+<ul>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> build: remove fix version of pytest on tests workflow. (<em>2024-05-25</em>)</li>
+</ul>
+<h2 id="106">1.0.6</h2>
+<h3 id="features_1"><img alt="✨" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2728.svg" title=":sparkles:" /> Features</h3>
+<ul>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add escape formatter group function. (<em>2024-05-24</em>)</li>
+</ul>
+<h3 id="code-changes_6"><img alt="✒" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2712.svg" title=":black_nib:" /> Code Changes</h3>
+<ul>
+<li><img alt="🧪" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9ea.svg" title=":test_tube:" /> tests: add test cases for escape regex work. (<em>2024-05-25</em>)</li>
+<li><img alt="🎨" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3a8.svg" title=":art:" /> style: add logging with <strong>name</strong> on init file. (<em>2024-05-19</em>)</li>
+<li><img alt="🎨" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3a8.svg" title=":art:" /> style: change type hint for itself class to Self. (<em>2024-05-18</em>)</li>
+</ul>
+<h3 id="documents_5"><img alt="🗃" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f5c3.svg" title=":card_file_box:" /> Documents</h3>
+<ul>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: update readme and doc-string. (#69) (<em>2024-05-15</em>)</li>
+</ul>
+<h3 id="fix-bugs_5"><img alt="🐛" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f41b.svg" title=":bug:" /> Fix Bugs</h3>
+<ul>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: import return type does not use on <strong>all</strong>. (<em>2024-05-25</em>)</li>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: add abstractmethod for abc class. (<em>2024-05-15</em>)</li>
+</ul>
+<h3 id="dependencies_3"><img alt="📮" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4ee.svg" title=":postbox:" /> Dependencies</h3>
+<ul>
+<li><img alt="📌" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4cc.svg" title=":pushpin:" /> deps: remove perf deps and add mkdocs deps for docs generator. (<em>2024-05-15</em>)</li>
+</ul>
+<h2 id="105">1.0.5</h2>
+<h3 id="features_2"><img alt="✨" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2728.svg" title=":sparkles:" /> Features</h3>
+<ul>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add validate method for Storage formatter object. (<em>2024-05-02</em>)</li>
+</ul>
+<h3 id="code-changes_7"><img alt="✒" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2712.svg" title=":black_nib:" /> Code Changes</h3>
+<ul>
+<li><img alt="🧪" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9ea.svg" title=":test_tube:" /> tests: add testcase for formatter group that should to fixed. (<em>2024-05-02</em>)</li>
+<li><img alt="🧪" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9ea.svg" title=":test_tube:" /> tests: add testcase for str2byte on Storage formatter obj. (<em>2024-05-02</em>)</li>
+</ul>
+<h3 id="fix-bugs_6"><img alt="🐛" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f41b.svg" title=":bug:" /> Fix Bugs</h3>
+<ul>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: change staticmethod that use itself class to classmethod for support inherit. (<em>2024-05-02</em>)</li>
+</ul>
+<h3 id="build-workflow_7"><img alt="📦" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4e6.svg" title=":package:" /> Build &amp; Workflow</h3>
+<ul>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> build: change repo url from github workflow file to env variable. (<em>2024-05-02</em>)</li>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> build: add environment for seperate deployment to PyPI. (<em>2024-05-02</em>)</li>
+</ul>
+<h2 id="104">1.0.4</h2>
+<h3 id="features_3"><img alt="✨" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2728.svg" title=":sparkles:" /> Features</h3>
+<ul>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: migrate and optimization the formatter object (<em>2024-05-02</em>)</li>
+</ul>
+<h3 id="code-changes_8"><img alt="✒" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2712.svg" title=":black_nib:" /> Code Changes</h3>
+<ul>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: change format generator suffix value update. (<em>2024-05-02</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: add ClassVar to any class attributes. (<em>2024-05-01</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: update change from the latest of main. (<em>2024-05-01</em>)</li>
+</ul>
+<h3 id="fix-bugs_7"><img alt="🐛" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f41b.svg" title=":bug:" /> Fix Bugs</h3>
+<ul>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: raise exception class does not use from exceptions file. (<em>2024-05-02</em>)</li>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: revert "Merge branch 'main' into migration". (<em>2024-04-30</em>)</li>
+</ul>
+<h3 id="build-workflow_8"><img alt="📦" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4e6.svg" title=":package:" /> Build &amp; Workflow</h3>
+<ul>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> build: add use venv step for activate python interpeter. (<em>2024-04-30</em>)</li>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> build: add cache on venv that reduce installation time. (<em>2024-04-30</em>)</li>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> build: use uv for installing Python dependencies in tests. (<em>2024-04-30</em>)</li>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> build: change installation uv by curl command. (<em>2024-04-30</em>)</li>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> build: test upgrade pip installation with uv. (<em>2024-04-30</em>)</li>
+</ul>
+<h2 id="103">1.0.3</h2>
+<h3 id="features_4"><img alt="✨" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2728.svg" title=":sparkles:" /> Features</h3>
+<ul>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add clishelf git config for force fix commit prefix. (<em>2024-04-29</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add parse method on migration of formatter object. (<em>2024-04-29</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: change input argument name from register to asset. (<em>2024-04-29</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add migration code for support dynamic creation. (<em>2024-03-04</em>)</li>
+</ul>
+<h3 id="code-changes_9"><img alt="✒" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2712.svg" title=":black_nib:" /> Code Changes</h3>
+<ul>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: remove exception classes that do not use on the formatter. (<em>2024-04-29</em>)</li>
+</ul>
+<h3 id="documents_6"><img alt="🗃" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f5c3.svg" title=":card_file_box:" /> Documents</h3>
+<ul>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: add migration note on formatter file. (<em>2024-04-29</em>)</li>
+</ul>
+<h3 id="fix-bugs_8"><img alt="🐛" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f41b.svg" title=":bug:" /> Fix Bugs</h3>
+<ul>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: merge branch 'migration' that fix the suffix matching. (<em>2024-04-29</em>)</li>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: fix the bug that does not add suffix with the correct cache number. (<em>2024-04-29</em>)</li>
+</ul>
+<h3 id="build-workflow_9"><img alt="📦" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4e6.svg" title=":package:" /> Build &amp; Workflow</h3>
+<ul>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> build: add pytest on installation step that loss from clishelf. (<em>2024-04-14</em>)</li>
+</ul>
+<h3 id="dependencies_4"><img alt="📮" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4ee.svg" title=":postbox:" /> Dependencies</h3>
+<ul>
+<li><img alt="⬆" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2b06.svg" title=":arrow_up:" /> deps: upgrade dependencies from main branch (#63) (<em>2024-04-10</em>)</li>
+</ul>
+<h2 id="102">1.0.2</h2>
+<h3 id="features_5"><img alt="✨" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2728.svg" title=":sparkles:" /> Features</h3>
+<ul>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: override <strong>format</strong> method for support fstring. (<em>2024-04-14</em>)</li>
+</ul>
+<h3 id="code-changes_10"><img alt="✒" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2712.svg" title=":black_nib:" /> Code Changes</h3>
+<ul>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: 📦 bump types-python-dateutil from 2.8.19.20240106 to 2.9.0.20240316 (<em>2024-04-01</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: ⬆ bump pypa/gh-action-pypi-publish from 1.8.12 to 1.8.14 (<em>2024-04-01</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: ⬆ bump pypa/gh-action-pypi-publish from 1.8.11 to 1.8.12 (<em>2024-03-01</em>)</li>
+<li><img alt="🎨" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3a8.svg" title=":art:" /> style: add type TypeAlias for hint support change on 3.12. (<em>2024-02-19</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: change repo type of clishelf from local to hook. (<em>2024-02-13</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: ⬆ bump actions/download-artifact from 3 to 4 (<em>2024-02-01</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: ⬆ bump codecov/codecov-action from 3 to 4 (<em>2024-02-01</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: ⬆ bump actions/upload-artifact from 3 to 4 (<em>2024-02-01</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: 📦 bump types-python-dateutil from 2.8.19.14 to 2.8.19.20240106 (<em>2024-02-01</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: ⬆ bump actions/cache from 3 to 4 (<em>2024-02-01</em>)</li>
+</ul>
+<h3 id="documents_7"><img alt="🗃" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f5c3.svg" title=":card_file_box:" /> Documents</h3>
+<ul>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: update README file. (<em>2024-03-03</em>)</li>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: update option highlight for note on README file. (<em>2024-02-29</em>)</li>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: update README for noted supported python version. (<em>2024-02-12</em>)</li>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: update README for supported python38. (<em>2024-01-30</em>)</li>
+</ul>
+<h3 id="fix-bugs_9"><img alt="🐛" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f41b.svg" title=":bug:" /> Fix Bugs</h3>
+<ul>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: change param name of download-artifact to pattern. (<em>2024-03-03</em>)</li>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: fix pre-commit skip hook id on ci workflow. (<em>2024-02-13</em>)</li>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: fix bug for download and upload artifact v4. (<em>2024-02-12</em>)</li>
+</ul>
+<h3 id="build-workflow_10"><img alt="📦" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4e6.svg" title=":package:" /> Build &amp; Workflow</h3>
+<ul>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> build: add issue template for problem on GitHub repo. (<em>2024-02-18</em>)</li>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> build: add multiple name for download and upload artifact supported on v4. (<em>2024-02-12</em>)</li>
+</ul>
+<h3 id="dependencies_5"><img alt="📮" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4ee.svg" title=":postbox:" /> Dependencies</h3>
+<ul>
+<li><img alt="📌" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4cc.svg" title=":pushpin:" /> deps: add typing-extensions for support import TypeAlias. (<em>2024-02-19</em>)</li>
+</ul>
+<h2 id="101">1.0.1</h2>
+<h3 id="code-changes_11">Code Changes</h3>
+<ul>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: 🚧 [pre-commit.ci] auto fixes from pre-commit.com hooks (<em>2024-01-29</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: 🚧 [pre-commit.ci] auto fixes from pre-commit.com hooks (<em>2024-01-15</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: upgrade pyupgrade config for support py39. (<em>2024-01-11</em>)</li>
+<li><img alt="🧪" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9ea.svg" title=":test_tube:" /> test: reformat test case that use assertIn instead assertTrue. (<em>2024-01-11</em>)</li>
+</ul>
+<h3 id="build-workflow_11">Build &amp; Workflow</h3>
+<ul>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> build: remove fix version of clishelf package. (<em>2024-01-30</em>)</li>
+</ul>
+<h2 id="100">1.0.0</h2>
+<h3 id="features_6">Features</h3>
+<ul>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: migrate code from py3.8 to py3.9 (#42) (<em>2024-01-04</em>)</li>
+</ul>
+<h2 id="044">0.4.4</h2>
+<h3 id="features_7">Features</h3>
+<ul>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add float2decimal util function for convert value in Storage formatter obj. (<em>2023-10-16</em>)</li>
+</ul>
+<h3 id="code-changes_12">Code Changes</h3>
+<ul>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: ⬆ bump actions/setup-python from 4 to 5 (<em>2024-01-01</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: ⬆ bump actions/download-artifact from 3 to 4 (<em>2024-01-01</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: ⬆ bump actions/upload-artifact from 3 to 4 (<em>2024-01-01</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: 📦 bump clishelf from 0.1.0 to 0.1.1 (<em>2024-01-01</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: ⬆ bump pypa/gh-action-pypi-publish from 1.8.10 to 1.8.11 (<em>2023-12-01</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: 📦 bump clishelf from 0.0.4 to 0.1.0 (<em>2023-11-01</em>)</li>
+</ul>
+<h3 id="fix-bugs_10">Fix Bugs</h3>
+<ul>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: change name of config data for clishelf on pyproject file. (<em>2024-01-04</em>)</li>
+</ul>
+<h3 id="build-workflow_12">Build &amp; Workflow</h3>
+<ul>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> build: change timezone from UTC to Etc/UTC. (<em>2023-11-22</em>)</li>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> build: change frequency of dependabot from weekly to monthly. (<em>2023-11-22</em>)</li>
+</ul>
+<h2 id="043">0.4.3</h2>
+<h3 id="features_8">Features</h3>
+<ul>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: create extract_wildcard class-method for BaseVersion object. (<em>2023-10-16</em>)</li>
+</ul>
+<h3 id="code-changes_13">Code Changes</h3>
+<ul>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: change object name of <em>VersionPackage to VerPackage for reusable. (_2023-10-16</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: change type of standard value of Storage formatter obj. (<em>2023-10-16</em>)</li>
+</ul>
+<h2 id="042">0.4.2</h2>
+<h3 id="features_9">Features</h3>
+<ul>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add to_const use-case for the formatter group. (<em>2023-10-15</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add string value that able to pass to any formatter objs. (<em>2023-10-15</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add from_formats and from_value class-method for formatter group. (<em>2023-10-14</em>)</li>
+</ul>
+<h3 id="documents_8">Documents</h3>
+<ul>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: update doc-string for Cosntant, FormatterGroup objs. (<em>2023-10-14</em>)</li>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: update doc-string on Naming, Storage formatter objs. (<em>2023-10-13</em>)</li>
+</ul>
+<h2 id="041">0.4.1</h2>
+<h3 id="features_10">Features</h3>
+<ul>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add train format for Naming formatter object. (<em>2023-10-12</em>)</li>
+</ul>
+<h3 id="code-changes_14">Code Changes</h3>
+<ul>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactor: 🚧 [pre-commit.ci] auto fixes from pre-commit.com hooks (<em>2023-10-09</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactor: 🚧 [pre-commit.ci] pre-commit autoupdate (<em>2023-10-09</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: add type hint on formatter obj. (<em>2023-10-06</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: add next_version method to VersionPackage and test-cases. (<em>2023-10-05</em>)</li>
+</ul>
+<h3 id="documents_9">Documents</h3>
+<ul>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: update doc-string on Datetime, Serial formatter objs. (<em>2023-10-13</em>)</li>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: update doc-string for formatter object. (<em>2023-10-13</em>)</li>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: update logo on python version support. (<em>2023-10-06</em>)</li>
+</ul>
+<h3 id="build-workflow_13">Build &amp; Workflow</h3>
+<ul>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> build: add deps version on pyproject file. (<em>2023-10-12</em>)</li>
+</ul>
+<h2 id="040">0.4.0</h2>
+<h3 id="features_11">Features</h3>
+<ul>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add <strong>add</strong> operation for version formatter obj. (<em>2023-10-05</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add VersionPackage that will instead packaging.version. (<em>2023-10-04</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: initial version object for Version formatter obj. (<em>2023-10-03</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add %c and %u format for Serial formatter object. (<em>2023-10-02</em>)</li>
+</ul>
+<h3 id="code-changes_15">Code Changes</h3>
+<ul>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactor: 🚧 [pre-commit.ci] pre-commit autoupdate (<em>2023-10-03</em>)</li>
+<li><img alt="🧪" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9ea.svg" title=":test_tube:" /> test: add test-case that compare between the value and datetime with same format string. (<em>2023-10-02</em>)</li>
+<li><img alt="🧪" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9ea.svg" title=":test_tube:" /> test: add storage examples test-case. (<em>2023-10-02</em>)</li>
+</ul>
+<h3 id="documents_10">Documents</h3>
+<ul>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: update 'train' naming format in doc-string. (<em>2023-10-03</em>)</li>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: update length of license comment. (<em>2023-10-02</em>)</li>
+</ul>
+<h3 id="build-workflow_14">Build &amp; Workflow</h3>
+<ul>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> build: add /tests/ on exclude list for build to sdist. (<em>2023-10-02</em>)</li>
+</ul>
+<h2 id="030">0.3.0</h2>
+<h3 id="features_12">Features</h3>
+<ul>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add checker method on SlotLevel object and validate of Naming. (<em>2023-10-02</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add validate naming value for Naming formatter obj. (<em>2023-10-01</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add validate datetime property on Datetime formatter obj. (<em>2023-10-01</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add strct mode for check duplicat format value before initialize. (<em>2023-10-01</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: update formatter string for EnvConst object. (<em>2023-09-19</em>)</li>
+</ul>
+<h3 id="code-changes_16">Code Changes</h3>
+<ul>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: change name of method passer to from_value that relate with FormatterGroup. (<em>2023-10-02</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: remove ddeutil deps and merge util funtions to local package. (<em>2023-10-02</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactor: 🚧 [pre-commit.ci] pre-commit autoupdate (<em>2023-09-26</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactor: 🚧 [pre-commit.ci] pre-commit autoupdate (<em>2023-09-19</em>)</li>
+</ul>
+<h3 id="documents_11">Documents</h3>
+<ul>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: update use-case on README. (<em>2023-10-02</em>)</li>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: edit example code style on README. (<em>2023-09-29</em>)</li>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: update info in README and rename env const obj. (<em>2023-09-18</em>)</li>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: update doc-string for formatter module. (<em>2023-09-18</em>)</li>
+</ul>
+<h3 id="fix-bugs_11">Fix Bugs</h3>
+<ul>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: add condition that raise if format string does not exists in regexes. (<em>2023-10-02</em>)</li>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: change condition of extract word for coverage. (<em>2023-10-02</em>)</li>
+</ul>
+<h2 id="023">0.2.3</h2>
+<h3 id="code-changes_17">Code Changes</h3>
+<ul>
+<li><img alt="🧪" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9ea.svg" title=":test_tube:" /> test: add test data path to gitignore file. (<em>2023-09-17</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactor: [pre-commit.ci] pre-commit autoupdate (<em>2023-09-12</em>)</li>
+</ul>
+<h3 id="documents_12">Documents</h3>
+<ul>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: add more detail in doc-string in formatter module. (<em>2023-09-12</em>)</li>
+</ul>
+<h3 id="fix-bugs_12">Fix Bugs</h3>
+<ul>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: change logic of ordering property of formatter constant and group. (<em>2023-09-17</em>)</li>
+</ul>
+<h3 id="build-workflow_15">Build &amp; Workflow</h3>
+<ul>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> build: add skip local repo on pre-commit ci config. (<em>2023-09-12</em>)</li>
+</ul>
+<h2 id="022">0.2.2</h2>
+<h3 id="code-changes_18">Code Changes</h3>
+<ul>
+<li><img alt="🎨" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3a8.svg" title=":art:" /> style: make newline on testing code and update usecase on README. (<em>2023-09-11</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: add type hint and comment for mypy. (<em>2023-09-10</em>)</li>
+</ul>
+<h3 id="documents_13">Documents</h3>
+<ul>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: update README on usecase topic. (<em>2023-09-11</em>)</li>
+</ul>
+<h3 id="build-workflow_16">Build &amp; Workflow</h3>
+<ul>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> build: add dependabot for pip package. (<em>2023-09-10</em>)</li>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> build: add condition for receive cache in the ci workflow. (<em>2023-09-08</em>)</li>
+</ul>
+<h2 id="021">0.2.1</h2>
+<h3 id="code-changes_19">Code Changes</h3>
+<ul>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: change deps package for dev and remove test from pyproject. (<em>2023-09-08</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: remove un-use deps package from pyproject. (<em>2023-09-08</em>)</li>
+</ul>
+<h2 id="020">0.2.0</h2>
+<h3 id="code-changes_20">Code Changes</h3>
+<ul>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: rename package from dup-fmt to fmtutil on PyPI. (<em>2023-09-07</em>)</li>
+</ul>
+<h2 id="014">0.1.4</h2>
+<h3 id="features_13">Features</h3>
+<ul>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: implement cls.adjust func to formatter group object. (<em>2023-09-07</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: custom operation property for Naming formatter obj. (<em>2023-09-07</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: custom operation property for Datetime formatter obj. (<em>2023-09-07</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: implement operation property to formatter object. (<em>2023-09-07</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add prepare_value staticmethod on parent formatter class. (<em>2023-09-07</em>)</li>
+</ul>
+<h3 id="code-changes_21">Code Changes</h3>
+<ul>
+<li><img alt="🧪" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9ea.svg" title=":test_tube:" /> test: upgrade pre-commit hooks. (<em>2023-09-07</em>)</li>
+<li><img alt="🧪" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9ea.svg" title=":test_tube:" /> test: add test case for serial operation scenarios. (<em>2023-09-07</em>)</li>
+</ul>
+<h2 id="013">0.1.3</h2>
+<h3 id="code-changes_22">Code Changes</h3>
+<ul>
+<li><img alt="🧪" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9ea.svg" title=":test_tube:" /> test: add test case for passing value to formatter static method. (<em>2023-09-06</em>)</li>
+<li><img alt="🧪" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9ea.svg" title=":test_tube:" /> test: add examples test case for formatter group object. (<em>2023-09-06</em>)</li>
+</ul>
+<h2 id="012">0.1.2</h2>
+<h3 id="features_14">Features</h3>
+<ul>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add condition for validate value of formatter. (<em>2023-09-06</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add .to_const() method on formatter object. (<em>2023-09-06</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add base_fmt parameter on make_const func for ignore default. (<em>2023-09-06</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add more type argument for formatter group class. (<em>2023-09-06</em>)</li>
+</ul>
+<h3 id="code-changes_23">Code Changes</h3>
+<ul>
+<li><img alt="🧪" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9ea.svg" title=":test_tube:" /> test: update test case for make formatter group from Constant. (<em>2023-09-05</em>)</li>
+</ul>
+<h2 id="011">0.1.1</h2>
+<h3 id="documents_14">Documents</h3>
+<ul>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: update README for Storage formatter object. (<em>2023-09-05</em>)</li>
+</ul>
+<h3 id="fix-bugs_13">Fix Bugs</h3>
+<ul>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: constant factory function can receive None value. (#18) (<em>2023-09-05</em>)</li>
+</ul>
+<h2 id="010">0.1.0</h2>
+<h3 id="features_15">Features</h3>
+<ul>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add Storage formatter and order property on formatter group instance. (<em>2023-09-05</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: create make_const instead Constant function. (<em>2023-09-05</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add dynamic class name on constant func constructor. (<em>2023-09-05</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add fmt2const constructor func for create Constant object. (<em>2023-09-05</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: implement order property on the formatter group class. (<em>2023-09-04</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: revision formatter group object logic. (<em>2023-09-04</em>)</li>
+</ul>
+<h3 id="code-changes_24">Code Changes</h3>
+<ul>
+<li><img alt="🧪" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9ea.svg" title=":test_tube:" /> test: add more test cases for Storage formatter object. (<em>2023-09-05</em>)</li>
+<li><img alt="🧪" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9ea.svg" title=":test_tube:" /> test: add test case for coverage running. (<em>2023-09-05</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: remove extract_regex_with_value function from formatter package. (<em>2023-09-04</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: move base_level to class attribute. (<em>2023-09-04</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: remove base_attr_prefix from formatter class. (<em>2023-09-04</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: remove ordered formatter clas. (<em>2023-09-04</em>)</li>
+<li><img alt="🧪" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9ea.svg" title=":test_tube:" /> test: change and fix test case for formatter group. (<em>2023-09-04</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: improve pref on regex classmethod. (<em>2023-09-03</em>)</li>
+</ul>
+<h3 id="fix-bugs_14">Fix Bugs</h3>
+<ul>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: fix mypy for typing hint. (<em>2023-09-05</em>)</li>
+</ul>
+<h2 id="006">0.0.6</h2>
+<h3 id="features_16">Features</h3>
+<ul>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add new constructor of Constant object that receive fmt and value. (<em>2023-09-01</em>)</li>
+</ul>
+<h3 id="code-changes_25">Code Changes</h3>
+<ul>
+<li><img alt="🧪" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9ea.svg" title=":test_tube:" /> test: add test-case for parsing when formatter does not set group name. (<em>2023-09-03</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: add suffix index on regex group name when parsing format. (<em>2023-09-03</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: edit code statement that support mypy. (<em>2023-09-01</em>)</li>
+</ul>
+<h3 id="fix-bugs_15">Fix Bugs</h3>
+<ul>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: add condition of camel convert function if case empty string value. (<em>2023-09-01</em>)</li>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: remove print debug stage from main code. (<em>2023-09-01</em>)</li>
+</ul>
+<h2 id="005post1">0.0.5.post1</h2>
+<h3 id="features_17">Features</h3>
+<ul>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: create_const function can receive Formatter instance. (<em>2023-09-01</em>)</li>
+</ul>
+<h3 id="fix-bugs_16">Fix Bugs</h3>
+<ul>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: fix parser method of formatter object that riase if duplicate format str. (<em>2023-09-01</em>)</li>
+</ul>
+<h2 id="005post0">0.0.5.post0</h2>
+<h3 id="code-changes_26">Code Changes</h3>
+<ul>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: change import layer of dup-uitls deps package. (<em>2023-08-28</em>)</li>
+</ul>
+<h3 id="fix-bugs_17">Fix Bugs</h3>
+<ul>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: generate Constant instance does not separate class attr. (<em>2023-08-31</em>)</li>
+</ul>
+<h2 id="005">0.0.5</h2>
+<h3 id="code-changes_27">Code Changes</h3>
+<ul>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: change import layer of dup-uitls deps package. (<em>2023-08-28</em>)</li>
+</ul>
+<h3 id="fix-bugs_18">Fix Bugs</h3>
+<ul>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: generate Constant instance does not separate class attr. (<em>2023-08-31</em>)</li>
+</ul>
+<h2 id="005_1">0.0.5</h2>
+<h3 id="features_18">Features</h3>
+<ul>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add make_order_fmt func that make new order formatter obj. (<em>2023-08-27</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add auto_serial in formatter ordered object. (<em>2023-08-27</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add FMTS class attr for dynamic foramtter mapping when ordered. (<em>2023-08-26</em>)</li>
+</ul>
+<h3 id="code-changes_28">Code Changes</h3>
+<ul>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: add type of formatter group argument. (<em>2023-08-27</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: split object of relative to objects file. (<em>2023-08-27</em>)</li>
+<li><img alt="🧪" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9ea.svg" title=":test_tube:" /> test: add test cases for relativeserial object. (<em>2023-08-26</em>)</li>
+<li><img alt="🎨" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3a8.svg" title=":art:" /> style: reformat code and comment message. (<em>2023-08-26</em>)</li>
+<li><img alt="🎨" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3a8.svg" title=":art:" /> style: change code style that make wrong newline issue. (<em>2023-08-26</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactored: add pre-commit message and change deps of test and dev optional deps. (<em>2023-08-25</em>)</li>
+</ul>
+<h3 id="fix-bugs_19">Fix Bugs</h3>
+<ul>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: change the version of dup-utils that fix import issue. (<em>2023-08-27</em>)</li>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: duplicate replaces to the previous value on format method. (<em>2023-08-26</em>)</li>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fixed: add omit cli files for coverage process (<em>2023-08-25</em>)</li>
+</ul>
+<h2 id="004">0.0.4</h2>
+<h3 id="features_19">Features</h3>
+<ul>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add cli commands of formatter object parsing method (<em>2023-08-24</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add utils package from dup-uitls project (<em>2023-07-11</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add cli for formatter package (<em>2023-07-10</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add performance load test for memory usage when init (<em>2023-06-19</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: Create dependabot.yml (<em>2023-06-19</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add script for commit-msg and generate release note (<em>2023-06-19</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: edit pre-commit-msg hook (<em>2023-06-19</em>)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: New (<em>2023-06-19</em>)</li>
+</ul>
+<h3 id="code-changes_29">Code Changes</h3>
+<ul>
+<li><img alt="🧪" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9ea.svg" title=":test_tube:" /> test: add type annotation with required by mypy package (<em>2023-08-24</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactor: remove commit-message script (<em>2023-07-03</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactor: ⬆ bump actions/setup-python from 3 to 4 (<em>2023-06-19</em>)</li>
+<li><img alt="🚧" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f6a7.svg" title=":construction:" /> refactor: ⬆ bump pypa/gh-action-pypi-publish from 1.8.5 to 1.8.6 (<em>2023-06-19</em>)</li>
+<li>script: add precommit (<em>2023-06-19</em>)</li>
+<li><img alt="🧪" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9ea.svg" title=":test_tube:" /> test: add type construct of formatter object scenario (<em>2023-06-19</em>)</li>
+</ul>
+<h3 id="documents_15">Documents</h3>
+<ul>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: prepare and remove unsuable code in pyproject.toml (<em>2023-06-23</em>)</li>
+</ul>
+<h3 id="fix-bugs_20">Fix Bugs</h3>
+<ul>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fix: delete extension file from git command (<em>2023-06-20</em>)</li>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fix: merge change from main that add dependabot config (<em>2023-06-19</em>)</li>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fix: commit-msg (<em>2023-06-19</em>)</li>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fix:  (<em>2023-06-19</em>)</li>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fix: has_warning (<em>2023-06-19</em>)</li>
+</ul>
+<h3 id="build-workflow_17">Build &amp; Workflow</h3>
+<ul>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> build: add bump2version dependency and update version dup-utils (<em>2023-08-24</em>)</li>
+</ul>
+<h2 id="003post1">0.0.3.post1</h2>
+<p><strong>Fix</strong>:</p>
+<ul>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fix: add type annotation for 100% coverage that missing (#7)</li>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fix: debug pytest for another python versions</li>
+</ul>
+<p><strong>Features</strong>:</p>
+<ul>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add abstract class for Formatter object (#7)</li>
+</ul>
+<p><strong>Documents</strong>:</p>
+<ul>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: add more README.md</li>
+</ul>
+<h2 id="003">0.0.3</h2>
+<p><strong>Fix</strong>:</p>
+<ul>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fix: add ignore htmlcov</li>
+</ul>
+<p><strong>Workflows</strong>:</p>
+<ul>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> build: add black config on pyproject.toml</li>
+</ul>
+<p><strong>Features</strong>:</p>
+<ul>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add type annotation and fix typing issue for mypy 100% coverage (#6)</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> test: add test examples</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add bump2version</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add local hook for pytest</li>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add test pipeline for python version 3.10, 3.11</li>
+</ul>
+<p><strong>Documents</strong></p>
+<ul>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: add more CONTRIBUTING.md</li>
+</ul>
+<h2 id="002">0.0.2</h2>
+<p><strong>Fix</strong>:</p>
+<ul>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fix: pypi release does not publish</li>
+</ul>
+<h2 id="001">0.0.1</h2>
+<p><strong>Fix</strong>:</p>
+<ul>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fix: clear debug command on workflow</li>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fix: ci pipeline does not add htmlcov/ (#4)</li>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fix: add debug for ci pipeline</li>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fix: htmlcov/ on coverage comment action (#3)</li>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fix: add htmlcov/ for action comment bot</li>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fix: feature and workflows from v0.0.1 (#2)</li>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fix: coverage in ci pipeline</li>
+<li><img alt="⚙" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2699.svg" title=":gear:" /> fix: ls command in ci pipeline</li>
+</ul>
+<p><strong>Workflows</strong>:</p>
+<ul>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> workflow: remove ci for any version branch</li>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> build: move version to about (#1)</li>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> workflow: edit ci pipeline</li>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> build: move version to about</li>
+<li><img alt="🧰" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f9f0.svg" title=":toolbox:" /> action: add github actions</li>
+</ul>
+<p><strong>Features</strong>:</p>
+<ul>
+<li><img alt="🎯" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f3af.svg" title=":dart:" /> feat: add foramtter package for version 0.0.1</li>
+</ul>
+<p><strong>Documents</strong>:</p>
+<ul>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: edit README file</li>
+<li><img alt="📄" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f4c4.svg" title=":page_facing_up:" /> docs: add README and pyproject.toml files</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href=".." class="md-footer__link md-footer__link--prev" aria-label="Previous: Welcome to Fmtutil">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Welcome to Fmtutil
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../error_handler/" class="md-footer__link md-footer__link--next" aria-label="Next: Error Handler">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Error Handler
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2023 <a href="https://github.com/korawica/fmtutil" target="_blank" rel="noopener">Korawich Anuttra</a>
+
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/korawica/fmtutil" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M186.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1M480 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2m-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3m-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://www.linkedin.com/in/korawica" target="_blank" rel="noopener" title="www.linkedin.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M100.28 448H7.4V148.9h92.88zM53.79 108.1C24.09 108.1 0 83.5 0 53.8a53.79 53.79 0 0 1 107.58 0c0 29.7-24.1 54.3-53.79 54.3M447.9 448h-92.68V302.4c0-34.7-.7-79.2-48.29-79.2-48.29 0-55.69 37.7-55.69 76.7V448h-92.78V148.9h89.08v40.8h1.3c12.4-23.5 42.69-48.3 87.88-48.3 94 0 111.28 61.9 111.28 142.3V448z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://x.com/korawica" target="_blank" rel="noopener" title="x.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8l164.9-188.5L26.8 48h145.6l100.5 132.9zm-24.8 373.8h39.1L151.1 88h-42z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.indexes", "navigation.instant", "navigation.instant.prefetch", "navigation.sections", "navigation.footer", "search.suggest", "search.highlight", "search.share", "content.tabs.link", "content.code.annotation", "content.code.copy", "content.code.select", "content.footnote.tooltips", "content.tooltips"], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.f1b6f286.min.js"></script>
+      
+    
+  </body>
+</html>
