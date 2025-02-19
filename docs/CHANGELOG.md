@@ -2,6 +2,12 @@
 
 ## Latest Changes
 
+## 1.0.15
+
+### :package: Build & Workflow
+
+- :toolbox: move auth with oidc on publish workflow.
+
 ## 1.0.14
 
 ### :package: Build & Workflow
