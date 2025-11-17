@@ -13,20 +13,20 @@ ci:
 
 repos:
 -   repo: https://github.com/asottile/pyupgrade
-    rev:  v3.21.0
+    rev:  v3.21.1
     hooks:
     -   id: pyupgrade
         args: ["--py39-plus", "--keep-runtime-typing"]
         stages: [ pre-commit ]
 
 -   repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 25.9.0
+    rev: 25.11.0
     hooks:
     -   id: black
         stages: [ pre-commit ]
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev:  v0.14.3
+    rev:  v0.14.5
     hooks:
     -   id: ruff
         args:
